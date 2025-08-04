@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PESO Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg bg-primary py-0 sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{url_for('index')}}">
+                <img class="m-0" style="height: 60px; width: 60px;" src="{{ url_for('static', filename='images/spes_logo.png') }}" alt="Logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <span class="nav-link">
+                            <i class="ms-2 bi bi-person-circle"></i>
+                            <b class="m-1">{{ peso_role }} - {{ peso_first_name }} {{ peso_last_name }}</b>
+                        </span>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <button class="btn btn-warning ms-2 d-flex align-items-center" id="logoutBtn" type="button">
+                            <i class="bi bi-box-arrow-right me-1"></i> Log-out
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Logout Confirmation Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+            <div class="modal-header bg-danger text-dark">
+                <h5 class="modal-title" id="logoutModalLabel"><i class="bi bi-box-arrow-right"></i> Confirm Logout</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to log out?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="{{ url_for('login.logout_peso') }}" class="btn btn-danger">Log-out</a>
+            </div>
+            </div>
+        </div>
+    </div>
+    <div class="container mt-4">
+        <div class="row g-4">
+            <div class="col-md-12">
+                <div class="card shadow-lg border-0">
+                    <div class="card-header bg-info text-dark">
+                        <h5 class="mb-0">Welcome, {{ peso_first_name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Account ID:</strong>
+                                <span>{{ peso_id }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Name:</strong>
+                                <span>{{ peso_first_name }} {{ peso_last_name }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Birth Date:</strong>
+                                <span>{{ peso_birth_date }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Sex:</strong>
+                                <span>{{ peso_sex }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Role:</strong>
+                                <span>{{ peso_role }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Username:</strong>
+                                <span>{{ peso_username }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Email:</strong>
+                                <span>{{ peso_email }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Mobile No.:</strong>
+                                <span>{{ peso_mobile_no }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="text-end">
+                        <button class="btn btn-warning btn-lg w-100 rounded-0 rounded-bottom-1" data-bs-toggle="modal" data-bs-target="#confirmPasswordModal">Update Profile</button>
+                    </div>
+                </div>
+            </div>
+            <div class="container mt-4">
+                <div class="row text-center">
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('peso.peso_registration') }}" class="btn btn-info border-black btn-lg w-100">Student Registrations</a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('peso.peso_pending_registration') }}" class="btn btn-info border-black btn-lg w-100">Pending Student Registrations</a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('peso.peso_final_spes_list') }}" class="btn btn-info border-black btn-lg w-100">Final SPES List</a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('peso.student_dtr_records') }}" class="btn btn-primary text-dark border-black btn-lg w-100">DTR Records</a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('peso.student_payroll') }}" class="btn btn-primary text-dark border-black btn-lg w-100">For Payroll</a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('peso.student_applications_archive') }}" class="btn btn-primary text-dark border-black btn-lg w-100">Archive</a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('peso.dtr_qr_scanner') }}" class="btn btn-success text-dark border-black btn-lg w-100">QR Scanner</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Confirm Password Modal -->
+    <div class="modal fade" id="confirmPasswordModal" tabindex="-1" aria-labelledby="confirmPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header bg-primary text-dark">
+                <h5 class="modal-title" id="confirmPasswordModalLabel">Confirm Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label for="profilePassword" class="form-label">Enter your password to update profile:</label>
+                <input type="password" class="form-control" id="profilePassword" autocomplete="current-password">
+                <div id="profilePasswordError" class="text-danger mt-2" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmProfilePasswordBtn">Confirm</button>
+            </div>
+            </div>
+        </div>
+    </div>
+    <!-- Update Profile Modal -->
+    <div class="modal fade" id="updateProfileModal" tabindex="-1" aria-labelledby="updateProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+            <div class="modal-header bg-info text-dark">
+                <h5 class="modal-title" id="updateProfileModalLabel">Update Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="updateProfileForm">
+                <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Last Name</label>
+                        <input type="text" class="form-control" id="edit_last_name" name="last_name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">First Name</label>
+                        <input type="text" class="form-control" id="edit_first_name" name="first_name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Birth Date</label>
+                        <input type="date" class="form-control" id="edit_birth_date" name="birth_date" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Sex</label>
+                        <select class="form-select" id="edit_sex" name="sex" required>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Role</label>
+                        <input type="text" class="form-control" id="edit_role" name="role" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Username (cannot be changed)</label>
+                        <input type="text" class="form-control" id="edit_username" name="username" readonly>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Email</label>
+                        <input type="email" class="form-control" id="edit_email" name="email" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Mobile No.</label>
+                        <input type="text" class="form-control" id="edit_mobile_no" name="mobile_no" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">New Password</label>
+                        <input type="password" class="form-control" id="edit_password" name="password" autocomplete="new-password">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Confirm New Password</label>
+                        <input type="password" class="form-control" id="edit_confirm_password" name="confirm_password" autocomplete="new-password">
+                    </div>
+                </div>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-success">Update</button>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+    <!-- Confirm Update Modal -->
+    <div class="modal fade" id="confirmUpdateModal" tabindex="-1" aria-labelledby="confirmUpdateModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="confirmUpdateModalLabel">Confirm Update</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to update your profile? You will be logged out after updating.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="confirmUpdateBtn">Confirm</button>
+            </div>
+            </div>
+        </div>
+    </div>
+    <span id="logoutUrl" data-url="{{ url_for('login.logout_peso') }}" style="display:none"></span>
+    <script src="{{ url_for('static', filename='peso_script.js') }}"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

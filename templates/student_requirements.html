@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+  <div style="flex: 1;">
+    <nav class="navbar bg-body-tertiary sticky-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{url_for('index')}}"><img class="m-0" style="height: 50px; width: 50px;" src="{{ url_for('static', filename='images/spes_logo.png') }}" alt="Logo"></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasNavbarLabel">{{ first_name}} {{ last_name}}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+            <li class="list-group list-group-flush">
+              <li class="list-group-item fw-bold fs-4 text-center"><a class="nav-link p-3" href="{{ url_for ('login.student_main')}}">Profile</a></li>
+              <li class="list-group-item fw-bold fs-4 text-center"><a class="nav-link p-3" href="{{ url_for ('student.student_registrations')}}">Submit Requirements</a></li>
+              <li class="list-group-item fw-bold fs-4 text-center"><a class="nav-link p-3" href="{{ url_for ('student.student_dtr')}}">DTR</a></li>
+              <li class="list-group-item fw-bold fs-4 text-center"><a class="nav-link p-3" href="{{ url_for('login.logout_student') }}">Log-out</a></li>
+            </li>
+          </ul>
+         </div>
+       </div>
+      </div>
+    </nav>
+    <div class="container mt-5">
+      <h1 class="text-center text-primary mb-4">Upload Requirements</h1>
+      <div class="card shadow-sm">
+        <div class="card-header bg-info text-dark">
+            <h5 class="mb-0">Required Documents</h5>
+        </div>
+        <div class="card-body">
+            <form id="requiredDocsForm" method="POST" action="{{ url_for('student.upload_required_docs') }}" enctype="multipart/form-data" enctype="multipart/form-data">
+              <div class="mb-3 p-2 rounded-3" id="passportPhotoSection">
+                <label for="passportPhoto" class="form-label fw-bold">Passport Size Photo <span class="text-danger">*</span></label>
+                <input type="file" class="form-control" id="passportPhoto" name="passportPhoto" accept=".jpg,.jpeg,.png" required>
+              </div>
+              <div class="mb-3 p-2 rounded-3" id="birthCertificateSection">
+                  <label for="birthCertificate" class="form-label fw-bold">Birth Certificate <span class="text-danger">*</span></label>
+                  <input type="file" class="form-control" id="birthCertificate" name="birthCertificate" accept=".pdf,.jpg,.jpeg,.png" required>
+              </div>
+              <div class="mb-3 p-2 rounded-3" id="parentsIDSection">
+                <label for="parentsID" class="form-label fw-bold">Parents/Guardian and student ID with 3 Signatures <span class="text-danger">*</span></label>
+                <input type="file" class="form-control" id="parentsID" name="parentsID" accept=".pdf,.jpg,.jpeg,.png" required>
+              </div>
+              <div class="mb-3 p-2 rounded-3" id="reportCardSection">
+                <label for="reportCard" class="form-label fw-bold">CTC of Grades Report <span class="text-danger">*</span></label>
+                <input type="file" class="form-control" id="reportCard" name="reportCard" accept=".pdf,.jpg,.jpeg,.png" required>
+              </div>
+              <div class="mb-3 p-2 rounded-3" id="itrSection">
+                  <label for="itr" class="form-label fw-bold">ITR of Employed Parents <span class="text-danger">*</span></label>
+                  <input type="file" class="form-control" id="itr" name="itr" accept=".pdf,.jpg,.jpeg,.png" required>
+              </div>
+              <div class="text-center">
+                <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="container mt-5">
+        <div class="card shadow-sm">
+          <div class="card-header bg-info text-dark">
+              <h5 class="mb-0">Additional Requirements</h5>
+          </div>
+          <div class="card-body">
+              <form id="additionalDocsForm" method="POST" action="{{ url_for('student.upload_additional_docs') }}" enctype="multipart/form-data">
+                  <div class="mb-3">
+                    <label for="itr" class="form-label fw-bold">Additional Files<span class="text-danger">*</span></label>
+                    <input type="file" class="form-control" id="additionalFiles" name="additionalFiles" accept=".pdf,.jpg,.jpeg,.png" required>
+                  </div>
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+                  </div>
+              </form>
+          </div>
+        </div>
+    </div>
+  </div>
+  <!-- Toast container -->
+  <div aria-live="polite" aria-atomic="true" class="position-relative">
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 2000;">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div id="msgToast" class="toast show align-items-center text-bg-{{ category }} border border-dark round-3" role="alert" aria-live="assertive" aria-atomic="true" style="min-width: 200px; min-height: 40px; font-size: 1rem;">
+            <div class="toast-header bg-dark text-light">
+              <img src="{{ url_for('static', filename='images/spes_logo.png') }}" class="rounded me-2" style="height: 30px; width: 30px;" alt="spes logo">
+              <strong class="me-auto">Student Page:</strong>
+              <small>Student Requirements</small>
+              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body text-dark">
+              {{ message }}
+            </div>
+          </div>
+        {% endfor %}
+      {% endwith %}
+    </div>
+  </div>
+  <footer class="bg-dark text-white text-center py-3 mt-5 fs-6">
+    <p>Contact us: <a href="mailto:peso.cob@gmail.com" class="text-white">peso.cob@gmail.com</a></p>
+    <p>Facebook</p>
+    <p>(047) 237-0718 / 0908-881-3004</p>
+    <p>2nd Floor Peso Balanga City (Former Balanga City Water District), St. Joseph St. Poblacion, Balanga City, Bataan</p>
+    <a href=""><img class="m-0" style="height: 50px; width: 50px;" src="{{ url_for ('static', filename='images/peso_balanga_logo.png') }}" alt="Logo"></a>
+    <a class="navbar-brand" href="{{url_for('index')}}"><img class="m-0" style="height: 50px; width: 50px;" src="{{ url_for('static', filename='images/spes_logo.png') }}" alt="Logo"></a>
+  </footer>
+    <script src="{{ url_for('static', filename='student_script.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>

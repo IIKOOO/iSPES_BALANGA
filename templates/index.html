@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iSPES</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body class="main-body">
+  <div style="flex: 1;">
+    <nav class="navbar navbar-expand-lg bg-primary py-0 position-sticky top-0" style="z-index: 1020;">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="{{url_for('index')}}"><img class="m-0" style="height: 60px; width: 60px;" src="{{ url_for('static', filename='images/spes_logo.png') }}" alt="Logo"></a> 
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-white fw-semibold px-3" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle me-1"></i> Login
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 mt-2" style="min-width: 220px;">
+                <!-- <li>
+                  <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+                    href="{{ url_for('login.admin_dashboard') if session.get('admin_logged_in') }}"
+                    data-bs-toggle="{{ '' if session.get('admin_logged_in') else 'modal' }}"
+                    data-bs-target="{{ '' if session.get('admin_logged_in') else '#admin_login' }}">
+                    <i class="bi bi-shield-lock-fill text-primary"></i> Admin Login
+                  </a>
+                </li> -->
+                <li>
+                  <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+                    href="{{ url_for('login.peso_dashboard') if session.get('peso_logged_in') }}"
+                    data-bs-toggle="{{ '' if session.get('peso_logged_in') else 'modal' }}"
+                    data-bs-target="{{ '' if session.get('peso_logged_in') else '#peso_login' }}">
+                    <i class="bi bi-briefcase-fill text-success"></i> Peso Login
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+                    href="{{ url_for('login.student_main') if session.get('student_logged_in') }}"
+                    data-bs-toggle="{{ '' if session.get('student_logged_in') else 'modal' }}"
+                    data-bs-target="{{ '' if session.get('student_logged_in') else '#student_login' }}">
+                    <i class="bi bi-mortarboard-fill text-warning"></i> Student Login
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="container-fluid main_section bg-light bg-opacity-75">
+      <div class="container text-center"> 
+          <h1 class="display-1" style="font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; font-size: 100px; text-shadow: 2px 2px 10px rgba(0,0,0,0.6);">SPES</h1>
+          <h3 class="display-2" style="font-size: 40px; font-weight: bold; text-align: center;text-shadow: 1px 1px 5px rgba(0,0,0,0.6);">Special Program for Employment of Students Balanga</h3>
+          <div>
+            <button class="btn btn-outline-primary border-3 mt-4 btn-lg me-2" id="registerNow" style="width: 180px; font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; text-shadow: 2px 2px 10px rgba(0,0,0,0.3);" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Register Now</button>
+            <!--<button class="btn btn-outline-primary mt-4 btn-lg ms-2" 
+              style="width: 180px;" 
+              onclick="window.location.href='{{ url_for('login.student_main') if session.get('student_logged_in') else '#' }}'" 
+              data-bs-toggle="{{ '' if session.get('student_logged_in') else 'modal' }}" 
+              data-bs-target="{{ '' if session.get('student_logged_in') else '#student_login' }}">
+              Log-in
+            </button>-->
+          </div>
+      </div>
+      <!-- Toast Container -->
+      <div aria-live="polite" aria-atomic="true" class="position-relative">
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 2000;">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+              <div id="msgToast" class="toast show align-items-center text-bg-{{ category }} border border-dark round-3 toast-blur-bg" role="alert" aria-live="assertive" aria-atomic="true" style="min-width: 200px; min-height: 40px; font-size: 1rem;">
+                <div class="toast-header bg-dark text-light">
+                  <img src="{{ url_for('static', filename='images/spes_logo.png') }}" class="rounded me-2" style="height: 30px; width: 30px;" alt="spes logo">
+                  <strong class="me-auto">Message</strong>
+                  <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body text-white">
+                  {{ message }}
+                </div>
+              </div>
+            {% endfor %}
+          {% endwith %}
+        </div>
+      </div>
+    </div>
+    <div class="instruction_section">
+      <div class="container-fluid" style="background: linear-gradient(to right, #003366, #003366);  width: 100%; height: 100%; padding: 50px; box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.7);">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-dark">
+                <h5 class="mb-0 text-dark fw-bold text-center">Announcement</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ general_announcement or "No announcement at this time." }}</p>
+            </div>
+        </div>
+        <div class="d-flex flex-column justify-content-center mt-5">
+          <h1 style="text-align: center; color: azure; margin-bottom: 40px; text-shadow: 1px 1px 5px rgba(0,0,0,0.6);">In SPES Balanga, you only need three easy steps to get started</h1>
+          <div class="row g3 d-flex justify-content-around">
+            <div class="card border-dark p-3 mt-2 instruction_card" style="width: 18rem;">
+              <img src="{{ url_for('static', filename='images/register_icon.png') }}" class="card-img-top" alt="...">
+              <div class="card-body text-center" style="background-color: beige;">
+                <h3 class="fw-bold">Register</h3>
+                <p class="card-text">
+                  Create your account and fill out your personal and academic information.
+                </p>
+              </div>
+            </div>
+            <div class="card border-dark p-3 mt-2 instruction_card" style="width: 18rem;">
+              <img src="{{ url_for('static', filename='images/submit_icon.png') }}" class="card-img-top" alt="...">
+              <div class="card-body text-center">
+                <h3 class="fw-bold">Upload</h3>
+                <p class="card-text">
+                  Upload all necessary documents/requirements to complete your application.
+                </p>
+              </div>
+            </div>
+            <div class="card border-dark p-3 mt-2 instruction_card" style="width: 18rem;">
+              <img src="{{ url_for('static', filename='images/done_icon.png') }}" class="card-img-top" alt="...">
+              <div class="card-body text-center">
+                <h3 class="fw-bold">Start Working</h3>
+                <p class="card-text">
+                  Once approved, you’ll receive your assignment and begin your SPES journey!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="about_section">
+      <div class="container-fluid m-0 p-5 p-md-5" style="background: linear-gradient(to bottom, #cce5ff, #003366); box-shadow: inset 0 8px 20px rgba(0, 0, 0, 0.7);">
+        <div class="row align-items-center p-3 p-md-5">
+          <div class="col-md-6 text-light">
+            <h1 class="fw-bold text-dark" style="font-size: 3rem; line-height: 1.5;">Welcome to SPES Balanga</h1>
+            <p class="text-dark fw-semibold" style="text-align: justify; font-size: 1rem; line-height: 1.5;">
+              The Special Program for Employment of Students (SPES) is a government initiative aimed at empowering students by providing them with meaningful work opportunities. This program allows students to gain valuable work experience, develop essential skills, and earn an income to support their educational needs. By bridging the gap between education and employment, SPES not only helps students financially but also prepares them for future career challenges. It is a testament to the government's commitment to fostering youth development and ensuring that education remains accessible to all, especially those in need.
+            </p>
+          </div>
+          <div class="col-md-6">
+            <div class="ratio ratio-16x9">
+              <!-- <iframe class="rounded-3 shadow-lg" width="560" height="315" src="https://www.youtube.com/embed/D1WYKF4vQt4" 
+                  title="YouTube video player" 
+                  frameborder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                  referrerpolicy="strict-origin-when-cross-origin" 
+                  allowfullscreen>
+              </iframe> -->
+              <iframe class="rounded-3 shadow-lg" width="560" height="315" src="https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/laborandemploymentph/videos/270344815804965/&show_text=0&width=560"
+                  title="YouTube video player" 
+                  frameborder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                  referrerpolicy="strict-origin-when-cross-origin" 
+                  allowfullscreen>
+              </iframe>
+              <!-- <iframe src="https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/laborandemploymentph/videos/270344815804965/&show_text=0&width=560" width="560" height="315" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-dark text-white text-center py-3 mt-0 fs-6">
+    <footer class="bg-dark text-white text-center py-3 fs-6">
+      <img class="m-0" style="height: 60px; width: 65px;" src="{{ url_for('static', filename='images/dole_logo.png') }}" alt="Logo">
+      <img class="m-0" style="height: 60px; width: 60px;" src="{{ url_for('static', filename='images/balanga_logo.png') }}" alt="Logo">
+      <img class="m-0" style="height: 60px; width: 60px;" src="{{ url_for('static', filename='images/peso_balanga_logo.png') }}" alt="Logo">
+      <h3 style="margin-top: 10px; margin-bottom: 18px; font-weight: bold; color: whitesmoke;">Contact</h3>
+      <p style="color: whitesmoke"><strong>📘 Facebook:</strong> <a href="https://www.facebook.com/mattangeless">SPES Balanga</a></p>
+      <p style="color: whitesmoke"><strong>✉️ Email:</strong> peso.cob@gmail.com</p>
+      <p style="color: whitesmoke"><strong>📞 Phone Numbers:</strong> (047) 237-0718 / 0908-881-3004</p>
+      <p style="color: whitesmoke"><strong>📍 Location:</strong> 2nd Floor Peso Balanga City (Former Balanga City Water District), St. Joseph St. Poblacion, Balanga City, Bataan</p>
+    </footer>
+  </footer>
+
+    <!-- Admin Login Modal -->
+    <!-- <div class="modal fade" id="admin_login" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-primary text-dark">
+              <h1 class="modal-title fs-5" id="staticBackdropLabel">Admin Login</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="admin_loginForm" method="POST" action="{{ url_for('login.login_admin') }}">
+                    {% if open_modal == 'admin_login' and acc_error %}
+                      <div class="alert alert-danger" role="alert">
+                        {{ acc_error }}
+                      </div>
+                    {% endif %}
+                    <div class="mb-3">
+                      <label for="username" class="form-label">Username</label>
+                      <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                      <label for="password" class="form-label">Password</label>
+                      <div class="input-group">
+                        <input class="form-control" type="password" id="admin_password" name="password" required>
+                        <button type="button" class="btn btn-outline-secondary toggle-password-btn" data-target="admin_password"><i class="bi bi-eye"></i></button>
+                      </div>
+                    </div>
+                    <div class="text-end">
+                      <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+            </div>
+          </div>
+        </div>
+    </div> -->
+
+    <!-- Peso Login Modal -->
+    <div class="modal fade" id="peso_login" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-primary text-dark">
+              <h1 class="modal-title fs-5" id="staticBackdropLabel">PESO Login</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="peso_loginForm" method="POST" action="{{ url_for('login.login_peso') }}">
+                    {% if open_modal == 'peso_login' and acc_error %}
+                      <div class="alert alert-danger" role="alert">
+                        {{ acc_error }}
+                      </div>
+                    {% endif %}
+                    {% if open_modal == 'peso_login' and disabled %}
+                      <div class="alert alert-danger" role="alert">
+                        {{ disabled }}
+                      </div>
+                    {% endif %}
+                    <div class="mb-3">
+                      <label for="username" class="form-label">Username</label>
+                      <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                      <label for="password" class="form-label">Password</label>
+                      <div class="input-group">
+                        <input class="form-control" type="password" id="peso_password" name="password" required>
+                        <button type="button" class="btn btn-outline-secondary toggle-password-btn" data-target="peso_password"><i class="bi bi-eye"></i></button>
+                      </div>
+                    </div>
+                    <div class="text-end">
+                      <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <!-- Student Login Modal -->
+    <div class="modal fade" id="student_login" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-primary text-dark">
+              <h1 class="modal-title fs-5" id="staticBackdropLabel">Student Login</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="student_loginForm" method="POST" action="{{ url_for('login.login_student') }}">
+                    {% if open_modal == 'student_login' and acc_error %}
+                      <div class="alert alert-danger" role="alert">
+                        {{ acc_error }}
+                      </div>
+                    {% endif %}
+                    {% if open_modal == 'student_login' and disabled %}
+                      <div class="alert alert-danger" role="alert">
+                        {{ disabled }}
+                      </div>
+                    {% endif %}
+                    <div class="mb-3">
+                      <label for="username" class="form-label">Username/E-mail</label>
+                      <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                      <label for="password" class="form-label">Password</label>
+                      <div class="input-group">
+                        <input class="form-control" type="password" id="student_password" name="password" required>
+                        <button type="button" class="btn btn-outline-secondary toggle-password-btn" data-target="student_password"><i class="bi bi-eye"></i></button>
+                      </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-dark">
+            <h1 class="modal-title fs-5" id="staticBackdropLabel">SPES Registration Form</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="registration_form" method="POST" action="{{ url_for('register.register') }}">
+              <div class="row g-3 bg-light my-1 py-1 position-sticky top-0 border-bottom shadow-sm" style="z-index: 1020;">
+                <div class="col-md-12">    
+                  <label class="form-label text-dark">
+                    <span class="text-dark fw-normal">
+                      <b class="text-dark">Note:</b> Fields with <i class="text-danger">*</i> are required.
+                    </span>
+                  </label>
+                </div> 
+              </div>
+              <!-- Personal Information Section -->
+              <div id="personal_card" class="card mb-4">
+                <div class="card-header bg-info text-dark">
+                  <h5 class="mb-0 fw-bold">Personal Information</h5>
+                </div>
+                <div class="card-body bg-light">
+                  <div class="row g-3">
+                    <div id="div_category" class="col-md-6">
+                      <label class="form-label fw-bold">Category<i class="text-danger">*</i></label>
+                      <select class="form-select bg-white mb-3 mt-0" id="student_category" name="student_category" required="" autocomplete="off">
+                        <option value=""></option>
+                        <option value="Senior High School">Senior High School</option>
+                        <option value="Applying for Iskolar ng Bataan">Applying for Iskolar ng Bataan</option>
+                        <option value="Iskolar ng Bataan">Iskolar ng Bataan</option>
+                      </select>
+                    </div>
+                    <div id="div_iskolar_type" class="col-md-4 d-none">
+                      <label class="form-label fw-bold">New / Old Iskolar<i class="text-danger">*</i></label>
+                      <select class="form-select bg-white mb-3 mt-0" id="iskolar_type" name="iskolar_type" autocomplete="off">
+                        <option value=""></option>
+                        <option value="NEW ISKOLAR">NEW ISKOLAR</option>
+                        <option value="OLD ISKOLAR">OLD ISKOLAR</option>
+                      </select>
+                    </div>
+                    <div id="div_status_of_student" class="col-md-6">
+                      <label class="form-label fw-bold">Status of Student <i class="text-danger">*</i></label>
+                      <select class="form-select bg-white mb-3 mt-0" id="status_of_student" name="status_of_student" required="" autocomplete="off">
+                        <option value=""></option>
+                        <option value="REGULAR">REGULAR</option>
+                        <option value="ALS STUDENT">ALS STUDENT</option>
+                        <option value="OUT-OF-SCHOOL YOUTH">OUT-OF-SCHOOL YOUTH</option>
+                        <option value="REGULAR">REGULAR</option>
+                        <option value="IRREGULAR">IRREGULAR</option>
+                        <option value="WITH OJT">WITH OJT</option>
+                        <option value="WITH SUMMER CLASS">WITH SUMMER CLASS</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Last Name <i class="text-danger">*</i></label>
+                      <input class="form-control" type="text" id="last_name" name="last_name" required autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">First Name <i class="text-danger">*</i></label>
+                      <input class="form-control" type="text" id="first_name" name="first_name" required autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Middle Name</label>
+                      <input class="form-control" type="text" id="middle_name" name="middle_name" minlength="2" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Suffix <i class="text-muted">(Ex. Jr., III)</i></label>
+                      <input class="form-control" type="text" id="suffix" name="suffix" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Date of Birth <i class="text-danger">*</i></label>
+                      <input class="form-control" type="date" id="date_of_birth" name="date_of_birth" required autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Place of Birth <i class="text-danger">*</i><i class="text-muted">CITY, PROVINCE</i></label>
+                      <input class="form-control" type="text" id="place_of_birth" name="place_of_birth" required autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Citizenship <i class="text-danger">*</i></label>
+                      <input class="form-control" type="text" id="citizenship" name="citizenship" required autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Mobile No. <i class="text-danger">*</i></label>
+                      <input class="form-control" type="text" id="mobile_number" name="mobile_number" required autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Email Address <i class="text-danger">*</i></label>
+                      <input class="form-control" type="email" id="email_address" name="email_address" required autocomplete="off">
+                      <div id="emailError" class="text-danger mt-1"></div>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Civil Status of SPES Applicant <i class="text-danger">*</i></label>
+                      <select class="form-select bg-white mb-3 mt-0" id="civil_status_of_spes_applicant" name="civil_status_of_spes_applicant" required="" autocomplete="off">
+                        <option value=""></option>
+                        <option value="SINGLE">SINGLE</option>
+                        <option value="MARRIED">MARRIED</option>
+                        <option value="WIDOW/ER">WIDOW/ER</option>
+                        <option value="SEPARATED">SEPARATED</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Sex <i class="text-danger">*</i></label>
+                      <select class="form-select bg-white mb-3 mt-0" id="sex" name="sex" required="" autocomplete="off">
+                        <option value=""></option>
+                        <option value="MALE">MALE</option>
+                        <option value="FEMALE">FEMALE</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">    
+                      <label class="form-label fw-bold">With Disabilities? <i class="text-muted">Please specify: </i></label>
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="with_disabilities" name="with_disabilities" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">    
+                      <label class="form-label w-100 fw-bold">Social Media Account Profile Link</label>                  
+                      <label class="form-label"><i>Facebook, Instagram, etc. <span class="text-muted">(Ex. facebook.com/juan.c.delacruz/)</span> <span class="text-danger">*</span></i></label>
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="social_media_account" name="social_media_account" required="" autocomplete="off">
+                    </div>
+                    <div class="col-md-4" id="div-spes-avail-list">
+                        <label class="form-label w-100 fw-bold">How many times have you participated in the SPES Program?<i class="text-danger">*</i></label>
+                        <label class="form-label"><i><span class="text-muted">Ilang beses kana naging SPES Benefeciary?</span></i><i class="text-danger">*</i></label>
+                        <select class="form-select" name="spes_avail" required>
+                          <option value=""></option>
+                          <option value="0">0</option>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
+                          <option value="5">5</option>
+                          <option value="6">6</option>
+                          <option value="7">7</option>
+                          <option value="8">8</option>
+                          <option value="9">9</option>
+                          <option value="10">10</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                      <label class="form-label fw-bold">Do you belong in these groups? <i class="text-danger">*</i></label>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" role="switch" name="belongs_in_groups" id="belongs_in_groups_victims" value="Victims of Armed Conflict" required="">
+                        <label class="form-check-label" for="belongs_in_groups_victims">VICTIMS OF ARMED CONFLICT</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" role="switch" name="belongs_in_groups" id="belongs_in_groups_rebel" value="Rebel Returnee" required="">
+                        <label class="form-check-label" for="belongs_in_groups_rebel">REBEL RETURNEE</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" role="switch" name="belongs_in_groups" id="belongs_in_groups_na" value="Not Applicable" required="">
+                        <label class="form-check-label" for="belongs_in_groups_na">NOT APPLICABLE</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row g-3">
+                    <div class="col-md-4">
+                      <label class="form-label w-100 fw-bold">Barangay <i class="text-danger">*</i></label>
+                      <label class="form-label"><i><span class="text-muted">(Balanga only)</span></i></label>
+                      <select class="form-select bg-white mb-3 mt-0" id="barangay" name="barangay" required autocomplete="off">
+                        <option value=""></option>
+                        <option value="BAGONG SILANG, BALANGA CITY, BATAAN">BAGONG SILANG, BALANGA CITY, BATAAN</option>
+                        <option value="BAGUMBAYAN, BALANGA CITY, BATAAN">BAGUMBAYAN, BALANGA CITY, BATAAN</option>
+                        <option value="CABOG-CABOG, BALANGA CITY, BATAAN">CABOG-CABOG, BALANGA CITY, BATAAN</option>
+                        <option value="CAMACHO, BALANGA CITY, BATAAN">CAMACHO, BALANGA CITY, BATAAN</option>
+                        <option value="CATANING, BALANGA CITY, BATAAN">CATANING, BALANGA CITY, BATAAN</option>
+                        <option value="BANI CATANING, BALANGA CITY, BATAAN">BANI CATANING, BALANGA CITY, BATAAN</option>
+                        <option value="CENTRAL, BALANGA CITY, BATAAN">CENTRAL, BALANGA CITY, BATAAN</option>
+                        <option value="CUPANG NORTH, BALANGA CITY, BATAAN">CUPANG NORTH, BALANGA CITY, BATAAN</option>
+                        <option value="CUPANG PROPER, BALANGA CITY, BATAAN">CUPANG PROPER, BALANGA CITY, BATAAN</option>
+                        <option value="CUPANG WEST, BALANGA CITY, BATAAN">CUPANG WEST, BALANGA CITY, BATAAN</option>
+                        <option value="DANGCOL, BALANGA CITY, BATAAN">DANGCOL, BALANGA CITY, BATAAN</option>
+                        <option value="DOÑA FRANCISCA, BALANGA CITY, BATAAN">DOÑA FRANCISCA, BALANGA CITY, BATAAN</option>
+                        <option value="IBAYO, BALANGA CITY, BATAAN">IBAYO, BALANGA CITY, BATAAN</option>
+                        <option value="MALABIA, BALANGA CITY, BATAAN">MALABIA, BALANGA CITY, BATAAN</option>
+                        <option value="MUNTING BATANGAS, BALANGA CITY, BATAAN">MUNTING BATANGAS, BALANGA CITY, BATAAN</option>
+                        <option value="POBLACION, BALANGA CITY, BATAAN">POBLACION, BALANGA CITY, BATAAN</option>
+                        <option value="PTO. RIVAS IBABA, BALANGA CITY, BATAAN">PTO. RIVAS IBABA, BALANGA CITY, BATAAN</option>
+                        <option value="PTO. RIVAS ITAAS, BALANGA CITY, BATAAN">PTO. RIVAS ITAAS, BALANGA CITY, BATAAN</option>
+                        <option value="PTO. RIVAS LOTE, BALANGA CITY, BATAAN">PTO. RIVAS LOTE, BALANGA CITY, BATAAN</option>
+                        <option value="SAN JOSE, BALANGA CITY, BATAAN">SAN JOSE, BALANGA CITY, BATAAN</option>
+                        <option value="SIBACAN, BALANGA CITY, BATAAN">SIBACAN, BALANGA CITY, BATAAN</option>
+                        <option value="TALISAY, BALANGA CITY, BATAAN">TALISAY, BALANGA CITY, BATAAN</option>
+                        <option value="TANATO, BALANGA CITY, BATAAN">TANATO, BALANGA CITY, BATAAN</option>
+                        <option value="TENEJERO, BALANGA CITY, BATAAN">TENEJERO, BALANGA CITY, BATAAN</option>
+                        <option value="TORTUGAS, BALANGA CITY, BATAAN">TORTUGAS, BALANGA CITY, BATAAN</option>
+                        <option value="TUYO, BALANGA CITY, BATAAN">TUYO, BALANGA CITY, BATAAN</option>
+                        <option value="UPPER TUYO, BALANGA CITY, BATAAN">UPPER TUYO, BALANGA CITY, BATAAN</option>
+                      </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label w-100 fw-bold">Street Address</label>
+                        <label class="form-label"><i><span class="text-muted">(Ex. MANAHAN ST., JP RIZAL ST., ETC.)</span></i></label>
+                        <input class="form-control bg-white mb-3 mt-0" type="text" id="street" name="street" autocomplete="off">
+                    </div>
+                  </div>
+                  <div class="row g-3">
+                    <div class="col-md-12">    
+                      <label class="form-label w-100 fw-bold">Name of  Beneficiary</label>                  
+                      <label class="form-label"><i>Ilagay ang pangalan ng iyong Nanay, Tatay, o Tagapag-alaga <span class="text-muted">(example format: FIRSTNAME MIDDLENAME LASTNAME)</span> <span class="text-danger">*</span></i></label>
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="name_of_beneficiary" name="name_of_beneficiary" required="" autocomplete="off">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold">Relationship to the Beneficiary <i class="text-danger">*</i></label>
+                      <select class="form-select bg-white mb-3 mt-0" id="relationship_to_beneficiary" name="relationship_to_beneficiary" required="" autocomplete="off">
+                        <option value=""></option>
+                        <option value="MOTHER">MOTHER</option>
+                        <option value="FATHER">FATHER</option>
+                        <option value="GUARDIAN">GUARDIAN</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">    
+                      <label class="form-label w-100 fw-bold">Current Status of Parents <i class="text-danger">*</i></label>
+                      <select class="form-select bg-white mb-3 mt-0" id="current_status_of_parents" name="current_status_of_parents" required="" autocomplete="off">
+                        <option value=""></option>
+                        <option value="LIVING TOGETHER">LIVING TOGETHER</option>
+                        <option value="SEPARATED">SEPARATED</option>
+                        <option value="WIDOW/ER">WIDOW/ER</option>
+                      </select>
+                    </div>
+                  </div>   
+                </div>
+              </div>
+              <!-- Parents/Guardians Information Section -->
+              <div id="parents_card" class="card mb-4">
+                <div class="card-header bg-info text-dark">
+                  <h5 class="mb-0 fw-bold">Parents/Guardian Information</h5>
+                </div>
+                <div class="card-body bg-light">
+                  <div class="col-md-12">
+                      <label class="form-label w-100 fw-bold">Living with?<i class="text-danger">*</i></label>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" role="switch" name="living_with" id="living_with_parents" value="Parents" onchange="LivingWithChanged(this);" required="">
+                        <label class="form-check-label" for="living_with_parents">PARENTS</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" role="switch" name="living_with" id="living_with_guardians" value="Guardian" onchange="LivingWithChanged(this);" required="">
+                        <label class="form-check-label" for="living_with_guardians">GUARDIAN</label>
+                      </div>
+                  </div>
+                  <div id="div_guardian" class="row g-3 d-none">
+                    <div class="col-md-12 text-center">    
+                      <label class="form-label text-primary h4">Guardian Information</label> 
+                    </div> 
+                    <div class="col-md-12">    
+                      <label class="form-label w-100 fw-bold">Guardian's Full Name<i class="text-danger">*</i></label>                  
+                      <label class="form-label"><i>Buong Pangalan ng iyong Tagapag-alaga <span class="text-muted">(example format: FIRSTNAME MIDDLENAME LASTNAME)</span> <span class="text-danger">*</span></i></label>
+                      <input class="form-control input-guardian bg-white mb-3 mt-0" type="text" id="guardian_full_name" name="guardian_full_name" autocomplete="off">
+                    </div>
+                    <div class="col-md-6">    
+                      <label class="form-label fw-bold">Guardian's Contact No. <i class="text-muted">(Ex. 09985666323)</i></label>   
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="guardian_contact_number" name="guardian_contact_number" autocomplete="off">
+                    </div>
+                    <div class="col-md-6">    
+                      <label class="form-label fw-bold">Guardian's Birthday <i class="text-danger">*</i></label>
+                      <input class="form-control input-guardian bg-white mb-3 mt-0" type="date" id="guardian_birthday" name="guardian_birthday" autocomplete="off">
+                    </div>
+                    <div class="col-md-12">    
+                      <label class="form-label w-100 fw-bold">Guardian's Occupation</label>          
+                      <label class="form-label"><i>Isulat ang trabaho ng iyong ama. Kung wala, ilagay ang "none". Kung siya ay pumanaw na, isulat ang "DECEASED".</i></label>
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="guardian_occupation" name="guardian_occupation" autocomplete="off">
+                    </div> 
+                    <div class="col-md-12">    
+                      <label class="form-label w-100 fw-bold">Relationship with Guardian <i class="text-danger">* </i><i class="fw-light">Ex. AUNTIE, GRANDMOTHER, SISTER, ETC.</i></label>
+                      <input class="form-control input-guardian bg-white mb-3 mt-0" type="text" id="relationship_to_guardian" name="relationship_to_guardian" autocomplete="off">
+                    </div>
+                    <div class="col-md-12">    
+                      <label class="form-label w-100 fw-bold">TIN No. of Guardian: (if applicable)</label>                  
+                      <label class="form-label"><i>Kung ikaw ay SPES noong nakaraang taon at nabigyan ng BIR Tax Exemption, makikita mo ang TIN # ng iyong magulang o guardian sa iyong Tax Exemption mula noong nakaraang taon.  Ilagay ang "NONE" kung wala.</i></label>
+                      <input class="form-control input-guardian bg-white mb-3 mt-0" type="text" id="guardian_tin_no" name="guardian_tin_no" autocomplete="off">
+                    </div>
+                  </div>
+                  <div id="div_parents" class="row g-3 d-none">
+                    <div class="col-md-12 text-center">    
+                      <label class="form-label text-primary h4">Parents Information</label> 
+                    </div> 
+                    <!-- FATHER -->
+                    <div class="col-md-12 text-center">    
+                      <label class="form-label text-primary h5">Father</label> 
+                    </div>
+                    <div class="col-md-12">    
+                      <label class="form-label w-100 fw-bold">Father's Full Name <i class="text-danger">*</i></label>                  
+                      <label class="form-label"><i>Buong Pangalan ng iyong Tatay <span class="text-muted">(example format: FIRSTNAME MIDDLENAME LASTNAME)</span> <span class="text-danger">*</span></i></label>
+                      <input class="form-control input-guardian bg-white mb-3 mt-0" type="text" id="father_full_name" name="father_full_name" autocomplete="off">
+                    </div>
+                    <div class="col-md-6">    
+                      <label class="form-label fw-bold">Father's Contact No. <i class="text-muted">(Ex. 09985666323)</i></label>   
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="father_contact_number" name="father_contact_number" autocomplete="off">
+                    </div>
+                     <div class="col-md-6">    
+                      <label class="form-label fw-bold">Father's Birthday</label>
+                      <input class="form-control bg-white mb-3 mt-0" type="date" id="father_birthday" name="father_birthday" required="" autocomplete="off">
+                    </div>
+                    <div class="col-md-12">    
+                      <label class="form-label w-100 fw-bold">Father's Occupation</label>          
+                      <label class="form-label"><i>Isulat ang trabaho ng iyong ama. Kung wala, ilagay ang "none". Kung siya ay pumanaw na, isulat ang "DECEASED".</i></label>
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="father_occupation" name="father_occupation" autocomplete="off">
+                    </div> 
+                    <div class="col-md-12">    
+                      <label class="form-label w-100 fw-bold">TIN No. of Father: (if applicable)</label>                  
+                      <label class="form-label"><i>Kung ikaw ay SPES noong nakaraang taon at nabigyan ng BIR Tax Exemption, makikita mo ang TIN # ng iyong tatay sa iyong Tax Exemption noong nakaraang taon. Ilagay ang "NONE" kung wala.</i></label>
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="father_tin_no" name="father_tin_no" required="" autocomplete="off">
+                    </div>
+                    <!-- MOTHER -->
+                    <div class="col-md-12 text-center">    
+                      <label class="form-label text-primary h5">Mother (Maiden Name)</label> 
+                    </div>
+                    <div class="col-md-12">    
+                      <label class="form-label w-100 fw-bold"> Mother's Full Maiden Name<i class="text-danger">*</i></label>                  
+                      <label class="form-label"><i>Buong Pangalan ng iyong Nanay sa pagka-dalaga <span class="text-muted">(example format: FIRSTNAME MIDDLENAME LASTNAME)</span> <span class="text-danger">*</span></i></label>
+                      <input class="form-control input-guardian bg-white mb-3 mt-0" type="text" id="mother_full_name" name="mother_full_name" autocomplete="off">
+                    </div> 
+                    <div class="col-md-6">    
+                      <label class="form-label fw-bold">Mother's Contact No. <i class="text-muted">(Ex. 09985666323) <span class="text-danger">*</span></i></label>   
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="mother_contact_no" name="mother_contact_number" required="" autocomplete="off">
+                    </div>
+                     <div class="col-md-6">    
+                      <label class="form-label fw-bold">Mother's Birthday <i class="text-danger">*</i></label>
+                      <input class="form-control bg-white mb-3 mt-0" type="date" id="mother_birthday" name="mother_birthday" required="" autocomplete="off">
+                    </div>
+                    <div class="col-md-12">    
+                      <label class="form-label w-100 fw-bold">Mother's Occupation <i class="text-danger">*</i></label>          
+                      <label class="form-label"><i>Isulat ang trabaho ng iyong ina. Kung wala, ilagay ang "none". Kung siya ay pumanaw na, isulat ang "DECEASED".</i></label>
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="mother_occupation" name="mother_occupation" required="" autocomplete="off">
+                    </div> 
+                    <div class="col-md-12">    
+                      <label class="form-label w-100 fw-bold">TIN No. of Mother: (if applicable)</label>                  
+                      <label class="form-label"><i>Kung ikaw ay SPES noong nakaraang taon at nabigyan ng BIR Tax Exemption, makikita mo ang TIN # ng iyong nanay sa iyong Tax Exemption noong nakaraang taon. Ilagay ang "NONE" kung wala.</i></label>
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="	mother_tin_no" name="	mother_tin_no" required="" autocomplete="off">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Educational Information Section -->
+              <div id="edu_card" class="card mb-4">
+                <div class="card-header bg-info text-dark">
+                  <h5 class="mb-0 fw-bold">Educational Information</h5>
+                </div>
+                <div class="card-body bg-light">
+                  <div class="row g-3">
+                    <div class="col-md-12">
+                      <label class="form-label fw-bold">School <i class="text-danger">*</i></label>
+                      <input class="form-control" type="text" id="school" name="school" list="schoolList" required autocomplete="off" style="text-transform: uppercase;">
+                      <datalist id="schoolList">
+                        <option value="ALTERNATIVE LEARNING SYSTEM">
+                        <option value="ADAMSON UNIVERSITY">
+                        <option value="ALPS MARIES INSTITUTE CORP.">
+                        <option value="AMA COMPUTER LEARNING CENTER">
+                        <option value="ANGELES UNIVERSITY FOUNDATION">
+                        <option value="ASIA PACIFIC COLLEGE OF ADVANCED STUDIES">
+                        <option value="BAGAC NATIONAL HIGH SCHOOL">
+                        <option value="BATAAN CHRISTIAN SCHOOL">
+                        <option value="BATAAN HEROES MEMORIAL COLLEGE">
+                        <option value="BATAAN MARITINE INSTITUTE">
+                        <option value="BATAAN MONTESSORI SCHOOL, INC">
+                        <option value="BATAAN PENINSULA STATE UNIVERSITY">
+                        <option value="BATAAN SCHOOL OF FISHIERIES">
+                        <option value="BATAAN NATIONAL HIGH SCHOOL">
+                        <option value="BONIFACIO CAMACHO NATIONAL HIGH SCHOOL">
+                        <option value="CALABANGA NATIONAL SCIENCE HIGH SCHOOL">
+                        <option value="CENTRO ESCOLAR UNIVERSITY">
+                        <option value="CITY OF BALANGA NATIONAL HIGH SCHOOL">
+                        <option value="COLEGIO DE SAN JUAN DE LETRAN">
+                        <option value="DR. VICTORIA B. ROMAN MEMORIAL HIGH SCHOOL">
+                        <option value="DON HONORIO VENTURA STATE UNIVERSITY">
+                        <option value="E.C BERNABE NATIONAL HIGH SCHOOL">
+                        <option value="EASTWOODS PROFESSIONAL COLLEGE OF SCIENCE AND TECHNOLOGY">
+                        <option value="HOLY ANGEL UNIVERSITY">
+                        <option value="ILOCOS SUR COMMUNITY COLLEGE">
+                        <option value="LAMAO NATONAL HIGH SCHOOL">
+                        <option value="LA CONSOLACION COLLEGE MANILA">
+                        <option value="LEANDRO V. LOCSIN SENIOR HIGH SCHOOL">
+                        <option value="LYCEUM OF SUBIC BAY">
+                        <option value="JOSE RIZAL INSTITUTE">
+                        <option value="JESUS IS LORD CHRISTIAN SCHOOL">
+                        <option value="MARIVELES NATIONAL HIGH SCHOOL">
+                        <option value="MANUEL L. QUEZON UNIVERSITY">
+                        <option value="MARITIME ACADEMY OF ASIA AND THE PACIFIC">
+                        <option value="MICROCITY COMPUTER COLLEGES FOUNDATION">
+                        <option value="OUR LADY OF FATIMA UNIVERSITY">
+                        <option value="PABLO ROMAN NATIONAL HIGH SCHOOL">
+                        <option value="PAMPANGA STATE AGRICULTURAL UNIVERSITY">
+                        <option value="PHILIPPINE SCIENCE HIGH SCHOOL SYSTEM">
+                        <option value="PHIL STATE COLLEGE OF AERONAUTICS">
+                        <option value="PHILIPPINE WOMENS UNIVERSITY">
+                        <option value="POLYTECHNIC UNIVERSITY OF THE PHILIPPINES">
+                        <option value="REGIONAL SCIENCE HIGH SCHOOL III">
+                        <option value="SAN MATIAS NATIONAL HIGH SCHOOL">
+                        <option value="ST. LOUIS COLLEGE VALENZUELA">
+                        <option value="ST. JOSEPH COLLEGE">
+                        <option value="SAINT LOUIS UNIVERSITY">
+                        <option value="SAN BEDA UNIVERSITY">
+                        <option value="THE PENINSULA SCHOOL INC.">
+                        <option value="TOMAS DEL ROSARIO COLLEGE">
+                        <option value="UNIVERSITY OF THE PHILIPPINES (CLARK)">
+                        <option value="UNIVERSITY OF THE EAST">
+                        <option value="UNIVERSITY OF THE PHILIPPINES">
+                        <option value="UNIVERSITY OF THE PHILIPPINES LOS BAÑOS">
+                        <option value="UNIVERSITY OF THE PHILIPPINES DILIMAN">
+                        <option value="UNIVERSITY OF SANTO TOMAS">
+                        <option value="UNIVERSIDAD DE MANILA">
+                        <option value="VIRGEN MILAGROSA DEL ROSARIO COLLEGE SEMINARY">
+                      </datalist>
+                    </div>
+                    <!-- <div class="col-md-12">
+                      <label class="form-label fw-bold">School <i class="text-danger">*</i></label>
+                      <select class="form-select" name="school" id="school" required>
+                        <option value=""></option>
+                        <option value="Alternative Learning System">Alternative Learning System</option>
+                        <option value="Adamson University">Adamson University</option>
+                        <option value="ALPS Maries Institute Corp.">ALPS Maries Institute Corp.</option>
+                        <option value="AMA Computer Learning Center">AMA Computer Learning Center</option>
+                        <option value="Angeles University Foundation">Angeles University Foundation</option>
+                        <option value="Asia Pacific College of Advanced Studies">Asia Pacific College of Advanced Studies</option>
+                        <option value="Bagac National High School">Bagac National High School</option>
+                        <option value="Bataan Christian School">Bataan Christian School</option>
+                        <option value="Bataan Heroes Memorial College">Bataan Heroes Memorial College</option>
+                        <option value="Bataan Maritine Institute">Bataan Maritine Institute</option>
+                        <option value="Bataan Montessori School, Inc">Bataan Montessori School, Inc</option>
+                        <option value="Bataan Peninsula State University">Bataan Peninsula State University</option>
+                        <option value="Bataan School of Fishieries">Bataan School of Fishieries</option>
+                        <option value="Bataan National High school">Bataan National High school</option>
+                        <option value="Bonifacio Camacho National High School">Bonifacio Camacho National High School</option>
+                        <option value="Calabanga National Science High School">Calabanga National Science High School</option>
+                        <option value="CENTRO ESCOLAR UNIVERSITY">CENTRO ESCOLAR UNIVERSITY</option>
+                        <option value="City of Balanga National High School">City of Balanga National High School</option>
+                        <option value="Colegio de San Juan de Letran">Colegio de San Juan de Letran</option>
+                        <option value="Dr. Victoria B. Roman Memorial High School">Dr. Victoria B. Roman Memorial High School</option>
+                        <option value="DON HONORIO VENTURA STATE UNIVERSITY">DON HONORIO VENTURA STATE UNIVERSITY</option>
+                        <option value="E.C Bernabe National High School">E.C Bernabe National High School</option>
+                        <option value="Eastwoods Professional College of Science and Technology">Eastwoods Professional College of Science and Technology</option>
+                        <option value="Holy Angel University">Holy Angel University</option>
+                        <option value="Ilocos Sur Community College">Ilocos Sur Community College</option>
+                        <option value="Lamao Natonal High School">Lamao Natonal High School</option>
+                        <option value="LA CONSOLACION COLLEGE MANILA">LA CONSOLACION COLLEGE MANILA</option>
+                        <option value="Leandro V. Locsin Senior High School">Leandro V. Locsin Senior High School</option>
+                        <option value="Lyceum of Subic Bay">Lyceum of Subic Bay</option>
+                        <option value="Jose Rizal Institute">Jose Rizal Institute</option>
+                        <option value="JESUS IS LORD CHRISTIAN SCHOOL">JESUS IS LORD CHRISTIAN SCHOOL</option>
+                        <option value="Mariveles National High School">Mariveles National High School</option>
+                        <option value="Manuel L. Quezon University">Manuel L. Quezon University</option>
+                        <option value="Maritime Academy of Asia and the Pacific">Maritime Academy of Asia and the Pacific</option>
+                        <option value="Microcity Computer Colleges Foundation">Microcity Computer Colleges Foundation</option>
+                        <option value="Our Lady of Fatima University">Our Lady of Fatima University</option>
+                        <option value="Pablo Roman National High School">Pablo Roman National High School</option>
+                        <option value="Pampanga State Agricultural University">Pampanga State Agricultural University</option>
+                        <option value="Philippine Science High School System">Philippine Science High School System</option>
+                        <option value="PHIL STATE COLLEGE OF AERONAUTICS">PHIL STATE COLLEGE OF AERONAUTICS</option>
+                        <option value="Philippine Womens University">Philippine Womens University</option>
+                        <option value="Polytechnic University of the Philippines">Polytechnic University of the Philippines</option>
+                        <option value="Regional Science High School III">Regional Science High School III</option>
+                        <option value="San Matias National High School">San Matias National High School</option>
+                        <option value="St. Louis College Valenzuela">St. Louis College Valenzuela</option>
+                        <option value="St. Joseph College">St. Joseph College</option>
+                        <option value="Saint Louis University">Saint Louis University</option>
+                        <option value="San Beda University">San Beda University</option>
+                        <option value="The Peninsula School Inc.">The Peninsula School Inc.</option>
+                        <option value="Tomas del Rosario College">Tomas del Rosario College</option>
+                        <option value="University of the Philippines (Clark)">University of the Philippines (Clark)</option>
+                        <option value="University of the East">University of the East</option>
+                        <option value="University of the Philippines">University of the Philippines</option>
+                        <option value="University of the Philippines Los Baños">University of the Philippines Los Baños</option>
+                        <option value="University of the Philippines Diliman">University of the Philippines Diliman</option>
+                        <option value="University of Santo Tomas">University of Santo Tomas</option>
+                        <option value="Universidad De Manila">Universidad De Manila</option>
+                        <option value="VIRGEN MILAGROSA DEL ROSARIO COLLEGE SEMINARY">VIRGEN MILAGROSA DEL ROSARIO COLLEGE SEMINARY</option>
+                        <option value="Others" onchange="schoolOthers(this);">Others</option>
+                      </select>
+                    </div> -->
+                    <div class="col-md-12 d-none" id="other_schoolDiv">
+                      <label class="form-label fw-bold">If "Others", specify the school</label>
+                      <input class="form-control" type="text" id="other_school" name="other_school" autocomplete="off">
+                    </div>
+                    <div class="col-md-12">
+                      <label class="form-label fw-bold">Educational Attainment <i class="text-danger">*</i></label>
+                      <label class="form-label"><i>Batay sa iyong Report of Grades, ito ang iyong kasalukuyang taon ng pag-aaral.</i></label>
+                      <select class="form-select" id="educational_attainment" name="educational_attainment" required>
+                        <option value=""></option>
+                        <option value="Grade 10(Incoming Grade 11)">Grade 10(Incomming Grade 11)</option>
+                        <option value="Grade 11(Incoming Grade 12)">Grade 11(Incomming Grade 12)</option>
+                        <option value="Grade 12(Incoming 1st Year)">Grade 12(Incoming 1st Year)</option>
+                        <option value="1st Year College (Incoming 2nd Year)">1ST YEAR COLLEGE (INCOMING 2ND YEAR)</option>
+                        <option value="2nd Year College (Incoming 3rd Year)">2ND YEAR COLLEGE (INCOMING 3RD YEAR)</option>
+                        <option value="2nd Year College (Candidate for Diploma Graduate)">2ND YEAR COLLEGE (CANDIDATE FOR DIPLOMA GRADUATE)</option>
+                        <option value="3rd Year College (Incoming 4th Year)">3RD YEAR COLLEGE (INCOMING 4TH YEAR)</option>
+                        <option value="4th Year College (Incoming 5th Year)">4TH YEAR COLLEGE (INCOMING 5TH YEAR)</option>
+                        <option value="4th Year College (Candidate for Graduation)">4TH YEAR COLLEGE (CANDIDATE FOR GRADUATION)</option>
+                        <option value="5th Year College (Graduating Student)">5TH YEAR COLLEGE (GRADUATING STUDENT)</option>
+                      </select>
+                    </div>
+                    <!-- SENIOR HIGH SCHOOL -->
+                    <div class="col-md-12 div-senior-high d-none">    
+                      <label class="form-label w-100 fw-bold">Senior High School Strand / Track <i class="text-danger">*</i></label>
+                      <label class="form-label w-100"><span class="text-muted">(Ex. STEM, ABM, HUMSS...)</span></label>
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="strand" name="strand" autocomplete="off">
+                    </div>  
+                    <!-- COLLEGE -->
+                    <div class="col-md-12 div-college d-none">
+                      <label class="form-label fw-bold">College Course <i class="text-danger">*</i></label>
+                      <label class="form-label w-100"><span class="text-muted">Note: include major if applicable</span></label>
+                      <label class="form-label"><i class="text-muted">(Ex. BS in Computer Science Major in Software Technology)</i></label> 
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="course" name="course" autocomplete="off">              
+                    </div>
+                    <div class="col-md-12 ">     
+                      <label class="form-label fw-bold">Date of Attendance <i class="text-danger">*</i></label> 
+                      <label class="form-label">(Current school year attended)</label>      
+                      <select class="form-select bg-white mb-3 mt-0" id="school_year" name="school_year" required="" autocomplete="off">
+                        <option value=""></option>
+                        <option value="2024-2025">2024-2025</option> <option value="2023-2024">2023-2024</option> <option value="2022-2023">2022-2023</option> <option value="2021-2022">2021-2022</option> <option value="2020-2021">2020-2021</option> <option value="2019-2020">2019-2020</option> <option value="2018-2019">2018-2019</option> <option value="2017-2018">2017-2018</option> <option value="2016-2017">2016-2017</option> <option value="2015-2016">2015-2016</option> <option value="2014-2015">2014-2015</option> <option value="2013-2014">2013-2014</option> <option value="2012-2013">2012-2013</option> <option value="2011-2012">2011-2012</option> <option value="2010-2011">2010-2011</option> <option value="2009-2010">2009-2010</option> <option value="2008-2009">2008-2009</option> <option value="2007-2008">2007-2008</option> <option value="2006-2007">2006-2007</option> <option value="2005-2006">2005-2006</option> <option value="2004-2005">2004-2005</option> <option value="2003-2004">2003-2004</option> <option value="2002-2003">2002-2003</option> <option value="2001-2002">2001-2002</option> <option value="2000-2001">2000-2001</option> <option value="1999-2000">1999-2000</option> <option value="1998-1999">1998-1999</option> <option value="1997-1998">1997-1998</option> <option value="1996-1997">1996-1997</option> <option value="1995-1996">1995-1996</option> <option value="1994-1995">1994-1995</option> <option value="1993-1994">1993-1994</option> <option value="1992-1993">1992-1993</option> <option value="1991-1992">1991-1992</option> <option value="1990-1991">1990-1991</option> <option value="1989-1990">1989-1990</option> <option value="1988-1989">1988-1989</option> <option value="1987-1988">1987-1988</option> <option value="1986-1987">1986-1987</option> <option value="1985-1986">1985-1986</option> <option value="1984-1985">1984-1985</option> <option value="1983-1984">1983-1984</option> <option value="1982-1983">1982-1983</option> <option value="1981-1982">1981-1982</option> <option value="1980-1981">1980-1981</option> <option value="1979-1980">1979-1980</option> <option value="1978-1979">1978-1979</option> <option value="1977-1978">1977-1978</option> <option value="1976-1977">1976-1977</option> <option value="1975-1976">1975-1976</option> <option value="1974-1975">1974-1975</option> <option value="1973-1974">1973-1974</option> <option value="1972-1973">1972-1973</option> <option value="1971-1972">1971-1972</option> <option value="1970-1971">1970-1971</option>
+                      </select>           
+                    </div>
+                  </div>
+                </div>
+              </div> 
+              <!-- Login Credentials Section -->
+              <div class="card mb-4">
+                <div class="card-header bg-info text-dark">
+                  <h5 class="mb-0 fw-bold">Login Credentials</h5>
+                </div>
+                <div class="card-body bg-light">
+                  <div class="row g-3">
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Username <i class="text-danger">*</i></label>
+                      <input class="form-control" type="text" id="registration_username" name="username" required>
+                      <div id="usernameError" class="text-danger mt-1"></div>
+                    </div>
+                    <div class="col-md-4">
+                      <label for="password" class="form-label">Password</label>
+                      <div class="input-group">
+                        <input class="form-control" type="password" id="registration_password" name="password" required>
+                        <button type="button" class="btn btn-outline-secondary toggle-password-btn" data-target="registration_password"><i class="bi bi-eye"></i></button>
+                      </div>
+                      <div id="passwordError" class="text-danger mt-1"></div>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Confirm Password <i class="text-danger">*</i></label>
+                      <div class="input-group">
+                        <input class="form-control" type="password" id="confirm_password" name="confirm_password" required>
+                        <button type="button" class="btn btn-outline-secondary toggle-password-btn" data-target="confirm_password"><i class="bi bi-eye"></i></button>
+                      </div>
+                      <div id="confirmPasswordError" class="text-danger mt-1"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Terms and Conditions -->
+              <div class="card mb-4">
+                <div class="card-header bg-info text-dark">
+                  <h5 class="mb-0 fw-bold">Terms and Conditions</h5>
+                </div>
+                <div class="card-body">
+                  <p>By registering, you agree to the following terms:</p>
+                  <ul>
+                    <li><strong>Accurate Information:</strong> You confirm that your details are true and correct.</li>
+                    <li><strong>Privacy:</strong> Your data will be handled according to our Privacy Policy.</li>
+                    <li><strong>Account Responsibility:</strong> You are responsible for maintaining your account security.</li>
+                  </ul>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="agree" required>
+                    <label class="form-check-label" for="agree">I agree to the Terms and Conditions</label>
+                  </div>
+                </div>
+              </div>
+              <!-- Submit Button -->
+              <div class="text-center">
+                <button type="submit" class="btn btn-primary btn-lg text-dark">Submit</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='admin_script.js') }}"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
+</body>
+</html>

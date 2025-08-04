@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+    <div style="flex: 1;">
+        <nav class="navbar bg-body-tertiary sticky-top">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{{url_for('index')}}"><img class="m-0" style="height: 50px; width: 50px;" src="{{ url_for('static', filename='images/spes_logo.png') }}" alt="Logo"></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+                    <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasNavbarLabel">{{ first_name}} {{ last_name}}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                            <li class="list-group list-group-flush">
+                                <li class="list-group-item fw-bold fs-4 text-center"><a class="nav-link p-3" href="{{ url_for ('login.student_main')}}">Profile</a></li>
+                                <li class="list-group-item fw-bold fs-4 text-center"><a class="nav-link p-3" href="{{ url_for ('student.student_registrations')}}">Submit Requirements</a></li>
+                                <li class="list-group-item fw-bold fs-4 text-center"><a class="nav-link p-3" href="{{ url_for ('student.student_dtr')}}">DTR</a></li>
+                                <li class="list-group-item fw-bold fs-4 text-center"><a class="nav-link p-3" href="{{ url_for('login.logout_student') }}">Log-out</a></li>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="container my-4">
+            <h2 class="text-center">Daily Time Record (DTR)</h2>
+            <div class="container mt-4">
+                <h5 class="text-center">Progress Tracker</h5>
+                <div class="progress">
+                    <div id="dtrProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="160">0% Complete</div>
+                </div>
+                <div class="text-center mt-2">
+                    <span id="dtrProgressText">0 hours completed, 160 hours remaining</span>
+                </div>
+            </div>
+            <!-- <div class="d-flex justify-content-center my-3">
+                <button id="scanQrBtn" class="btn btn-primary">Open QR Code Scanner</button>
+            </div> -->
+            <div class="container my-4">
+                <div id="qr-reader" style="width:300px; margin:auto; display:none;"></div>
+                <div id="qr-result" class="text-center my-2"></div>
+            </div>
+            <div class="table-responsive rounded-3" style="box-shadow: 0 2px 5px rgba(0, 0, 0, 0.514);">
+                <table class="table table-bordered text-center bg-light">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Location</th>
+                            <th>Day</th>
+                            <th>Date</th>
+                            <th class="text-bg-warning">Morning-In</th>
+                            <th class="text-bg-warning">Morning-Out</th>
+                            <th class="text-bg-success">Afternoon-In</th>
+                            <th class="text-bg-success">Afternoon-Out</th>
+                            <th class="text-bg-danger">Evaluation-Morning</th>
+                            <th class="text-bg-danger">Evaluation-Afternoon</th>
+                            <th class="text-bg-primary">Daily total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                    </tbody>
+                </table>
+            </div>
+            <!-- AR upload section -->
+            <div class="container mt-5">
+                <div id="accomplishment-upload-section" style="display:none;">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-info text-dark">
+                            <h5 class="mb-0">Accomplishment Report</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="accomplishmentForm" method="POST" action="{{ url_for('student.upload_accomplishment_report') }}" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                  <label for="accomplishment_report" class="form-label fw-bold">Upload Accomplishment Report (PDF/Image):<span class="text-danger">you wont be moved to  payroll if accomplishment report is missing*</span></label>
+                                  <input type="file" class="form-control" id="accomplishment_report" name="accomplishment_report" accept=".pdf,.jpg,.jpeg,.png" required>
+                                </div>
+                                <div class="text-center">
+                                  <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div id="requestedDocs-upload-section" style="display:none;">
+                    <div class="card shadow-sm mt-4">
+                        <div class="card-header bg-info text-dark">
+                            <h5 class="mb-0">Requested Documents</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="requestedDocsForm" method="POST" action="{{ url_for('student.upload_requested_docs') }}" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                  <label for="requested_docs" class="form-label fw-bold">Upload Requested Documents (PDF/Image):<span class="text-danger">you wont be moved to  payroll if failed to comply*</span></label>
+                                  <input type="file" class="form-control" id="requested_docs" name="requested_docs" accept=".pdf,.jpg,.jpeg,.png" required>
+                                </div>
+                                <div class="text-center">
+                                  <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- Resign Button Section -->
+                <div class="d-flex justify-content-center my-3" id="resignBtnSection" style="display:none;">
+                    <button id="resignBtn" class="btn btn-danger text-light">RESIGN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Toast Container -->
+    <div aria-live="polite" aria-atomic="true" class="position-relative">
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 2000;">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div id="msgToast" class="toast show align-items-center text-bg-{{ category }} border border-dark round-3" role="alert" aria-live="assertive" aria-atomic="true" style="min-width: 200px; min-height: 40px; font-size: 1rem;">
+                <div class="toast-header bg-dark text-light">
+                    <img src="{{ url_for('static', filename='images/spes_logo.png') }}" class="rounded me-2" style="height: 30px; width: 30px;" alt="spes logo">
+                    <strong class="me-auto">Student Page:</strong>
+                    <small>Student DTR</small>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body text-dark">
+                    {{ message }}
+                </div>
+                </div>
+            {% endfor %}
+            {% endwith %}
+        </div>
+    </div>
+    <!-- Modal for Resignation Confirmation -->
+    <div class="modal fade" id="resignConfirmModal" tabindex="-1" aria-labelledby="resignConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="resignConfirmModalLabel">Confirm Resignation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to resign? This will finalize your DTR and you will be evaluated based on your current hours.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmResignBtn">Yes, Resign</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5 fs-6">
+        <footer class="bg-dark text-white text-center py-3 fs-6">
+            <img class="m-0" style="height: 60px; width: 65px;" src="{{ url_for('static', filename='images/dole_logo.png') }}" alt="Logo">
+            <img class="m-0" style="height: 60px; width: 60px;" src="{{ url_for('static', filename='images/balanga_logo.png') }}" alt="Logo">
+            <img class="m-0" style="height: 60px; width: 60px;" src="{{ url_for('static', filename='images/peso_balanga_logo.png') }}" alt="Logo">
+            <h3 style="margin-top: 10px; margin-bottom: 18px; font-weight: bold; color: whitesmoke;">Contact</h3>
+            <p style="color: whitesmoke"><strong>📘 Facebook:</strong> <a href="https://www.facebook.com/mattangeless">SPES Balanga</a></p>
+            <p style="color: whitesmoke"><strong>✉️ Email:</strong> peso.cob@gmail.com</p>
+            <p style="color: whitesmoke"><strong>📞 Phone Numbers:</strong> (047) 237-0718 / 0908-881-3004</p>
+            <p style="color: whitesmoke"><strong>📍 Location:</strong> 2nd Floor Peso Balanga City (Former Balanga City Water District), St. Joseph St. Poblacion, Balanga City, Bataan</p>
+        </footer>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='student_script.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>

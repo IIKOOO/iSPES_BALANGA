@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PESO Final SPES List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg bg-primary py-0 mb-2 sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{url_for('index')}}">
+                <img class="m-0" style="height: 40px; width: 40px;" src="{{ url_for('static', filename='images/spes_logo.png') }}" alt="Logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login.peso_dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('peso.student_applications_archive') }}">Archive</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="row row-cols-5 g-2 text-center mb-2">
+            <div class="col">
+                <a href="{{ url_for('peso.peso_registration') }}" class="btn btn-info btn-lg w-100 border border-dark">Student Registrations</a>
+            </div>
+            <div class="col">
+                <a href="{{ url_for('peso.peso_pending_registration') }}" class="btn btn-info btn-lg w-100 border border-dark">Pending Student Registrations</a>
+            </div>
+            <div class="col">
+                <a href="{{ url_for('peso.peso_final_spes_list') }}" class="btn btn-success btn-lg w-100 border border-dark">Final SPES List</a>
+            </div>
+            <div class="col">
+                <a href="{{ url_for('peso.student_dtr_records') }}" class="btn btn-info btn-lg w-100 border border-dark">Finished Students DTR Records</a>
+            </div>
+            <div class="col">
+                <a href="{{ url_for('peso.student_payroll') }}" class="btn btn-info btn-lg w-100 border border-dark">Students Payroll</a>
+            </div>
+        </div>
+    </div>
+    <div class="peso_container">
+        <div class="left_side m-1 mt-0 border">
+            <div class="container-fluid bg-white p-4 rounded shadow-sm">
+                <div class="row gy-4">
+                    <!-- <div class="col-lg-3 col-md-8">
+                        <div class="card border border-dark shadow-sm bg-info">
+                            <div class="card-body">
+                                <label for="category_filter" class="form-label text-primary fw-semibold text-dark">Siblings filter</label>
+                                <select id="siblings_filter" class="form-select border-primary" aria-label="Filter by Category">
+                                    <option value="All" selected>All Students</option>
+                                    <option value="Senior High School">Same Last Names</option>
+                                    <option value="Not Iskolar ng Bataan">Same Parents/Guardian Names</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div> -->
+                    <div class="col-lg-4 col-md-8">
+                        <div class="card border border-dark shadow-sm bg-info">
+                            <div class="card-body">
+                                <label for="category_filter" class="form-label text-primary fw-semibold text-dark">Filter by Category</label>
+                                <select id="category_filter" class="form-select border-primary" aria-label="Filter by Category">
+                                    <option value="All" selected>All Categories</option>
+                                    <option value="Senior High School">Senior High School</option>
+                                    <option value="Applying for Iskolar ng Bataan">Applying for Iskolar ng Bataan</option>
+                                    <option value="Iskolar ng Bataan">Iskolar ng Bataan</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-8">
+                        <div class="card border border-dark shadow-sm bg-info">
+                            <div class="card-body">
+                                <label for="sort_option" class="form-label text-primary fw-semibold text-dark">Sort By</label>
+                                <select id="sort_option" class="form-select border-primary" aria-label="Sort by">
+                                    <option value="last_name_asc" selected>Last Name (A-Z)</option>
+                                    <option value="last_name_desc">Last Name (Z-A)</option>
+                                    <option value="timestamp_asc">Timestamp (Oldest First)</option>
+                                    <option value="timestamp_desc">Timestamp (Newest First)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-8">
+                        <div class="card border border-dark shadow-sm bg-info">
+                            <div class="card-body">
+                                <label for="search_input" class="form-label text-primary fw-semibold text-dark">Search</label>
+                                <div class="input-group">
+                                    <input id="search_input" class="form-control border-primary" type="search" placeholder="Search by name or ID" aria-label="Search">
+                                    <!-- <button class="btn btn-success" id="filterBtn" type="button"><i class="bi bi-search me-2"></i> Filter</button> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="max-height: 725px; overflow-y: auto;">
+                <table class="table table-secondary table-striped">
+                    <thead class="table-dark sticky-top">
+                        <tr>
+                            <th>ID</th>
+                            <th>Last Name</th>
+                            <th>First Name</th>
+                            <th>Middle Name</th>
+                            <th>Category</th>
+                            <th>Email</th>
+                            <th>Timestamp</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Modal for Viewing Data -->
+        <div class="modal fade" id="viewDataModal" tabindex="-1" aria-labelledby="viewDataModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-dark">
+                        <h5 class="modal-title" id="viewDataModalLabel">Student Information</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="modalContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="peso_right_side m-1 mt-0 rounded bg-info">
+            <div class="container-fluid">
+                <div class="card mt-3 shadow-sm">
+                    <div class="card-header bg-primary text-dark">
+                        <h5 class="mb-0">Final SPES List Summary</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <h5 class="fw-bold">Total of Students Working</h5>
+                        <h3 class="text-primary fw-bold"><span id="totalFinal">0</span></h3>
+                        <div class="d-flex justify-content-center mt-3">
+                            <!-- <button id="deleteAllPendingBtn" class="btn btn-danger btn-sm">
+                                <i class="bi bi-trash"></i> Delete All Students Records
+                            </button> -->
+                        </div>
+                    </div>
+                    <div class="card-body text-center">
+                        <button id="downloadFinalSpesListCsvBtn" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-download"></i> Download Final SPES List CSV
+                        </button>
+                        <button id="moveFinalSpesListToArchiveBtn" class="btn btn-outline-primary btn-sm mt-3">
+                            <i class="bi"></i> Move All Final SPES List to Archive
+                        </button>
+                    </div>
+                </div>
+                <div class="card mt-3 shadow-sm">
+                    <div class="card-header bg-primary text-dark">
+                        <h5 class="mb-0">Recent Action Logs</h5>
+                    </div>
+                    <div class="card-body" style="max-height: 520px; overflow-y: auto;">
+                    <ul class="list-group list-group-flush" id="actionLogsList"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="dtrImageModal" tabindex="-1" aria-labelledby="dtrImageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dtrImageModalLabel">Captured Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" id="dtr-image-modal-body">
+                <!-- Image will be loaded here -->
+            </div>
+            </div>
+        </div>
+    </div>
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="moveFinalArchiveModal" tabindex="-1" aria-labelledby="moveFinalArchiveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="moveFinalArchiveModalLabel">Confirm Move to Archive</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to move <strong>all students in the Final SPES List</strong> to the archive? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmMoveFinalArchiveBtn" type="button" class="btn btn-danger">Yes, Move All</button>
+            </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="editDtrModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form id="editDtrForm" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit DTR Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Inputs for each field, pre-filled with current values -->
+                <input type="hidden" id="editDtrId">
+                <label>Time In AM</label>
+                <input type="datetime-local" id="editTimeInAm" class="form-control">
+                <label>Time Out AM</label>
+                <input type="datetime-local" id="editTimeOutAm" class="form-control">
+                <label>Time In PM</label>
+                <input type="datetime-local" id="editTimeInPm" class="form-control">
+                <label>Time Out PM</label>
+                <input type="datetime-local" id="editTimeOutPm" class="form-control">
+                <label>Evaluation AM</label>
+                <input type="text" id="editEvalAm" class="form-control">
+                <label>Evaluation PM</label>
+                <input type="text" id="editEvalPm" class="form-control">
+                <label>Scanner Location</label>
+                <input type="text" id="editScannerLocation" class="form-control">
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-success">Save</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+            </form>
+        </div>
+    </div>
+    <!-- Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+        <div id="finalActionToast" class="toast align-items-center border border-dark round-3" role="alert" aria-live="assertive" aria-atomic="true" style="min-width: 200px; min-height: 40px; font-size: 1rem;">
+            <div class="toast-header bg-dark text-light">
+                <img src="{{ url_for('static', filename='images/spes_logo.png') }}" class="rounded me-2" style="height: 30px; width: 30px;" alt="spes logo">
+                <strong class="me-auto">Peso Page:</strong>
+                <small>Final SPES List</small>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body text-dark" id="finalActionToastBody"></div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='peso_final_spes_list.js') }}"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

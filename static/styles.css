@@ -1,0 +1,202 @@
+body {
+    background-color: beige !important;
+}
+
+.nav-link:hover {
+    color: #fff !important;
+    background-color: #007bff !important;
+    border-radius: 5px;
+}
+
+.main-body {
+    background-image: url('/static/images/bg2.png');
+    background-attachment: fixed;
+}
+
+.admin_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.peso_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.left_side{
+    flex: 100%;
+}
+
+.right_side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 400px;
+    height: 880px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.514);
+    border: 3px solid #007bff;
+}
+
+.peso_right_side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 400px;
+    height: 880px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.514);
+    border: 3px solid #007bff;
+}
+
+.navbar {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.514);
+    background: linear-gradient(90deg, #007bff, #0056b3);
+}
+
+.navbar-brand {
+    display: inline-block;
+    transition: transform 0.3s ease-in-out;
+}
+
+.navbar-brand:hover {
+    animation: rotate-back-and-forth 0.6s ease-in-out; 
+}
+
+@keyframes rotate-back-and-forth {
+    0% {
+        transform: rotate(0deg); 
+    }
+    50% {
+        transform: rotate(-30deg);
+    }
+    100% {
+        transform: rotate(360deg); 
+    }
+}
+
+.navbar-nav .nav-link {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #ffd700 !important; 
+}
+
+.footer p {
+    color: whitesmoke
+}
+
+button {
+    color: black !important;
+}
+
+.main_section {
+    /*background-image: url('/static/images/main.jpg');*/
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 500px;
+}
+
+.offcanvas-header {
+    background: linear-gradient(90deg, #007bff, #0056b3); 
+    color: white;
+}
+
+.modal-header {
+    background: linear-gradient(90deg, #007bff, #0056b3); 
+    color: white;
+}
+
+.instruction_card {
+    transition: transform 0.3s ease;
+    background: beige !important;
+}
+
+.instruction_card:hover {
+    transform: scale(1.1);
+}
+ 
+.toast-blur-bg {
+  background-color: rgba(255,255,255,0.7) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+}
+
+@media print {
+    @page {
+        size: Letter portrait;
+        margin: 8mm;
+    }
+    .accomplishment-report-card,
+    .card:empty, .card-body:empty {
+        display: none !important;
+    }
+    body, html {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+    }
+    .modal,
+    .modal-dialog,
+    .modal-content,
+    .modal-body,
+    .card,
+    .card-body,
+    .container,
+    .container-fluid,
+    .left_side {
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        background: #fff !important;
+    }
+    [style*="overflow-y: auto"], [style*="max-height"] {
+        overflow: visible !important;
+        max-height: none !important;
+        height: auto !important;
+    }
+    .table, .table-responsive, table {
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: 11px !important;
+        margin: 0 !important;
+    }
+    tr, td, th {
+        page-break-inside: avoid !important;
+        padding: 2px !important;
+    }
+    .btn, .navbar, .footer, .peso_right_side, .right_side {
+        display: none !important;
+    }
+}
+.table td, .table th {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+#registration_form input[type="text"],
+  #registration_form input[type="email"],
+  #registration_form textarea,
+  #registration_form select {
+    text-transform: uppercase;
+}
+
+/* Remove uppercase for email_address only */
+#registration_form input#email_address,
+#registration_form input#registration_username,
+#registration_form input#registration_password,
+#registration_form input#confirm_password,
+#registration_form input#social_media_account {
+    text-transform: none;
+}
+
