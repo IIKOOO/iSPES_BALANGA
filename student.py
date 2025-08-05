@@ -5,6 +5,7 @@ import os
 import qrcode
 import io
 from datetime import datetime
+import pytz
 
 student_bp = Blueprint('student', __name__)
 
@@ -42,6 +43,8 @@ def upload_required_docs():
     passport_photo = files.get('passportPhoto')
     parents_id = files.get('parentsID')
     itr = files.get('itr')
+    manila_tz = pytz.timezone('Asia/Manila')
+    now = datetime.now(manila_tz).replace(tzinfo=None)
 
     try:
         cur = conn.cursor()
@@ -104,6 +107,8 @@ def upload_additional_docs():
         return redirect(url_for('student.student_registrations'))
 
     file_bytes = file.read()
+    manila_tz = pytz.timezone('Asia/Manila')
+    now = datetime.now(manila_tz).replace(tzinfo=None)
     try:
         cur = conn.cursor()
         cur.execute("""

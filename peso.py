@@ -7,6 +7,7 @@ from app import conn
 import io
 import csv
 import requests
+import pytz
 
 peso_bp = Blueprint('peso', __name__)
 
@@ -361,10 +362,12 @@ def reject_student(student_id):
             cur.execute("DELETE FROM student_application WHERE student_id = %s", (student_id,))
             # Delete from student_login as well
             cur.execute("DELETE FROM student_login WHERE student_id = %s", (student_id,))
+            manila_tz = pytz.timezone('Asia/Manila')
+            performed_at = datetime.now(manila_tz).replace(tzinfo=None)
             cur.execute("""
                 INSERT INTO peso_action_logs (student_id, action, performed_by, performed_at)
                 VALUES (%s, %s, %s, %s)
-            """, (student_id, 'Reject', session.get('peso_username', 'unknown'), datetime.now()))
+            """, (student_id, 'Reject', session.get('peso_username', 'unknown'), performed_at))
             conn.commit()
         return jsonify({'success': True})
     except Exception as e:
@@ -381,10 +384,12 @@ def move_to_pending(student_id):
                 SET is_pending = TRUE, is_approved = FALSE
                 WHERE student_id = %s
             """, (student_id,))
+            manila_tz = pytz.timezone('Asia/Manila')
+            performed_at = datetime.now(manila_tz).replace(tzinfo=None)
             cur.execute("""
                 INSERT INTO peso_action_logs (student_id, action, performed_by, performed_at)
                 VALUES (%s, %s, %s, %s)
-            """, (student_id, 'Move to Pending', session.get('peso_username', 'unknown'), datetime.now()))
+            """, (student_id, 'Move to Pending', session.get('peso_username', 'unknown'), performed_at))
             conn.commit()
         return jsonify({'success': True})
     except Exception as e:
@@ -402,10 +407,12 @@ def move_to_final_list(student_id):
                 SET is_approved = TRUE, is_pending = FALSE
                 WHERE student_id = %s
             """, (student_id,))
+            manila_tz = pytz.timezone('Asia/Manila')
+            performed_at = datetime.now(manila_tz).replace(tzinfo=None)
             cur.execute("""
                 INSERT INTO peso_action_logs (student_id, action, performed_by, performed_at)
                 VALUES (%s, %s, %s, %s)
-            """, (student_id, 'Approved', session.get('peso_username', 'unknown'), datetime.now()))
+            """, (student_id, 'Approved', session.get('peso_username', 'unknown'), performed_at))
             conn.commit()
         return jsonify({'success': True})
     except Exception as e:
@@ -422,10 +429,12 @@ def move_to_final_list_from_pending(student_id):
                 SET is_approved = TRUE, is_pending = FALSE
                 WHERE student_id = %s
             """, (student_id,))
+            manila_tz = pytz.timezone('Asia/Manila')
+            performed_at = datetime.now(manila_tz).replace(tzinfo=None)
             cur.execute("""
                 INSERT INTO peso_action_logs (student_id, action, performed_by, performed_at)
                 VALUES (%s, %s, %s, %s)
-            """, (student_id, 'Approved', session.get('peso_username', 'unknown'), datetime.now()))
+            """, (student_id, 'Approved', session.get('peso_username', 'unknown'), performed_at))
             conn.commit()
         return jsonify({'success': True})
     except Exception as e:
@@ -726,10 +735,12 @@ def move_to_payroll(student_id):
                 SET for_payroll = TRUE
                 WHERE dtr_record_id = %s
             """, (student_id,))
+            manila_tz = pytz.timezone('Asia/Manila')
+            performed_at = datetime.now(manila_tz).replace(tzinfo=None)
             cur.execute("""
                 INSERT INTO peso_action_logs (student_id, action, performed_by, performed_at)
                 VALUES (%s, %s, %s, %s)
-            """, (student_id, 'Move to Payroll', session.get('peso_username', 'unknown'), datetime.now()))
+            """, (student_id, 'Move to Payroll', session.get('peso_username', 'unknown'), performed_at))
             # Fetch student's mobile_no and first_name
             cur.execute("""
                 SELECT mobile_no, first_name
@@ -762,10 +773,12 @@ def toggle_payroll_paid(student_id):
             new_status = not is_paid
             cur.execute("UPDATE student_dtr_records SET is_paid = %s WHERE dtr_record_id = %s", (new_status, student_id))
             action = 'Mark as Paid' if new_status else 'Mark as Unpaid'
+            manila_tz = pytz.timezone('Asia/Manila')
+            performed_at = datetime.now(manila_tz).replace(tzinfo=None)
             cur.execute("""
                 INSERT INTO peso_action_logs (student_id, action, performed_by, performed_at)
                 VALUES (%s, %s, %s, %s)
-            """, (student_id, action, session.get('peso_username', 'unknown'), datetime.now()))
+            """, (student_id, action, session.get('peso_username', 'unknown'), performed_at))
             conn.commit()
         flash(f"Student payroll marked as {'Paid' if new_status else 'Unpaid'}.", "success")
         return jsonify({'success': True, 'is_paid': new_status})
@@ -1185,29 +1198,6 @@ def update_total_worked_hours_for_student(student_id):
             WHERE dtr_record_id = %s
         """, (str(total_hours), student_id))
         conn.commit()
-    
-# @peso_bp.route('/mark_dtr_absent', methods=['POST'])
-# def mark_dtr_absent():
-#     data = request.get_json()
-#     dtr_id = data.get('dtr_id')
-#     with conn.cursor() as cur:
-#         cur.execute("UPDATE student_dtr SET daily_total = '0' WHERE dtr_id = %s RETURNING student_id", (dtr_id,))
-#         student_id = cur.fetchone()[0]
-#         conn.commit()
-#     update_total_worked_hours_for_student(student_id)
-#     return jsonify({'success': True})
-
-# @peso_bp.route('/edit_dtr_hours', methods=['POST'])
-# def edit_dtr_hours():
-#     data = request.get_json()
-#     dtr_id = data.get('dtr_id')
-#     new_hours = data.get('new_hours')
-#     with conn.cursor() as cur:
-#         cur.execute("UPDATE student_dtr SET daily_total = %s WHERE dtr_id = %s RETURNING student_id", (str(new_hours), dtr_id))
-#         student_id = cur.fetchone()[0]
-#         conn.commit()
-#     update_total_worked_hours_for_student(student_id)
-#     return jsonify({'success': True})
 
 @peso_bp.route('/update_requirement_isgood/<string:table>/<int:student_id>/<string:file_key>', methods=['POST'])
 def update_requirement_isgood(table, student_id, file_key):
@@ -1306,14 +1296,13 @@ def edit_dtr():
                 SET total_worked_hours = %s
                 WHERE dtr_record_id = %s
             """, (str(total_worked_hours), student_id))
-            
+        manila_tz = pytz.timezone('Asia/Manila')
+        performed_at = datetime.now(manila_tz).replace(tzinfo=None)    
         cur.execute("""
             INSERT INTO peso_action_logs (student_id, action, performed_by, performed_at)
             VALUES (%s, %s, %s, %s)
         """, (
-            student_id,'Edit DTR',
-            session.get('peso_username', 'unknown'),
-            datetime.now()
+            student_id,'Edit DTR', session.get('peso_username', 'unknown'),performed_at
         ))
         conn.commit()
 
@@ -1333,10 +1322,12 @@ def toggle_payroll_on_hold(student_id):
             updated = cur.fetchone()
             # Log the action
             action = 'Mark as On Hold' if new_status else 'Mark as Active'
+            manila_tz = pytz.timezone('Asia/Manila')
+            performed_at = datetime.now(manila_tz).replace(tzinfo=None)
             cur.execute("""
                 INSERT INTO peso_action_logs (student_id, action, performed_by, performed_at)
                 VALUES (%s, %s, %s, %s)
-            """, (student_id, action, session.get('peso_username', 'unknown'), datetime.now()))
+            """, (student_id, action, session.get('peso_username', 'unknown'), performed_at))
             conn.commit()
         return jsonify({'success': True, 'on_hold': updated[0]})
     except Exception as e:

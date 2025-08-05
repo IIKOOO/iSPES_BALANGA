@@ -4,6 +4,7 @@ from app import conn
 from werkzeug.security import generate_password_hash
 from flask import jsonify
 import requests
+import pytz
 
 register_bp = Blueprint('register', __name__)
 
@@ -133,6 +134,9 @@ def register():
                     flash("Registration is closed.", "danger")
                     return redirect(url_for('index'))
                 
+                # Insert into student_application
+                manila_tz = pytz.timezone('Asia/Manila')
+                manila_now = datetime.now(manila_tz).replace(tzinfo=None)
                 cur.execute("""
                     INSERT INTO student_application (
                         student_category, iskolar_type, status_of_student, last_name, first_name, middle_name, suffix,
@@ -143,13 +147,13 @@ def register():
                         %s, %s, %s, %s, %s, %s, %s,
                         %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         %s, %s, %s, %s, %s,
-                        %s, %s, NOW(), FALSE, FALSE
+                        %s, %s, %s, FALSE, FALSE
                     ) RETURNING student_id
                 """, (
                     student_category, iskolar_type, status_of_student, last_name, first_name, middle_name, suffix,
                     birth_date, birth_place, citizenship, mobile_no, email, civil_status, sex, disabilities, socmed,
                     int(participation_count) if participation_count else None, belongs_in_group, barangay, street_add,
-                    name_of_beneficiary, relationship_to_beneficiary, parents_status
+                    name_of_beneficiary, relationship_to_beneficiary, parents_status, manila_now
                 ))
                 student_application_id = cur.fetchone()[0]
 
