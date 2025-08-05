@@ -365,7 +365,7 @@
                       <input class="form-control" type="text" id="first_name" name="first_name" required autocomplete="off">
                     </div>
                     <div class="col-md-4">
-                      <label class="form-label fw-bold">Middle Name</label>
+                      <label class="form-label fw-bold">Middle Name <i class="text-danger">*</i></label>
                       <input class="form-control" type="text" id="middle_name" name="middle_name" minlength="2" autocomplete="off">
                     </div>
                     <div class="col-md-4">
@@ -374,7 +374,7 @@
                     </div>
                     <div class="col-md-4">
                       <label class="form-label fw-bold">Date of Birth <i class="text-danger">*</i></label>
-                      <input class="form-control" type="date" id="date_of_birth" name="date_of_birth" required autocomplete="off">
+                      <input class="form-control" type="date" id="date_of_birth" name="date_of_birth" required autocomplete="off" onkeydown="return false;">
                     </div>
                     <div class="col-md-4">
                       <label class="form-label fw-bold">Place of Birth <i class="text-danger">*</i><i class="text-muted">CITY, PROVINCE</i></label>
@@ -490,14 +490,14 @@
                       </select>
                     </div>
                     <div class="col-md-8">
-                        <label class="form-label w-100 fw-bold">Street Address</label>
+                        <label class="form-label w-100 fw-bold">Street Address <i class="text-danger">*</i></label>
                         <label class="form-label"><i><span class="text-muted">(Ex. MANAHAN ST., JP RIZAL ST., ETC.)</span></i></label>
                         <input class="form-control bg-white mb-3 mt-0" type="text" id="street" name="street" autocomplete="off">
                     </div>
                   </div>
                   <div class="row g-3">
                     <div class="col-md-12">    
-                      <label class="form-label w-100 fw-bold">Name of  Beneficiary</label>                  
+                      <label class="form-label w-100 fw-bold">Name of  Beneficiary <i class="text-danger">*</i></label>                  
                       <label class="form-label"><i>Ilagay ang pangalan ng iyong Nanay, Tatay, o Tagapag-alaga <span class="text-muted">(example format: FIRSTNAME MIDDLENAME LASTNAME)</span> <span class="text-danger">*</span></i></label>
                       <input class="form-control bg-white mb-3 mt-0" type="text" id="name_of_beneficiary" name="name_of_beneficiary" required="" autocomplete="off">
                     </div>
@@ -549,15 +549,15 @@
                       <input class="form-control input-guardian bg-white mb-3 mt-0" type="text" id="guardian_full_name" name="guardian_full_name" autocomplete="off">
                     </div>
                     <div class="col-md-6">    
-                      <label class="form-label fw-bold">Guardian's Contact No. <i class="text-muted">(Ex. 09985666323)</i></label>   
+                      <label class="form-label fw-bold">Guardian's Contact No. <i class="text-muted"><span class="text-danger">*</span> (Ex. 09985666323)</i></label>   
                       <input class="form-control bg-white mb-3 mt-0" type="text" id="guardian_contact_number" name="guardian_contact_number" autocomplete="off">
                     </div>
                     <div class="col-md-6">    
                       <label class="form-label fw-bold">Guardian's Birthday <i class="text-danger">*</i></label>
-                      <input class="form-control input-guardian bg-white mb-3 mt-0" type="date" id="guardian_birthday" name="guardian_birthday" autocomplete="off">
+                      <input class="form-control input-guardian bg-white mb-3 mt-0" type="date" id="guardian_birthday" name="guardian_birthday" autocomplete="off" onkeydown="return false;">
                     </div>
                     <div class="col-md-12">    
-                      <label class="form-label w-100 fw-bold">Guardian's Occupation</label>          
+                      <label class="form-label w-100 fw-bold">Guardian's Occupation <i class="text-danger">*</i></label>          
                       <label class="form-label"><i>Isulat ang trabaho ng iyong ama. Kung wala, ilagay ang "none". Kung siya ay pumanaw na, isulat ang "DECEASED".</i></label>
                       <input class="form-control bg-white mb-3 mt-0" type="text" id="guardian_occupation" name="guardian_occupation" autocomplete="off">
                     </div> 
@@ -566,7 +566,7 @@
                       <input class="form-control input-guardian bg-white mb-3 mt-0" type="text" id="relationship_to_guardian" name="relationship_to_guardian" autocomplete="off">
                     </div>
                     <div class="col-md-12">    
-                      <label class="form-label w-100 fw-bold">TIN No. of Guardian: (if applicable)</label>                  
+                      <label class="form-label w-100 fw-bold">TIN No. of Guardian: <i class="text-danger">*</i></label>                  
                       <label class="form-label"><i>Kung ikaw ay SPES noong nakaraang taon at nabigyan ng BIR Tax Exemption, makikita mo ang TIN # ng iyong magulang o guardian sa iyong Tax Exemption mula noong nakaraang taon.  Ilagay ang "NONE" kung wala.</i></label>
                       <input class="form-control input-guardian bg-white mb-3 mt-0" type="text" id="guardian_tin_no" name="guardian_tin_no" autocomplete="off">
                     </div>
@@ -585,20 +585,20 @@
                       <input class="form-control input-guardian bg-white mb-3 mt-0" type="text" id="father_full_name" name="father_full_name" autocomplete="off">
                     </div>
                     <div class="col-md-6">    
-                      <label class="form-label fw-bold">Father's Contact No. <i class="text-muted">(Ex. 09985666323)</i></label>   
+                      <label class="form-label fw-bold">Father's Contact No. <i class="text-muted"><span class="text-danger">*  </span>(Ex. 09985666323)</i></label>   
                       <input class="form-control bg-white mb-3 mt-0" type="text" id="father_contact_number" name="father_contact_number" autocomplete="off">
                     </div>
                      <div class="col-md-6">    
-                      <label class="form-label fw-bold">Father's Birthday</label>
-                      <input class="form-control bg-white mb-3 mt-0" type="date" id="father_birthday" name="father_birthday" required="" autocomplete="off">
+                      <label class="form-label fw-bold">Father's Birthday<i class="text-muted"><span class="text-danger">*</span></i></label>
+                      <input class="form-control bg-white mb-3 mt-0" type="date" id="father_birthday" name="father_birthday" required="" autocomplete="off" onkeydown="return false;">
                     </div>
                     <div class="col-md-12">    
-                      <label class="form-label w-100 fw-bold">Father's Occupation</label>          
+                      <label class="form-label w-100 fw-bold">Father's Occupation <i class="text-danger">*</i></label>          
                       <label class="form-label"><i>Isulat ang trabaho ng iyong ama. Kung wala, ilagay ang "none". Kung siya ay pumanaw na, isulat ang "DECEASED".</i></label>
                       <input class="form-control bg-white mb-3 mt-0" type="text" id="father_occupation" name="father_occupation" autocomplete="off">
                     </div> 
                     <div class="col-md-12">    
-                      <label class="form-label w-100 fw-bold">TIN No. of Father: (if applicable)</label>                  
+                      <label class="form-label w-100 fw-bold">TIN No. of Father: <i class="text-danger">*</i></label>                  
                       <label class="form-label"><i>Kung ikaw ay SPES noong nakaraang taon at nabigyan ng BIR Tax Exemption, makikita mo ang TIN # ng iyong tatay sa iyong Tax Exemption noong nakaraang taon. Ilagay ang "NONE" kung wala.</i></label>
                       <input class="form-control bg-white mb-3 mt-0" type="text" id="father_tin_no" name="father_tin_no" required="" autocomplete="off">
                     </div>
@@ -612,12 +612,12 @@
                       <input class="form-control input-guardian bg-white mb-3 mt-0" type="text" id="mother_full_name" name="mother_full_name" autocomplete="off">
                     </div> 
                     <div class="col-md-6">    
-                      <label class="form-label fw-bold">Mother's Contact No. <i class="text-muted">(Ex. 09985666323) <span class="text-danger">*</span></i></label>   
-                      <input class="form-control bg-white mb-3 mt-0" type="text" id="mother_contact_no" name="mother_contact_number" required="" autocomplete="off">
+                      <label class="form-label fw-bold">Mother's Contact No. <i class="text-muted"><span class="text-danger">*  </span>(Ex. 09985666323)</i></label>   
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="mother_contact_number" name="mother_contact_number" required="" autocomplete="off">
                     </div>
-                     <div class="col-md-6">    
+                    <div class="col-md-6">    
                       <label class="form-label fw-bold">Mother's Birthday <i class="text-danger">*</i></label>
-                      <input class="form-control bg-white mb-3 mt-0" type="date" id="mother_birthday" name="mother_birthday" required="" autocomplete="off">
+                      <input class="form-control bg-white mb-3 mt-0" type="date" id="mother_birthday" name="mother_birthday" required="" autocomplete="off" onkeydown="return false;">
                     </div>
                     <div class="col-md-12">    
                       <label class="form-label w-100 fw-bold">Mother's Occupation <i class="text-danger">*</i></label>          
@@ -625,7 +625,7 @@
                       <input class="form-control bg-white mb-3 mt-0" type="text" id="mother_occupation" name="mother_occupation" required="" autocomplete="off">
                     </div> 
                     <div class="col-md-12">    
-                      <label class="form-label w-100 fw-bold">TIN No. of Mother: (if applicable)</label>                  
+                      <label class="form-label w-100 fw-bold">TIN No. of Mother: <i class="text-danger">*</i></label>                  
                       <label class="form-label"><i>Kung ikaw ay SPES noong nakaraang taon at nabigyan ng BIR Tax Exemption, makikita mo ang TIN # ng iyong nanay sa iyong Tax Exemption noong nakaraang taon. Ilagay ang "NONE" kung wala.</i></label>
                       <input class="form-control bg-white mb-3 mt-0" type="text" id="	mother_tin_no" name="	mother_tin_no" required="" autocomplete="off">
                     </div>
@@ -826,7 +826,7 @@
                       <div id="usernameError" class="text-danger mt-1"></div>
                     </div>
                     <div class="col-md-4">
-                      <label for="password" class="form-label">Password</label>
+                      <label for="password" class="form-label fw-bold">Password <i class="text-danger">*</i></label>
                       <div class="input-group">
                         <input class="form-control" type="password" id="registration_password" name="password" required>
                         <button type="button" class="btn btn-outline-secondary toggle-password-btn" data-target="registration_password"><i class="bi bi-eye"></i></button>

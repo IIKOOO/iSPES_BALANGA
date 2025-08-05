@@ -314,6 +314,7 @@ def post_announcement():
 
     try:
         with conn.cursor() as cur:
+            updated = False
             if general_announcement is not None:
                 cur.execute("""
                     UPDATE announcements
@@ -321,14 +322,19 @@ def post_announcement():
                     WHERE announcement_id = 1
                 """, (general_announcement.strip(),))
                 flash('General announcement updated successfully!', 'success')
-            elif student_announcement is not None:
+                updated = True
+            if student_announcement is not None:
                 cur.execute("""
                     UPDATE announcements
                     SET student_announcement = %s
                     WHERE announcement_id = 1
                 """, (student_announcement.strip(),))
                 flash('Student announcement updated successfully!', 'success')
-            conn.commit()
+                updated = True
+            if updated:
+                conn.commit()
+            else:
+                flash('No announcement provided.', 'warning')
     except Exception as e:
         conn.rollback()
         flash('Failed to update announcement: ' + str(e), 'danger')

@@ -49,17 +49,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (status.on_hold) {
                     document.getElementById('accomplishment-upload-section').style.display = 'block';
                     document.getElementById('requestedDocs-upload-section').style.display = 'block';
-                    document.getElementById('resignBtnSection').style.display = 'none';
+                    document.getElementById('resignBtn').style.display = 'none';
                 } else {
                     document.getElementById('accomplishment-upload-section').style.display = 'block';
                     document.getElementById('requestedDocs-upload-section').style.display = 'none';
-                    document.getElementById('resignBtnSection').style.display = 'none';
+                    document.getElementById('resignBtn').style.display = 'none';
                 }
             });
         } else {
             document.getElementById('accomplishment-upload-section').style.display = 'none';
             document.getElementById('requestedDocs-upload-section').style.display = 'none';
-            document.getElementById('resignBtnSection').style.display = 'block';
+            document.getElementById('resignBtn').style.display = 'block';
         }
     });
 });
