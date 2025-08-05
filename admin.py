@@ -314,6 +314,13 @@ def post_announcement():
 
     try:
         with conn.cursor() as cur:
+            # Ensure row exists
+            cur.execute("SELECT 1 FROM announcements WHERE announcement_id = 1")
+            if not cur.fetchone():
+                cur.execute("""
+                    INSERT INTO announcements (announcement_id, general_announcements, student_announcement, peso_announcement)
+                    VALUES (1, '', '', '')
+                """)
             updated = False
             if general_announcement is not None:
                 cur.execute("""

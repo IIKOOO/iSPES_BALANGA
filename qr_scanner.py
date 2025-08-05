@@ -26,12 +26,8 @@ def dtr_scan():
         if not approved:
             return jsonify({'success': False, 'error': 'Student is not approved or not yet approved for SPES.'}), 403
 
-    # now = datetime.now(pytz.timezone('Asia/Manila'))
-    utc_now = datetime.utcnow()
     manila_tz = pytz.timezone('Asia/Manila')
-    now = pytz.utc.localize(utc_now).astimezone(manila_tz)
-    today = now.date()
-    current_time = now.time()
+    now = datetime.now(pytz.utc).astimezone(manila_tz)
     today = now.date()
     current_time = now.time()
     try:
