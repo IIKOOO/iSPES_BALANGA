@@ -161,8 +161,8 @@
                           <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
                         </div>
                         <div class="col-md-12">
-                        <label for="mobile_no" class="form-label fw-bold">Mobile No. <i class="text-danger">*</i></label>
-                        <input type="text" class="form-control" id="mobile_no" name="mobile_no" placeholder="Enter mobile number" required>
+                        <label for="mobile_no" class="form-label fw-bold">Mobile No. <i class="text-danger">* <span class="text-muted">Please use this format +639XXXXXXXXX</span></i></label>
+                        <input type="text" class="form-control" id="mobile_no" name="mobile_no" placeholder="Enter mobile number" required pattern="^\+63\d{10}$" placeholder="+639123456789">
                       </div>
                       </div>
                     </div>

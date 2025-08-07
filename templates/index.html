@@ -385,8 +385,8 @@
                       <input class="form-control" type="text" id="citizenship" name="citizenship" required autocomplete="off">
                     </div>
                     <div class="col-md-4">
-                      <label class="form-label fw-bold">Mobile No. <i class="text-danger">*</i></label>
-                      <input class="form-control" type="text" id="mobile_number" name="mobile_number" required autocomplete="off">
+                      <label class="form-label fw-bold">Mobile No. <i class="text-danger">* <span class="text-muted">Please use this format +639</span></i></label>
+                      <input class="form-control" type="text" id="mobile_number" name="mobile_number" required autocomplete="off" pattern="^\+63\d{10}$" placeholder="+639123456789">
                     </div>
                     <div class="col-md-4">
                       <label class="form-label fw-bold">Email Address <i class="text-danger">*</i></label>
@@ -549,8 +549,8 @@
                       <input class="form-control input-guardian bg-white mb-3 mt-0" type="text" id="guardian_full_name" name="guardian_full_name" autocomplete="off">
                     </div>
                     <div class="col-md-6">    
-                      <label class="form-label fw-bold">Guardian's Contact No. <i class="text-muted"><span class="text-danger">*</span> (Ex. 09985666323)</i></label>   
-                      <input class="form-control bg-white mb-3 mt-0" type="text" id="guardian_contact_number" name="guardian_contact_number" autocomplete="off">
+                      <label class="form-label fw-bold">Guardian's Contact No. <i class="text-muted"><span class="text-danger">*</span>Please use this format +639</i></label>   
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="guardian_contact_number" name="guardian_contact_number" autocomplete="off" pattern="^\+63\d{10}$" placeholder="+639123456789">
                     </div>
                     <div class="col-md-6">    
                       <label class="form-label fw-bold">Guardian's Birthday <i class="text-danger">*</i></label>
@@ -585,8 +585,8 @@
                       <input class="form-control input-guardian bg-white mb-3 mt-0" type="text" id="father_full_name" name="father_full_name" autocomplete="off">
                     </div>
                     <div class="col-md-6">    
-                      <label class="form-label fw-bold">Father's Contact No. <i class="text-muted"><span class="text-danger">*  </span>(Ex. 09985666323)</i></label>   
-                      <input class="form-control bg-white mb-3 mt-0" type="text" id="father_contact_number" name="father_contact_number" autocomplete="off">
+                      <label class="form-label fw-bold">Father's Contact No. <i class="text-muted"><span class="text-danger">*  </span>Please use this format +639</i></label>   
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="father_contact_number" name="father_contact_number" autocomplete="off" pattern="^\+63\d{10}$" placeholder="+639123456789">
                     </div>
                      <div class="col-md-6">    
                       <label class="form-label fw-bold">Father's Birthday<i class="text-muted"><span class="text-danger">*</span></i></label>
@@ -612,8 +612,8 @@
                       <input class="form-control input-guardian bg-white mb-3 mt-0" type="text" id="mother_full_name" name="mother_full_name" autocomplete="off">
                     </div> 
                     <div class="col-md-6">    
-                      <label class="form-label fw-bold">Mother's Contact No. <i class="text-muted"><span class="text-danger">*  </span>(Ex. 09985666323)</i></label>   
-                      <input class="form-control bg-white mb-3 mt-0" type="text" id="mother_contact_number" name="mother_contact_number" required="" autocomplete="off">
+                      <label class="form-label fw-bold">Mother's Contact No. <i class="text-muted"><span class="text-danger">*  </span>Please use this format +639</i></label>   
+                      <input class="form-control bg-white mb-3 mt-0" type="text" id="mother_contact_number" name="mother_contact_number" required="" autocomplete="off" pattern="^\+63\d{10}$" placeholder="+639123456789">
                     </div>
                     <div class="col-md-6">    
                       <label class="form-label fw-bold">Mother's Birthday <i class="text-danger">*</i></label>
@@ -777,9 +777,9 @@
                       <label class="form-label"><i>Batay sa iyong Report of Grades, ito ang iyong kasalukuyang taon ng pag-aaral.</i></label>
                       <select class="form-select" id="educational_attainment" name="educational_attainment" required>
                         <option value=""></option>
-                        <option value="Grade 10(Incoming Grade 11)">Grade 10(Incomming Grade 11)</option>
-                        <option value="Grade 11(Incoming Grade 12)">Grade 11(Incomming Grade 12)</option>
-                        <option value="Grade 12(Incoming 1st Year)">Grade 12(Incoming 1st Year)</option>
+                        <option value="GRADE 10(INCOMING GRADE 11)">GRADE 10(INCOMING GRADE 11))</option>
+                        <option value="GRADE 11(INCOMING GRADE 12)">GRADE 11(INCOMING GRADE 12)</option>
+                        <option value="GRADE 12(INCOMING 1ST YEAR)">GRADE 12(INCOMING 1ST YEAR)</option>
                         <option value="1st Year College (Incoming 2nd Year)">1ST YEAR COLLEGE (INCOMING 2ND YEAR)</option>
                         <option value="2nd Year College (Incoming 3rd Year)">2ND YEAR COLLEGE (INCOMING 3RD YEAR)</option>
                         <option value="2nd Year College (Candidate for Diploma Graduate)">2ND YEAR COLLEGE (CANDIDATE FOR DIPLOMA GRADUATE)</option>

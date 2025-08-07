@@ -8,15 +8,14 @@ import pytz
 
 register_bp = Blueprint('register', __name__)
 
-SEMAPHORE_API_KEY = 'api_key'
-# TXTBOX_SENDER = 'sender_name'
+TEXTBELT_API_KEY = '508ce5c121dff4a11ac47e361cb12da0b833c6f0jbexgNOYzvBcGfeTIB0ExZnGP'
 
-def send_sms_semaphore(to, message):
-    url = 'https://api.semaphore.co/api/v4/messages'
+def send_sms(to, message):
+    url = 'https://textbelt.com/text'
     payload = {
-        'apikey': SEMAPHORE_API_KEY,
-        'number': to,
-        'message': message
+        'phone': to,
+        'message': message,
+        'key': TEXTBELT_API_KEY
     }
     response = requests.post(url, data=payload)
     return response.json()
@@ -195,11 +194,11 @@ def register():
                 ))
 
                 conn.commit()
-                # sms_message = (
-                #     f"Hello {first_name}, your registration was successful! "
-                #     "You can now log in and please submit your requirements."
-                # )
-                # send_sms_semaphore(mobile_no, sms_message)
+                sms_message = (
+                    f"Hello {first_name}, your registration was successful! "
+                    "You can now log in and please submit your requirements."
+                )
+                send_sms(mobile_no, sms_message)
                 flash('Registration successful!', 'success')
                 return redirect(url_for('index'))
 

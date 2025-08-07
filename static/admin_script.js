@@ -592,11 +592,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     numberFields.forEach(field => {
         field.addEventListener('input', () => {
-            field.value = field.value.replace(/\D/g, '');
-
-            if (field.value.length > 11) {
-                field.value = field.value.slice(0, 11);
+            let value = field.value;
+            value = value.replace(/[^\d+]/g, '');
+            if (value.startsWith('+')) {
+                value = '+' + value.slice(1).replace(/\+/g, '');
+            } else {
+                value = value.replace(/\+/g, '');
             }
+            if (value.length > 13) {
+                value = value.slice(0, 13);
+            }
+            field.value = value;
         });
     });
 });

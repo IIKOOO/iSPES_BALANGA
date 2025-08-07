@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     category.addEventListener('change', () => {
         const selectedValue = category.value;   
 
-        if (selectedValue === "Iskolar ng Bataan") {
+        if (selectedValue === "ISKOLAR NG BATAAN") {
             iskolarType.classList.remove('d-none');
             iskolarType.setAttribute('required', 'required');
             divCategory.classList.remove('col-md-6');
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     studentCategory.addEventListener('change', () => {
         const selectedCategory = studentCategory.value;
 
-        if (selectedCategory === 'Senior High School') {
+        if (selectedCategory === 'SENIOR HIGH SCHOOL') {
             seniorHighSection.classList.remove('d-none');
             collegeSection.classList.add('d-none');
         } else {
@@ -68,12 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
         Array.from(educationalAttainment.options).forEach(option => {
             option.style.display = '';
 
-            if (selectedCategory === 'Senior High School') {
-                if (!['Grade 10(Incoming Grade 11)', 'Grade 11(Incoming Grade 12)', 'Grade 12(Incoming 1st Year)'].includes(option.value)) {
+            if (selectedCategory === 'SENIOR HIGH SCHOOL') {
+                if (!['GRADE 10(INCOMING GRADE 11)', 'GRADE 11(INCOMING GRADE 12)', 'GRADE 12(INCOMING 1ST YEAR)'].includes(option.value)) {
                     option.style.display = 'none';
                 }
-            } else if (selectedCategory === 'Applying for Iskolar ng Bataan' || selectedCategory === 'Iskolar ng Bataan') {
-                if (['Grade 10(Incoming Grade 11)', 'Grade 11(Incoming Grade 12)', 'Grade 12(Incoming 1st Year)'].includes(option.value)) {
+            } else if (selectedCategory === 'APPLYING FOR ISKOLAR NG BATAAN' || selectedCategory === 'ISKOLAR NG BATAAN') {
+                if (['GRADE 10(INCOMING GRADE 11)', 'GRADE 11(INCOMING GRADE 12)', 'GRADE 12(INCOMING 1ST YEAR)'].includes(option.value)) {
                     option.style.display = 'none';
                 }
             }
@@ -95,11 +95,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     numberFields.forEach(field => {
         field.addEventListener('input', () => {
-            field.value = field.value.replace(/\D/g, '');
-
-            if (field.value.length > 11) {
-                field.value = field.value.slice(0, 11);
+            let value = field.value;
+            value = value.replace(/[^\d+]/g, '');
+            if (value.startsWith('+')) {
+                value = '+' + value.slice(1).replace(/\+/g, '');
+            } else {
+                value = value.replace(/\+/g, '');
             }
+            if (value.length > 13) {
+                value = value.slice(0, 13);
+            }
+            field.value = value;
         });
     });
 });
@@ -122,17 +128,17 @@ function applyCategoryRestrictions() {
 
             if (!data.senior_high_enabled) {
                 Array.from(select.options).forEach(option => {
-                    if (option.value === 'Senior High School') option.style.display = 'none';
+                    if (option.value === 'SENIOR HIGH SCHOOL') option.style.display = 'none';
                 });
             }
             if (!data.applying_iskolar_enabled) {
                 Array.from(select.options).forEach(option => {
-                    if (option.value === 'Applying for Iskolar ng Bataan') option.style.display = 'none';
+                    if (option.value === 'APPLYING FOR ISKOLAR NG BATAAN') option.style.display = 'none';
                 });
             }
             if (!data.iskolar_enabled) {
                 Array.from(select.options).forEach(option => {
-                    if (option.value === 'Iskolar ng Bataan') option.style.display = 'none';
+                    if (option.value === 'ISKOLAR NG BATAAN') option.style.display = 'none';
                 });
             }
         });

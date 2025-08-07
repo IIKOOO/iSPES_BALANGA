@@ -11,15 +11,14 @@ import pytz
 
 peso_bp = Blueprint('peso', __name__)
 
-SEMAPHORE_API_KEY = 'api_key'
-# TXTBOX_SENDER = 'sender_name'
+TEXTBELT_API_KEY = '508ce5c121dff4a11ac47e361cb12da0b833c6f0jbexgNOYzvBcGfeTIB0ExZnGP'
 
-def send_sms_semaphore(to, message):
-    url = 'https://api.semaphore.co/api/v4/messages'
+def send_sms(to, message):
+    url = 'https://textbelt.com/text'
     payload = {
-        'apikey': SEMAPHORE_API_KEY,
-        'number': to,
-        'message': message
+        'phone': to,
+        'message': message,
+        'key': TEXTBELT_API_KEY
     }
     response = requests.post(url, data=payload)
     return response.json()
@@ -344,11 +343,11 @@ def update_peso_comment(student_id):
             first_name = student[1] if student else "Student"
 
             # Send SMS if mobile_no exists
-            # if mobile_no:
-            #     sms_message = (
-            #         f"Hello {first_name}, you have a new comment from PESO regarding the status of your registration: {comment}"
-            #     )
-            #     send_sms_semaphore(mobile_no, sms_message)
+            if mobile_no:
+                sms_message = (
+                    f"Hello {first_name}, you have a new comment from PESO regarding the status of your registration: {comment}"
+                )
+                send_sms(mobile_no, sms_message)
 
         return jsonify({'success': True})
     except Exception as e:
@@ -752,11 +751,11 @@ def move_to_payroll(student_id):
             first_name = student[1] if student else "Student"
             conn.commit()
         # Send SMS notification if mobile_no exists
-        # if mobile_no:
-        #     sms_message = (
-        #         f"Hello {first_name} This is from Peso regarding SPES, you have been moved to payroll. Please wait for any announcement regarding the payroll in announcement tabs."
-        #     )
-        #     send_sms_semaphore(mobile_no, sms_message)
+        if mobile_no:
+            sms_message = (
+                f"Hello {first_name} This is from Peso regarding SPES, you have been moved to payroll. Please wait for any announcement regarding the payroll in announcement tabs."
+            )
+            send_sms(mobile_no, sms_message)
         flash('Student successfully moved to Payroll!', 'success')
         return jsonify({'success': True})
     except Exception as e:
@@ -1398,11 +1397,11 @@ def update_dtr_comment(student_id):
             first_name = student[1] if student else "Student"
             conn.commit()
         # Send SMS if mobile_no exists
-        # if mobile_no:
-        #     sms_message = (
-        #         f"Hello {first_name}, you have a new comment from PESO regarding your DTR: {comment}"
-        #     )
-        #     send_sms_semaphore(mobile_no, sms_message)
+        if mobile_no:
+            sms_message = (
+                f"Hello {first_name}, you have a new comment from PESO regarding your DTR: {comment}"
+            )
+            send_sms(mobile_no, sms_message)
         return jsonify({'success': True})
     except Exception as e:
         conn.rollback()
