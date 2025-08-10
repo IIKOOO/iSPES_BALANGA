@@ -76,6 +76,24 @@
                     </div>
                 </div>
             </div>
+            <div class="row mt-1">
+                <div class="col-md-12 mb-3">
+                    <div class="card shadow-lg">
+                        <div class="card-header bg-info text-dark text-center">
+                            <h5 class="mb-0">Upload Accomplishment Report Template</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="arTemplateForm" method="POST" action="{{ url_for('admin.upload_ar_template') }}" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="ar_template" class="form-label fw-bold">Upload DOCX File:</label>
+                                    <input type="file" class="form-control" id="ar_template" name="ar_template" accept=".docx" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Upload Template</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="row mt-4">
                 <div class="col-md-12">
                     <div class="card shadow-lg border-0">

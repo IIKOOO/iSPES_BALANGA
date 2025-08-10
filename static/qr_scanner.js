@@ -101,6 +101,9 @@ function startQrScanner(cameraId = null) {
     );
     qrScanner.start().then(() => {
         if (cameraId) currentCameraId = cameraId;
+        setTimeout(() => {
+            videoElem.style.transform = 'scaleX(-1)';
+        }, 500);
     });
 }
 

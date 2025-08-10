@@ -192,7 +192,7 @@ function fetchAndDisplayDtrRecords() {
                     let commentCard = `
                         <div class="card mt-4">
                             <div class="card-header bg-info text-dark">
-                                <h5 class="mb-0 fw-bold">PESO Comment to Student</h5>
+                                <h5 class="mb-0 fw-bold">PESO Comment to DTR</h5>
                             </div>
                             <div class="card-body" style="background-color:beige;">
                                 <textarea class="form-control mb-2" id="dtrPesoComment" rows="3" placeholder="Enter comment...">${comment || ''}</textarea>

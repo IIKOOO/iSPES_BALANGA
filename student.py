@@ -395,3 +395,19 @@ def get_dtr_upload_status():
         "ar_isgood": bool(row[0]) if row else False,
         "requested_docs_isgood": bool(row[1]) if row else False
     })
+    
+@student_bp.route('/download_ar_template')
+def download_ar_template():
+    with conn.cursor() as cur:
+        cur.execute("SELECT ar_template FROM announcements WHERE announcement_id = 1")
+        row = cur.fetchone()
+        if not row or not row[0]:
+            flash('No template available.', 'danger')
+            return redirect(url_for('student.student_dtr'))
+        file_bytes = row[0]
+    return send_file(
+        io.BytesIO(file_bytes),
+        mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        as_attachment=True,
+        download_name='Accomplishment_Report_Template.docx'
+    )

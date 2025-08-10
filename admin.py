@@ -719,3 +719,26 @@ def peso_action_logs_summary_admin():
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 500
+    
+@admin_bp.route('/upload_ar_template', methods=['POST'])
+def upload_ar_template():
+    if 'admin_logged_in' not in session:
+        return redirect(url_for('login.login_admin'))
+    file = request.files.get('ar_template')
+    if not file or not file.filename.endswith('.docx'):
+        flash('Please upload a DOCX file.', 'danger')
+        return redirect(url_for('login.login_admin'))
+    file_bytes = file.read()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE announcements
+                SET ar_template = %s
+                WHERE announcement_id = 1
+            """, (file_bytes,))
+            conn.commit()
+        flash('Accomplishment Report Template uploaded successfully!', 'success')
+    except Exception as e:
+        conn.rollback()
+        flash('Failed to upload template: ' + str(e), 'danger')
+    return redirect(url_for('login.login_admin'))
