@@ -210,7 +210,7 @@ def login_peso():
             conn.rollback()
             error_message = "A database error occurred. Please try again."
 
-    return render_template('admin_login.html', acc_error=error_message, open_modal='peso_login')
+    return render_template('index.html', acc_error=error_message, open_modal='peso_login')
 
 
 @login_bp.route('/student_main', methods=['GET', 'POST'])

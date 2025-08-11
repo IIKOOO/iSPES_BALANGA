@@ -208,3 +208,87 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const updatePasswordBtn = document.getElementById('updatePasswordBtn');
+    const authPasswordModal = new bootstrap.Modal(document.getElementById('authPasswordModal'));
+    const updatePasswordModal = new bootstrap.Modal(document.getElementById('updatePasswordModal'));
+    const authPasswordForm = document.getElementById('authPasswordForm');
+    const updatePasswordForm = document.getElementById('updatePasswordForm');
+    const authPasswordError = document.getElementById('authPasswordError');
+    const updatePasswordError = document.getElementById('updatePasswordError');
+
+    if (updatePasswordBtn) {
+        updatePasswordBtn.addEventListener('click', function() {
+            authPasswordError.style.display = 'none';
+            document.getElementById('currentPassword').value = '';
+            authPasswordModal.show();
+        });
+    }
+
+    if (authPasswordForm) {
+        authPasswordForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const currentPassword = document.getElementById('currentPassword').value;
+            fetch('/student_auth_password', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({current_password: currentPassword})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    authPasswordModal.hide();
+                    updatePasswordError.style.display = 'none';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmNewPassword').value = '';
+                    updatePasswordModal.show();
+                } else {
+                    authPasswordError.innerText = data.error || 'Authentication failed.';
+                    authPasswordError.style.display = 'block';
+                }
+            });
+        });
+    }
+
+    if (updatePasswordForm) {
+        updatePasswordForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+            if (newPassword !== confirmNewPassword) {
+                updatePasswordError.innerText = "Passwords do not match.";
+                updatePasswordError.style.display = 'block';
+                return;
+            }
+            fetch('/student_update_password', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({new_password: newPassword})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    updatePasswordModal.hide();
+                    alert('Password updated successfully!');
+                } else {
+                    updatePasswordError.innerText = data.error || 'Update failed.';
+                    updatePasswordError.style.display = 'block';
+                }
+            });
+        });
+    }
+});
+
+document.querySelectorAll('.toggle-password-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const targetId = btn.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            if (input) {
+                input.type = input.type === 'password' ? 'text' : 'password';
+                btn.innerHTML = input.type === 'password'
+                    ? '<i class="bi bi-eye"></i>'
+                    : '<i class="bi bi-eye-slash"></i>';
+            }
+        });
+    });

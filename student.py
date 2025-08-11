@@ -168,7 +168,7 @@ def get_dtr():
     with conn.cursor() as cur:
         cur.execute("""
             SELECT date, time_in_am, time_out_am, time_in_pm, time_out_pm, dtr_time_evaluation_am, dtr_time_evaluation_pm, daily_total, scanner_location
-            FROM student_dtr WHERE student_id=%s ORDER BY date DESC
+            FROM student_dtr WHERE student_id=%s ORDER BY date ASC
         """, (student_id,))
         rows = cur.fetchall()
     data = []
@@ -411,3 +411,38 @@ def download_ar_template():
         as_attachment=True,
         download_name='Accomplishment_Report_Template.docx'
     )
+    
+from werkzeug.security import check_password_hash, generate_password_hash
+
+@student_bp.route('/student_auth_password', methods=['POST'])
+def student_auth_password():
+    if 'student_logged_in' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+    data = request.get_json()
+    current_password = data.get('current_password')
+    student_id = session.get('student_id')
+    with conn.cursor() as cur:
+        cur.execute("SELECT password FROM student_login WHERE student_id=%s AND is_active=TRUE", (student_id,))
+        row = cur.fetchone()
+        if not row or not check_password_hash(row[0], current_password):
+            return jsonify({'success': False, 'error': 'Incorrect password.'})
+    return jsonify({'success': True})
+
+@student_bp.route('/student_update_password', methods=['POST'])
+def student_update_password():
+    if 'student_logged_in' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+    data = request.get_json()
+    new_password = data.get('new_password')
+    if not new_password or len(new_password) < 6:
+        return jsonify({'success': False, 'error': 'Password must be at least 6 characters.'})
+    student_id = session.get('student_id')
+    hashed = generate_password_hash(new_password)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE student_login SET password=%s WHERE student_id=%s", (hashed, student_id))
+            conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'success': False, 'error': str(e)})

@@ -95,17 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     numberFields.forEach(field => {
         field.addEventListener('input', () => {
-            let value = field.value;
-            value = value.replace(/[^\d+]/g, '');
-            if (value.startsWith('+')) {
-                value = '+' + value.slice(1).replace(/\+/g, '');
-            } else {
-                value = value.replace(/\+/g, '');
+            field.value = field.value.replace(/\D/g, '');
+
+            if (field.value.length > 11) {
+                field.value = field.value.slice(0, 12);
             }
-            if (value.length > 13) {
-                value = value.slice(0, 13);
-            }
-            field.value = value;
         });
     });
 });
@@ -228,33 +222,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const regForm = document.getElementById('registration_form');
     if (regForm) {
         regForm.addEventListener('submit', function(e) {
-            e.preventDefault(); // Always block submission first!
-    
+            e.preventDefault();
+
             (async function() {
                 let valid = true;
-    
-                // Username length
-                const username = document.getElementById('registration_username'); // <-- updated id
+
+                // Username existence (AJAX)
+                const username = document.getElementById('registration_username');
                 const usernameError = document.getElementById('usernameError');
-                const usernameValue = username.value.trim(); // Always trim!
-    
-                if (usernameValue.length < 4) {
-                    usernameError.textContent = 'Username must be at least 4 characters long.';
-                    valid = false;
-                } else {
-                    usernameError.textContent = '';
+                const usernameValue = username.value.trim();
+
+                usernameError.textContent = '';
+
+                if (usernameValue) {
+                    try {
+                        const res = await fetch('/check_username', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username: usernameValue })
+                        });
+                        const data = await res.json();
+                        if (data.exists) {
+                            usernameError.textContent = 'Your username is already taken.';
+                            valid = false;
+                        }
+                    } catch (err) {}
                 }
-    
-                // Password length
+
+                // Password error clear
                 const password = document.getElementById('registration_password');
                 const passwordError = document.getElementById('passwordError');
-                if (password.value.length < 5) {
-                    passwordError.textContent = 'Password must be at least 5 characters long.';
-                    valid = false;
-                } else {
-                    passwordError.textContent = '';
-                }
-    
+                passwordError.textContent = '';
+
                 // Confirm password match
                 const confirmPassword = document.getElementById('confirm_password');
                 const confirmPasswordError = document.getElementById('confirmPasswordError');
@@ -264,26 +263,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     confirmPasswordError.textContent = '';
                 }
-    
-                // Username existence (AJAX)
-                if (usernameValue.length >= 4) {
-                    try {
-                        const res = await fetch('/check_username', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ username: usernameValue }) // Use trimmed value!
-                        });
-                        const data = await res.json();
-                        if (data.exists) {
-                            usernameError.textContent = 'Your username is already taken.';
-                            valid = false;
-                        }
-                    } catch (err) {}
-                }
-    
+
                 // Email existence (AJAX)
                 const email = document.getElementById('email_address');
                 const emailError = document.getElementById('emailError');
+                emailError.textContent = '';
                 if (email.value) {
                     try {
                         const res = await fetch('/check_email', {
@@ -298,12 +282,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     } catch (err) {}
                 }
-    
+
                 if (valid) {
                     regForm.querySelectorAll('input[type="text"], input[type="email"], textarea').forEach(function(input) {
                         const excludeIds = [
                             'email_address',
-                            'registration_username', // <-- updated id
+                            'registration_username',
                             'registration_password',
                             'confirm_password',
                             'social_media_account'
@@ -316,9 +300,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })();
         });
-    
+
         // Clear errors on input
-        ['registration_username', 'email_address', 'registration_password', 'confirm_password'].forEach(function(id) { // <-- updated id
+        ['registration_username', 'email_address', 'registration_password', 'confirm_password'].forEach(function(id) {
             const input = document.getElementById(id);
             if (input) {
                 input.addEventListener('input', function() {

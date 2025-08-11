@@ -5,19 +5,26 @@ from werkzeug.security import generate_password_hash
 from flask import jsonify
 import requests
 import pytz
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+API_TOKEN = os.getenv('API_TOKEN')   
 
 register_bp = Blueprint('register', __name__)
 
-TEXTBELT_API_KEY = '508ce5c121dff4a11ac47e361cb12da0b833c6f0jbexgNOYzvBcGfeTIB0ExZnGP'
-
 def send_sms(to, message):
-    url = 'https://textbelt.com/text'
+    url = f'https://sms.iprogtech.com/api/v1/sms_messages'
     payload = {
-        'phone': to,
-        'message': message,
-        'key': TEXTBELT_API_KEY
+        "api_token": API_TOKEN,
+        "phone_number": to,
+        "message": message
     }
-    response = requests.post(url, data=payload)
+    headers = {
+        "Content-Type": "application/json"
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    print("SMS API response:", response.text)  # Add this line for debugging
     return response.json()
 
 @register_bp.route('/register', methods=['GET', 'POST'])
@@ -195,8 +202,14 @@ def register():
 
                 conn.commit()
                 sms_message = (
-                    f"Hello {first_name}, your registration was successful! "
-                    "You can now log in and please submit your requirements."
+                    f"""Good day, {first_name}!
+                This is SPES Balanga. Your registration is successful.
+
+                You may now log in and upload the required documents.
+
+                Note: Submitting documents does not guarantee acceptance as a SPES beneficiary. Please wait for further updates.
+
+                Thank you."""
                 )
                 send_sms(mobile_no, sms_message)
                 flash('Registration successful!', 'success')

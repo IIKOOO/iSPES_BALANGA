@@ -587,24 +587,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const numberFields = [
         document.getElementById('mobile_no'),
         document.getElementById('update_admin_mobile_no'),
-        document.getElementById('update_mobile_no'),
     ];
 
     numberFields.forEach(field => {
         field.addEventListener('input', () => {
-            let value = field.value;
-            value = value.replace(/[^\d+]/g, '');
-            if (value.startsWith('+')) {
-                value = '+' + value.slice(1).replace(/\+/g, '');
-            } else {
-                value = value.replace(/\+/g, '');
+            field.value = field.value.replace(/\D/g, '');
+
+            if (field.value.length > 11) {
+                field.value = field.value.slice(0, 12);
             }
-            if (value.length > 13) {
-                value = value.slice(0, 13);
-            }
-            field.value = value;
         });
     });
+});
+
+document.getElementById('updatePesoModal')?.addEventListener('shown.bs.modal', function() {
+    const updateMobileNo = document.getElementById('update_mobile_no');
+    if (updateMobileNo) {
+        updateMobileNo.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '');
+            if (this.value.length > 11) {
+                this.value = this.value.slice(0, 12);
+            }
+        });
+    }
 });
 
 document.addEventListener('DOMContentLoaded', function() {

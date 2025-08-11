@@ -8,19 +8,25 @@ import io
 import csv
 import requests
 import pytz
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+API_TOKEN = os.getenv('API_TOKEN')
 
 peso_bp = Blueprint('peso', __name__)
 
-TEXTBELT_API_KEY = '508ce5c121dff4a11ac47e361cb12da0b833c6f0jbexgNOYzvBcGfeTIB0ExZnGP'
-
 def send_sms(to, message):
-    url = 'https://textbelt.com/text'
+    url = f'https://sms.iprogtech.com/api/v1/sms_messages'
     payload = {
-        'phone': to,
-        'message': message,
-        'key': TEXTBELT_API_KEY
+        "api_token": API_TOKEN,
+        "phone_number": to,
+        "message": message
     }
-    response = requests.post(url, data=payload)
+    headers = {
+        "Content-Type": "application/json"
+    }
+    response = requests.post(url, json=payload, headers=headers)
     return response.json()
 
 def nocache(view):
@@ -345,7 +351,13 @@ def update_peso_comment(student_id):
             # Send SMS if mobile_no exists
             if mobile_no:
                 sms_message = (
-                    f"Hello {first_name}, you have a new comment from PESO regarding the status of your registration: {comment}"
+                    f"""Good day, {first_name}!
+                This is SPES Balanga
+                You have a new comment from PESO regarding the status of your registration.
+                
+                {comment}
+                
+                Thank you."""
                 )
                 send_sms(mobile_no, sms_message)
 
@@ -412,7 +424,29 @@ def move_to_final_list(student_id):
                 INSERT INTO peso_action_logs (student_id, action, performed_by, performed_at)
                 VALUES (%s, %s, %s, %s)
             """, (student_id, 'Approved', session.get('peso_username', 'unknown'), performed_at))
+            # Fetch student's mobile_no and first_name
+            cur.execute("""
+                SELECT mobile_no, first_name
+                FROM student_application
+                WHERE student_id = %s
+            """, (student_id,))
+            student = cur.fetchone()
+            mobile_no = student[0] if student else None
+            first_name = student[1] if student else "Student"
             conn.commit()
+        # Send SMS notification if mobile_no exists
+        if mobile_no:
+            sms_message = (
+                f"""Good day, {first_name}!
+            This is SPES Balanga.
+
+            Congratulations! You are now qualified as a SPES beneficiary.
+
+            Please wait for further announcements regarding your next steps.
+
+            Thank you."""
+            )
+            send_sms(mobile_no, sms_message)
         return jsonify({'success': True})
     except Exception as e:
         conn.rollback()
@@ -434,7 +468,29 @@ def move_to_final_list_from_pending(student_id):
                 INSERT INTO peso_action_logs (student_id, action, performed_by, performed_at)
                 VALUES (%s, %s, %s, %s)
             """, (student_id, 'Approved', session.get('peso_username', 'unknown'), performed_at))
+            # Fetch student's mobile_no and first_name
+            cur.execute("""
+                SELECT mobile_no, first_name
+                FROM student_application
+                WHERE student_id = %s
+            """, (student_id,))
+            student = cur.fetchone()
+            mobile_no = student[0] if student else None
+            first_name = student[1] if student else "Student"
             conn.commit()
+        # Send SMS notification if mobile_no exists
+        if mobile_no:
+            sms_message = (
+                f"""Good day, {first_name}!
+            This is SPES Balanga.
+
+            Congratulations! You are now qualified as a SPES beneficiary.
+
+            Please wait for further announcements regarding your next steps.
+
+            Thank you."""
+            )
+            send_sms(mobile_no, sms_message)
         return jsonify({'success': True})
     except Exception as e:
         conn.rollback()
@@ -680,7 +736,7 @@ def get_student_dtr(student_id):
     with conn.cursor() as cur:
         cur.execute("""
             SELECT dtr_id, scanner_location, date, time_in_am, time_out_am, time_in_pm, time_out_pm, dtr_time_evaluation_am, dtr_time_evaluation_pm, daily_total
-            FROM student_dtr WHERE student_id=%s ORDER BY date DESC
+            FROM student_dtr WHERE student_id=%s ORDER BY date ASC
         """, (student_id,))
         rows = cur.fetchall()
         data = []
@@ -753,7 +809,12 @@ def move_to_payroll(student_id):
         # Send SMS notification if mobile_no exists
         if mobile_no:
             sms_message = (
-                f"Hello {first_name} This is from Peso regarding SPES, you have been moved to payroll. Please wait for any announcement regarding the payroll in announcement tabs."
+                f"""Good day, {first_name}!
+            This is SPES Balanga.
+            
+            You have been moved to payroll. Please wait for any announcement regarding the payroll in announcement tabs."
+
+            Thank you."""
             )
             send_sms(mobile_no, sms_message)
         flash('Student successfully moved to Payroll!', 'success')
@@ -1399,7 +1460,13 @@ def update_dtr_comment(student_id):
         # Send SMS if mobile_no exists
         if mobile_no:
             sms_message = (
-                f"Hello {first_name}, you have a new comment from PESO regarding your DTR: {comment}"
+                f"""Good day, {first_name}!
+            This is SPES Balanga
+            You have a new comment from PESO regarding the your DTR.
+            
+            {comment}
+            
+            Thank you."""
             )
             send_sms(mobile_no, sms_message)
         return jsonify({'success': True})
