@@ -275,35 +275,6 @@ def student_resign():
                     ] for r in dtr_rows
                 ])
             ))
-            
-            # --- Archive student data ---
-            # Archive student_application
-            cur.execute("""
-                INSERT INTO student_application_archive
-                SELECT * FROM student_application WHERE student_id = %s
-            """, (student_id,))
-            # Archive education
-            cur.execute("""
-                INSERT INTO student_application_archive_education
-                SELECT * FROM student_application_education WHERE student_application_id = %s
-            """, (student_id,))
-            # Archive parents/guardians
-            cur.execute("""
-                INSERT INTO student_application_archive_parents_guardians
-                SELECT * FROM student_application_parents_guardians WHERE student_application_id = %s
-            """, (student_id,))
-            # Archive requirements
-            cur.execute("""
-                INSERT INTO student_application_archive_requirements
-                SELECT * FROM student_application_requirements WHERE student_application_id = %s
-            """, (student_id,))
-
-            # --- Delete from main tables ---
-            # cur.execute("DELETE FROM student_application_requirements WHERE student_application_id = %s", (student_id,))
-            # cur.execute("DELETE FROM student_application_education WHERE student_application_id = %s", (student_id,))
-            # cur.execute("DELETE FROM student_application_parents_guardians WHERE student_application_id = %s", (student_id,))
-            # cur.execute("DELETE FROM student_application WHERE student_id = %s", (student_id,))
-            
             conn.commit()
         flash('You have successfully resigned. Please upload your accomplishment report.', 'success')
         return jsonify({'success': True})
