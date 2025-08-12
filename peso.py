@@ -1178,17 +1178,17 @@ def update_dtr_comment(student_id):
             first_name = student[1] if student else "Student"
             conn.commit()
         # Send SMS if mobile_no exists
-        # if mobile_no:
-        #     sms_message = (
-        #         f"""Good day, {first_name}!
-        #     This is SPES Balanga
-        #     You have a new comment from PESO regarding the your DTR.
+        if mobile_no:
+            sms_message = (
+                f"""Good day, {first_name}!
+            This is SPES Balanga
+            You have a new comment from PESO regarding the your DTR.
             
-        #     {comment}
+            {comment}
             
-        #     Thank you."""
-        #     )
-        #     send_sms(mobile_no, sms_message)
+            Thank you."""
+            )
+            send_sms(mobile_no, sms_message)
         return jsonify({'success': True})
     except Exception as e:
         conn.rollback()
