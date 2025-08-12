@@ -22,12 +22,14 @@ from register import register_bp
 from peso import peso_bp
 from student import student_bp
 from qr_scanner import qr_bp
+from reports import reports_bp
 app.register_blueprint(login_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(register_bp)
 app.register_blueprint(peso_bp)
 app.register_blueprint(student_bp)
 app.register_blueprint(qr_bp)
+app.register_blueprint(reports_bp)
 
 @app.route('/')
 def index():

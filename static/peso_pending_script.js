@@ -499,6 +499,10 @@ document.getElementById('downloadPedningCsvBtn').addEventListener('click', funct
     window.location.href = '/download_pending_student_registration_csv';
 });
 
+document.getElementById('downloadPedningXlsxBtn').addEventListener('click', function() {
+    window.location.href = '/download_pending_student_registration_xlsx';
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     fetchAndDisplayRegistrations();
     fetchPendingSummary();

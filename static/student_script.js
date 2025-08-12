@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     updatePasswordModal.hide();
-                    alert('Password updated successfully!');
+                    showActionToast('Password updated successfully!', true);
                 } else {
                     updatePasswordError.innerText = data.error || 'Update failed.';
                     updatePasswordError.style.display = 'block';
@@ -292,3 +292,13 @@ document.querySelectorAll('.toggle-password-btn').forEach(function(btn) {
             }
         });
     });
+
+
+function showActionToast(message, isSuccess) {
+    const toastEl = document.getElementById('actionToast');
+    const toastBody = document.getElementById('actionToastBody');
+    toastBody.textContent = message;
+    toastEl.classList.remove('text-bg-success', 'text-bg-danger');
+    toastEl.classList.add(isSuccess ? 'text-bg-success' : 'text-bg-danger');
+    new bootstrap.Toast(toastEl).show();
+}

@@ -560,6 +560,10 @@ document.getElementById('downloadCsvBtn').addEventListener('click', function() {
     window.location.href = '/download_student_registration_csv';
 });
 
+document.getElementById('downloadXlsxBtn').addEventListener('click', function() {
+    window.location.href = '/download_student_registration_xlsx';
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     fetchAndDisplayRegistrations();
     fetchRegistrationSummary();

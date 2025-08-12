@@ -234,6 +234,17 @@ document.getElementById('category_filter').addEventListener('change', fetchAndDi
 document.getElementById('sort_option').addEventListener('change', fetchAndDisplayDtrRecords);
 document.getElementById('search_input').addEventListener('input', fetchAndDisplayDtrRecords);
 
+// Toast function for payroll actions
+function showDtrActionToast(message, isSuccess) {
+    const toastEl = document.getElementById('dtrActionToast');
+    const toastBody = document.getElementById('dtrActionToastBody');
+    toastBody.textContent = message;
+    toastEl.classList.remove('text-bg-success', 'text-bg-danger');
+    toastEl.classList.add(isSuccess ? 'text-bg-success' : 'text-bg-danger');
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
+    toast.show();
+}
+
 let payrollStudentId = null;
 document.getElementById('moveToPayrollBtn').addEventListener('click', function() {
     payrollStudentId = this.getAttribute('data-student-id');
@@ -250,30 +261,18 @@ document.getElementById('confirmPayrollBtn').addEventListener('click', function(
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            showPayrollActionToast('Student successfully moved to Payroll!', true);
+            alert('Student successfully moved to Payroll!');
             setTimeout(() => location.reload(), 1200);
         } else {
-            showPayrollActionToast('Failed to move to Payroll: ' + (data.error || 'Unknown error'), false);
+            showDtrActionToast('Failed to move to Payroll: ' + (data.error || 'Unknown error'), false);
         }
         bootstrap.Modal.getInstance(document.getElementById('payrollConfirmModal')).hide();
     })
     .catch(err => {
-        showPayrollActionToast('Error: ' + err, false);
+        showDtrActionToast('Error: ' + err, false);
         bootstrap.Modal.getInstance(document.getElementById('payrollConfirmModal')).hide();
     });
 });
-
-// Toast function for payroll actions
-function showPayrollActionToast(message, isSuccess) {
-    const toastEl = document.getElementById('payrollActionToast');
-    const toastBody = document.getElementById('payrollActionToastBody');
-    toastBody.textContent = message;
-    toastEl.classList.remove('text-bg-success', 'text-bg-danger');
-    toastEl.classList.add(isSuccess ? 'text-bg-success' : 'text-bg-danger');
-    const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
-    toast.hide();
-    setTimeout(() => toast.show(), 100);
-}
 
 function fetchDtrSummary() {
     fetch('/dtr_summary')
@@ -501,8 +500,9 @@ document.getElementById('editDtrForm').addEventListener('submit', function(e) {
         if (data.success) {
             const studentId = document.getElementById('moveToPayrollBtn').getAttribute('data-student-id');
             refreshDtrModalTable(studentId);
+            alert('DTR updated successfully!');
         } else {
-            showPayrollActionToast('Failed to update DTR.', false);
+            showDtrActionToast('Failed to update DTR.', false);
         }
         bootstrap.Modal.getInstance(document.getElementById('editDtrModal')).hide();
     });
@@ -531,8 +531,9 @@ document.addEventListener('click', function(e) {
             .then(resp => {
                 if (resp.success) {
                     location.reload();
+                    alert('On hold status updated successfully!');
                 } else {
-                    showPayrollActionToast('Failed to update on hold status.', false);
+                    showDtrActionToast('Failed to update on hold status.', false);
                 }
             });
     }
@@ -553,7 +554,7 @@ document.addEventListener('change', function(e) {
             if (resp.success) {
                 e.target.nextElementSibling.textContent = isGood ? 'Good' : 'Needs Reupload';
             } else {
-                showPayrollActionToast('Failed to update requested docs status.', false);
+                showDtrActionToast('Failed to update requested docs status.', false);
             }
         });
     }
@@ -571,7 +572,7 @@ document.addEventListener('change', function(e) {
             if (resp.success) {
                 e.target.nextElementSibling.textContent = isGood ? 'Good' : 'Needs Reupload';
             } else {
-                showPayrollActionToast('Failed to update AR status.', false);
+                showDtrActionToast('Failed to update AR status.', false);
             }
         });
     }
@@ -589,12 +590,11 @@ document.addEventListener('click', function(e) {
         .then(res => res.json())
         .then(resp => {
             if (resp.success) {
-                showPayrollActionToast('Comment saved and SMS sent!', true);
+                alert('Comment saved and SMS sent!');
             } else {
-                showPayrollActionToast('Failed to save comment.', false);
+                showDtrActionToast('Failed to save comment.', false);
             }
         })
-        .catch(() => showPayrollActionToast('Error saving comment.', false));
+        .catch(() => showDtrActionToast('Error saving comment.', false));
     }
 });
-
