@@ -29,13 +29,13 @@
     <div class="container-fluid">
         <div class="row g3 text-center mb-2">
             <div class="col-md-4">
-                <a href="{{ url_for('admin.admin_adminAcc') }}" class="btn btn-info btn-lg w-100 border border-dark">Admin Accounts</a>
+                <a href="{{ url_for('admin.admin_adminAcc') }}" class="btn btn-lg w-100 border border-dark text-white" style="background-color: #003366;">Admin Accounts</a>
             </div>
             <div class="col-md-4">
-                <a href="{{ url_for('admin.admin_studentAcc') }}" class="btn btn-info btn-lg w-100 border border-dark">Student Accounts</a>
+                <a href="{{ url_for('admin.admin_studentAcc') }}" class="btn btn-lg w-100 border border-dark text-white" style="background-color: #003366;">Student Accounts</a>
             </div>
             <div class="col-md-4">
-                <a href="{{ url_for('admin.admin_pesoAcc') }}" class="btn btn-success btn-lg w-100 border border-dark">Peso Accounts</a>
+                <a href="{{ url_for('admin.admin_pesoAcc') }}" class="btn btn-lg w-100 border border-dark text-dark" style="background-color: #98c1d9;">PESO Accounts</a>
             </div>
         </div>
     </div>
@@ -43,7 +43,7 @@
         <div class="left_side m-1 border rounded">
           <div class="p-2 d-flex justify-content-between align-items-center">
             <div>
-              <h2 class="text-center" style="font-weight: bold;">Peso Accounts</h2>
+              <h2 class="text-center" style="font-weight: bold;">PESO Accounts</h2>
             </div>
             <div class="input-group" style="width: 400px; margin-left: auto;">
               <div class="me-1">
@@ -77,11 +77,11 @@
             </table>
           </div>
         </div>
-        <div class="right_side m-1 rounded bg-info">
+        <div class="right_side m-1 rounded" style="background-color: #98c1d9;">
             <div class="container-fluid">
                 <div class="card mt-3 shadow-sm">
-                    <div class="card-header bg-primary text-dark">
-                        <h5 class="mb-0">Peso Account Summary</h5>
+                    <div class="card-header text-white" style="background-color: #003366;">
+                        <h5 class="mb-0">PESO Account Summary</h5>
                     </div>
                     <div class="card-body text-center">
                         <h5 class="fw-bold">Total Accounts</h5>
@@ -96,7 +96,7 @@
                                 <p class="fw-bold text-danger"><span id="pesoInactive">0</span></p>
                             </div>
                             <div>
-                              <button class="btn btn-success" type="button" data-bs-toggle="modal" data-bs-target="#addSvAccModal">Add an Peso Account</button>
+                              <button class="btn btn-success" type="button" data-bs-toggle="modal" data-bs-target="#addSvAccModal">Add an PESO Account</button>
                             </div>
                         </div>
                     </div>

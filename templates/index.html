@@ -35,18 +35,18 @@
                 </li> -->
                 <li>
                   <a class="dropdown-item d-flex align-items-center gap-2 py-2"
-                    href="{{ url_for('login.peso_dashboard') if session.get('peso_logged_in') }}"
-                    data-bs-toggle="{{ '' if session.get('peso_logged_in') else 'modal' }}"
-                    data-bs-target="{{ '' if session.get('peso_logged_in') else '#peso_login' }}">
-                    <i class="bi bi-briefcase-fill text-success"></i> Peso Login
+                    href="{{ url_for('login.student_main') if session.get('student_logged_in') }}"
+                    data-bs-toggle="{{ '' if session.get('student_logged_in') else 'modal' }}"
+                    data-bs-target="{{ '' if session.get('student_logged_in') else '#student_login' }}">
+                    <i class="bi bi-mortarboard-fill text-warning"></i> STUDENT
                   </a>
                 </li>
                 <li>
                   <a class="dropdown-item d-flex align-items-center gap-2 py-2"
-                    href="{{ url_for('login.student_main') if session.get('student_logged_in') }}"
-                    data-bs-toggle="{{ '' if session.get('student_logged_in') else 'modal' }}"
-                    data-bs-target="{{ '' if session.get('student_logged_in') else '#student_login' }}">
-                    <i class="bi bi-mortarboard-fill text-warning"></i> Student Login
+                    href="{{ url_for('login.peso_dashboard') if session.get('peso_logged_in') }}"
+                    data-bs-toggle="{{ '' if session.get('peso_logged_in') else 'modal' }}"
+                    data-bs-target="{{ '' if session.get('peso_logged_in') else '#peso_login' }}">
+                    <i class="bi bi-briefcase-fill text-success"></i> PESO STAFF
                   </a>
                 </li>
               </ul>
@@ -93,8 +93,8 @@
     <div class="instruction_section">
       <div class="container-fluid" style="background: linear-gradient(to right, #003366, #003366);  width: 100%; height: 100%; padding: 50px; box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.7);">
         <div class="card shadow-sm">
-            <div class="card-header bg-info text-dark">
-                <h5 class="mb-0 text-dark fw-bold text-center">Announcement</h5>
+            <div class="card-header bg-warning text-dark">
+                <h3 class="mb-0 text-dark fw-bold text-center">Announcement</h3>
             </div>
             <div class="card-body">
                 <p>{{ general_announcement or "No announcement at this time." }}</p>
@@ -173,7 +173,7 @@
       <img class="m-0" style="height: 60px; width: 60px;" src="{{ url_for('static', filename='images/balanga_logo.png') }}" alt="Logo">
       <img class="m-0" style="height: 60px; width: 60px;" src="{{ url_for('static', filename='images/peso_balanga_logo.png') }}" alt="Logo">
       <h3 style="margin-top: 10px; margin-bottom: 18px; font-weight: bold; color: whitesmoke;">Contact</h3>
-      <p style="color: whitesmoke"><strong>📘 Facebook:</strong> <a href="https://www.facebook.com/mattangeless">SPES Balanga</a></p>
+      <p style="color: whitesmoke"><strong>📘 Facebook:</strong> <a href="https://www.facebook.com/BalangaCitySPES">Balanga City SPES</a></p>
       <p style="color: whitesmoke"><strong>✉️ Email:</strong> peso.cob@gmail.com</p>
       <p style="color: whitesmoke"><strong>📞 Phone Numbers:</strong> (047) 237-0718 / 0908-881-3004</p>
       <p style="color: whitesmoke"><strong>📍 Location:</strong> 2nd Floor Peso Balanga City (Former Balanga City Water District), St. Joseph St. Poblacion, Balanga City, Bataan</p>
@@ -305,7 +305,7 @@
     <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
       <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
-          <div class="modal-header bg-primary text-dark">
+          <div class="modal-header text-dark">
             <h1 class="modal-title fs-5" id="staticBackdropLabel">SPES Registration Form</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
@@ -349,10 +349,9 @@
                       <select class="form-select bg-white mb-3 mt-0" id="status_of_student" name="status_of_student" required="" autocomplete="off">
                         <option value=""></option>
                         <option value="REGULAR">REGULAR</option>
+                        <option value="IRREGULAR">IRREGULAR</option>
                         <option value="ALS STUDENT">ALS STUDENT</option>
                         <option value="OUT-OF-SCHOOL YOUTH">OUT-OF-SCHOOL YOUTH</option>
-                        <option value="REGULAR">REGULAR</option>
-                        <option value="IRREGULAR">IRREGULAR</option>
                         <option value="WITH OJT">WITH OJT</option>
                         <option value="WITH SUMMER CLASS">WITH SUMMER CLASS</option>
                       </select>
@@ -458,7 +457,7 @@
                   <div class="row g-3">
                     <div class="col-md-4">
                       <label class="form-label w-100 fw-bold">Barangay <i class="text-danger">*</i></label>
-                      <label class="form-label"><i><span class="text-muted">(Balanga only)</span></i></label>
+                      <label class="form-label"><i><span class="text-muted">(Balanga City only)</span></i></label>
                       <select class="form-select bg-white mb-3 mt-0" id="barangay" name="barangay" required autocomplete="off">
                         <option value=""></option>
                         <option value="BAGONG SILANG, BALANGA CITY, BATAAN">BAGONG SILANG, BALANGA CITY, BATAAN</option>

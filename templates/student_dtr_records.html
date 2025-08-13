@@ -22,6 +22,9 @@
                         <a class="nav-link" href="{{ url_for('login.peso_dashboard') }}">Dashboard</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link">|</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('peso.student_applications_archive') }}">Archive</a>
                     </li>
                 </ul>
@@ -31,19 +34,19 @@
     <div class="container-fluid">
         <div class="row row-cols-5 g-2 text-center mb-2">
             <div class="col">
-                <a href="{{ url_for('peso.peso_registration') }}" class="btn btn-info btn-lg w-100 border border-dark">Student Registrations</a>
+                <a href="{{ url_for('peso.peso_registration') }}" class="btn btn-lg text-white w-100 border border-dark" style="background-color: #003366;">Student Registrations</a>
             </div>
             <div class="col">
-                <a href="{{ url_for('peso.peso_pending_registration') }}" class="btn btn-info btn-lg w-100 border border-dark">Pending Student Registrations</a>
+                <a href="{{ url_for('peso.peso_pending_registration') }}" class="btn btn-lg w-100 border border-dark text-white" style="background-color: #003366;">Pending Student Registrations</a>
             </div>
             <div class="col">
-                <a href="{{ url_for('peso.peso_final_spes_list') }}" class="btn btn-info btn-lg w-100 border border-dark">Final SPES List</a>
+                <a href="{{ url_for('peso.peso_final_spes_list') }}" class="btn btn-lg w-100 border border-dark text-white" style="background-color: #003366;">Final SPES List</a>
             </div>
             <div class="col">
-                <a href="{{ url_for('peso.student_dtr_records') }}" class="btn btn-success btn-lg w-100 border border-dark">Finished Students DTR Records</a>
+                <a href="{{ url_for('peso.student_dtr_records') }}" class="btn btn-lg w-100 border border-dark text-dark" style="background-color: #98c1d9;">Finished Students DTR Records</a>
             </div>
             <div class="col">
-                <a href="{{ url_for('peso.student_payroll') }}" class="btn btn-info btn-lg w-100 border border-dark">Students Payroll</a>
+                <a href="{{ url_for('peso.student_payroll') }}" class="btn btn-lg w-100 border border-dark text-white" style="background-color: #003366;">Students Payroll</a>
             </div>
         </div>
     </div>
@@ -63,9 +66,9 @@
                         </div>
                     </div> -->
                     <div class="col-lg-4 col-md-8">
-                        <div class="card border border-dark shadow-sm bg-info">
+                        <div class="card border border-dark shadow-sm" style="background-color: #003366;">
                             <div class="card-body">
-                                <label for="category_filter" class="form-label text-primary fw-semibold text-dark">Filter by Category</label>
+                                <label for="category_filter" class="form-label text-primary fw-semibold text-white">Filter by Category</label>
                                 <select id="category_filter" class="form-select border-primary" aria-label="Filter by Category">
                                     <option value="All" selected>All Categories</option>
                                     <option value="SENIOR HIGH SCHOOL">SENIOR HIGH SCHOOL</option>
@@ -76,24 +79,25 @@
                         </div>
                     </div>
                     <div class="col-lg-4 col-md-8">
-                        <div class="card border border-dark shadow-sm bg-info">
+                        <div class="card border border-dark shadow-sm" style="background-color: #003366;">
                             <div class="card-body">
-                                <label for="sort_option" class="form-label text-primary fw-semibold text-dark">Sort By</label>
+                                <label for="sort_option" class="form-label text-primary fw-semibold text-white">Sort By</label>
                                 <select id="sort_option" class="form-select border-primary" aria-label="Sort by">
                                     <option value="last_name_asc" selected>Last Name (A-Z)</option>
                                     <option value="last_name_desc">Last Name (Z-A)</option>
-                                    <option value="active">Active</option>
-                                    <option value="on_hold">On Hold</option>
+                                    <option value="timestamp_asc">Timestamp (Oldest First)</option>
+                                    <option value="timestamp_desc">Timestamp (Newest First)</option>
                                 </select>
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-4 col-md-8">
-                        <div class="card border border-dark shadow-sm bg-info">
+                        <div class="card border border-dark shadow-sm" style="background-color: #003366;">
                             <div class="card-body">
-                                <label for="search_input" class="form-label text-primary fw-semibold text-dark">Search</label>
+                                <label for="search_input" class="form-label text-primary fw-semibold text-white">Search</label>
                                 <div class="input-group">
-                                    <input id="search_input" class="form-control border-primary" type="search" placeholder="Search by name" aria-label="Search">
+                                    <input id="search_input" class="form-control border-primary" type="search" placeholder="Search by name or ID" aria-label="Search">
+                                    <!-- <button class="btn btn-success" id="filterBtn" type="button"><i class="bi bi-search me-2"></i> Filter</button> -->
                                 </div>
                             </div>
                         </div>
@@ -156,10 +160,10 @@
               {% endwith %}
             </div>
           </div> -->
-        <div class="peso_right_side m-1 mt-0 rounded bg-info">
+        <div class="peso_right_side m-1 mt-0 rounded" style="background-color: #98c1d9">
             <div class="container-fluid">
                 <div class="card mt-3 shadow-sm">
-                    <div class="card-header bg-primary text-dark">
+                    <div class="card-header text-white" style="background-color: #003366;">
                         <h5 class="mb-0">DTR Summary</h5>
                     </div>
                     <div class="card-body text-center">
@@ -193,7 +197,7 @@
                     </div>
                 </div>
                 <div class="card mt-3 shadow-sm">
-                    <div class="card-header bg-primary text-dark">
+                    <div class="card-header text-white" style="background-color: #003366;">
                         <h5 class="mb-0">Recent Action Logs</h5>
                     </div>
                     <div class="card-body" style="max-height: 270px; overflow-y: auto;">

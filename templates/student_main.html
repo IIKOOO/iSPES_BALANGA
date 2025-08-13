@@ -121,8 +121,8 @@
               {% for announcement in announcements %}
               <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
                   <div class="card shadow-sm">
-                      <div class="card-header bg-info text-dark">
-                          <h5 class="mb-0 text-dark fw-bold">{{ announcement.title }}</h5>
+                      <div class="card-header" style="background-color: #003366;">
+                          <h5 class="mb-0 text-white fw-bold">{{ announcement.title }}</h5>
                       </div>
                       <div class="card-body">
                           <p>{{ announcement.content }}</p>
@@ -148,8 +148,8 @@
     <!-- Profile Section -->
     <div class="container mt-4">
       <div class="card shadow-lg border-0">
-        <div class="card-header bg-info text-dark">
-          <h5 class="mb-0 text-dark fw-bold">Welcome, {{ first_name }}</h5>
+        <div class="card-header" style="background-color: #003366;">
+          <h5 class="mb-0 text-white fw-bold">Welcome, {{ first_name }}</h5>
         </div>
         <div class="card-body">
           <div class="row mt-4">
@@ -196,10 +196,10 @@
     <div class="container mt-4">
       <div class="row text-center">
           <div class="col-md-6 mb-3 border-dark">
-              <a href="{{ url_for('student.student_registrations') }}" class="btn btn-info btn-lg w-100">Submit Requirements</a>
+              <a href="{{ url_for('student.student_registrations') }}" class="btn btn-lg w-100 text-white" style="background-color: #003366;">Submit Requirements</a>
           </div>
           <div class="col-md-6 mb-3 border-dark">
-              <a href="{{ url_for('student.student_dtr') }}" class="btn btn-success btn-lg w-100">View DTR</a>
+              <a href="{{ url_for('student.student_dtr') }}" class="btn btn-warning btn-lg w-100">View DTR</a>
           </div>
       </div>
     </div>
