@@ -190,7 +190,7 @@ function fetchAndDisplayDtrRecords() {
                     const student = allRecords.find(r => r.dtr_record_id == studentId);
                     let comment = student && student.comment_for_dtr ? student.comment_for_dtr : '';
                     let commentCard = `
-                        <div class="card mt-4">
+                        <div class="card mt-4 peso-comment-card">
                             <div class="card-header bg-info text-dark">
                                 <h5 class="mb-0 fw-bold">PESO Comment to DTR</h5>
                             </div>

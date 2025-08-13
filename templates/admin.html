@@ -56,7 +56,7 @@
                                 <div class="mb-3">
                                     <textarea class="form-control" id="general_announcement" name="general_announcement" rows="10" required>{{ general_announcement or '' }}</textarea>
                                 </div>
-                                <button type="submit" class="btn btn-primary w-100">Post Announcement</button>
+                                <button type="submit" class="btn btn-primary w-100 text-dark">Post Announcement</button>
                             </form>
                         </div>
                     </div>
@@ -71,7 +71,7 @@
                                 <div class="mb-3">
                                     <textarea class="form-control" id="student_announcement" name="student_announcement" rows="10" required>{{ student_announcement or '' }}</textarea>
                                 </div>
-                                <button type="submit" class="btn btn-primary w-100">Post Announcement</button>
+                                <button type="submit" class="btn btn-primary w-100 text-dark">Post Announcement</button>
                             </form>
                         </div>
                     </div>
@@ -89,7 +89,9 @@
                                     <label for="ar_template" class="form-label fw-bold">Upload DOCX File:</label>
                                     <input type="file" class="form-control" id="ar_template" name="ar_template" accept=".docx" required>
                                 </div>
-                                <button type="submit" class="btn btn-primary w-100">Upload Template</button>
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary w-25 text-dark">Upload Template</button>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -126,7 +128,7 @@
                                         <div class="card text-center shadow-sm">
                                             <div class="card-body">
                                                 <h6 class="card-title">Iskolar ng Bataan</h6>
-                                                <button id="toggleIskolar" class="btn btn-outline-primary w-100">Loading...</button>
+                                                <button id="toggleIskolar" class="btn btn-outline-primary w-100 text-dark">Loading...</button>
                                             </div>
                                         </div>
                                     </div>

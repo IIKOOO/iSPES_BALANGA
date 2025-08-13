@@ -350,13 +350,7 @@ def update_peso_comment(student_id):
             # Send SMS if mobile_no exists
             if mobile_no:
                 sms_message = (
-                    f"""Good day, {first_name}!
-                This is SPES Balanga
-                You have a new comment from PESO regarding the status of your registration.
-                
-                {comment}
-                
-                Thank you."""
+                    f"New comment from PESO regarding the status of your registration. {comment}"
                 )
                 send_sms(mobile_no, sms_message)
 
@@ -436,14 +430,7 @@ def move_to_final_list(student_id):
         # Send SMS notification if mobile_no exists
         if mobile_no:
             sms_message = (
-                f"""Good day, {first_name}!
-            This is SPES Balanga.
-
-            Congratulations! You are now qualified as a SPES beneficiary.
-
-            Please wait for further announcements regarding your next steps.
-
-            Thank you."""
+                f"Hello {first_name}, you are now qualified as a SPES beneficiary. Please await further instructions. - SPES Balanga"
             )
             send_sms(mobile_no, sms_message)
         return jsonify({'success': True})
@@ -480,14 +467,7 @@ def move_to_final_list_from_pending(student_id):
         # Send SMS notification if mobile_no exists
         if mobile_no:
             sms_message = (
-                f"""Good day, {first_name}!
-            This is SPES Balanga.
-
-            Congratulations! You are now qualified as a SPES beneficiary.
-
-            Please wait for further announcements regarding your next steps.
-
-            Thank you."""
+                f"Hello {first_name}, you are now qualified as a SPES beneficiary. Please wait for further instructions. - SPES Balanga"
             )
             send_sms(mobile_no, sms_message)
         return jsonify({'success': True})
@@ -758,11 +738,15 @@ def get_student_dtr(student_id):
 @peso_bp.route('/get_accomplishment_report/<int:student_id>')
 def get_accomplishment_report(student_id):
     with conn.cursor() as cur:
-        cur.execute("SELECT accomplishment_report FROM student_dtr_records WHERE dtr_record_id = %s", (student_id,))
+        cur.execute("SELECT accomplishment_report, ar_isgood FROM student_dtr_records WHERE dtr_record_id = %s", (student_id,))
         row = cur.fetchone()
         if not row or not row[0]:
             return jsonify({'has_report': False})
-        return jsonify({'has_report': True, 'filetype': 'pdf'})
+        return jsonify({
+            'has_report': True,
+            'filetype': 'pdf',
+            'ar_isgood': bool(row[1]) if row[1] is not None else False
+        })
 
 @peso_bp.route('/download_accomplishment_report/<int:student_id>')
 def download_accomplishment_report(student_id):
@@ -808,12 +792,7 @@ def move_to_payroll(student_id):
         # Send SMS notification if mobile_no exists
         if mobile_no:
             sms_message = (
-                f"""Good day, {first_name}!
-            This is SPES Balanga.
-            
-            You have been moved to payroll. Please wait for any announcement regarding the payroll in announcement tabs."
-
-            Thank you."""
+                f"Hello {first_name}, you have been moved to payroll. Please check the announcement tab for updates. Thank you. - SPES Balanga"
             )
             send_sms(mobile_no, sms_message)
         flash('Student successfully moved to Payroll!', 'success')
@@ -1180,13 +1159,7 @@ def update_dtr_comment(student_id):
         # Send SMS if mobile_no exists
         if mobile_no:
             sms_message = (
-                f"""Good day, {first_name}!
-            This is SPES Balanga
-            You have a new comment from PESO regarding the your DTR.
-            
-            {comment}
-            
-            Thank you."""
+                f"New comment from PESO regarding Your DTR. {comment}"
             )
             send_sms(mobile_no, sms_message)
         return jsonify({'success': True})

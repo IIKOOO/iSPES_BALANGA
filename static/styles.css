@@ -92,6 +92,23 @@ button {
     color: black !important;
 }
 
+.offcanvas-list:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s;
+}
+
+.btn:hover:not(.update-profile) {
+    transform: scale(1.05);
+    transition: transform 0.2s;
+}
+
+.update-profile:hover {
+    background-color: #003366 !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
 .main_section {
     /*background-image: url('/static/images/main.jpg');*/
     display: flex;
@@ -134,6 +151,8 @@ button {
         margin: 8mm;
     }
     .accomplishment-report-card,
+    .requested-docs-card,
+    .peso-comment-card,
     .card:empty, .card-body:empty {
         display: none !important;
     }

@@ -19,17 +19,50 @@
         </button>
         <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
           <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasNavbarLabel">{{ first_name}} {{ last_name}}</h5>
+            <h5 class="offcanvas-title text-dark fw-bold" id="offcanvasNavbarLabel">Student Menu</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
           </div>
-          <div class="offcanvas-body">
+          <div class="offcanvas-body" style="background-color: beige;">
             <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-              <li class="list-group list-group-flush">
-                <li class="list-group-item fw-bold fs-4 text-center"><a class="nav-link p-3" href="{{ url_for ('login.student_main')}}">Profile</a></li>
-                <li class="list-group-item fw-bold fs-4 text-center"><a class="nav-link p-3" href="{{ url_for ('student.student_registrations')}}">Submit Requirements</a></li>
-                <li class="list-group-item fw-bold fs-4 text-center"><a class="nav-link p-3" href="{{ url_for ('student.student_dtr')}}">DTR</a></li>
-                <li class="list-group-item fw-bold fs-4 text-center"><a class="nav-link p-3" href="#" id="updatePasswordBtn">Update Password</a></li>
-                <li class="list-group-item fw-bold fs-4 text-center"><a class="nav-link p-3"  id="logoutBtn">Log-out</a></li>
+              <li class="mb-3 offcanvas-list">
+                <a class="d-flex align-items-center rounded-4 px-3 py-3 w-100"
+                  style="background:#003366; color:#fff; text-decoration:none; font-size:1.2rem;"
+                  href="{{ url_for('login.student_main') }}">
+                  <i class="bi bi-person-circle me-3 fs-3"></i>
+                  Profile
+                </a>
+              </li>
+              <li class="mb-3 offcanvas-list">
+                <a class="d-flex align-items-center rounded-4 px-3 py-3 w-100"
+                  style="background:#003366; color:#fff; text-decoration:none; font-size:1.2rem;"
+                  href="{{ url_for('student.student_registrations') }}">
+                  <i class="bi bi-file-earmark-text me-3 fs-3"></i>
+                  Submit Requirements
+                </a>
+              </li>
+              <li class="mb-3 offcanvas-list">
+                <a class="d-flex align-items-center rounded-4 px-3 py-3 w-100"
+                  style="background:#003366; color:#fff; text-decoration:none; font-size:1.2rem;"
+                  href="{{ url_for('student.student_dtr') }}">
+                  <i class="bi bi-clock-history me-3 fs-3"></i>
+                  DTR
+                </a>
+              </li>
+              <li class="mb-3 offcanvas-list">
+                <a class="d-flex align-items-center rounded-4 px-3 py-3 w-100"
+                  style="background:#003366; color:#fff; text-decoration:none; font-size:1.2rem;"
+                  href="#" id="updatePasswordBtn">
+                  <i class="bi bi-key me-3 fs-3"></i>
+                  Update Password
+                </a>
+              </li>
+              <li class="mb-3 offcanvas-list">
+                <a class="d-flex align-items-center rounded-4 px-3 py-3 w-100"
+                  style="background:#003366; color:#fff; text-decoration:none; font-size:1.2rem;"
+                  href="#" id="logoutBtn">
+                  <i class="bi bi-box-arrow-right me-3 fs-3"></i>
+                  Log-out
+                </a>
               </li>
             </ul>
           </div>
