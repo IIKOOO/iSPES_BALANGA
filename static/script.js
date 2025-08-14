@@ -313,3 +313,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+document.querySelectorAll('.toggle-password-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const targetId = btn.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            if (input) {
+                input.type = input.type === 'password' ? 'text' : 'password';
+                btn.innerHTML = input.type === 'password'
+                    ? '<i class="bi bi-eye"></i>'
+                    : '<i class="bi bi-eye-slash"></i>';
+            }
+        });
+    });

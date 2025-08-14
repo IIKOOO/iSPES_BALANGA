@@ -10,316 +10,7 @@ import os
 import csv
 import io
 
-reports_bp = Blueprint('reports', __name__)
-
-@reports_bp.route('/download_student_registration_xlsx')
-def download_student_registration_xlsx():
-    # Query student data
-    with conn.cursor() as cur:
-        cur.execute("""
-            SELECT
-                s.student_id, s.last_name, s.first_name, s.middle_name, s.suffix, s.birth_date,
-                s.sex, s.street_add, s.barangay, s.mobile_no, e.educational_attainment, s.iskolar_type
-            FROM student_application s
-            LEFT JOIN student_application_education e ON s.student_id = e.student_application_id
-            WHERE s.is_pending = FALSE AND s.is_approved = FALSE
-            ORDER BY s.last_name, s.first_name
-        """)
-        rows = cur.fetchall()
-
-    # Calculate male, female, total
-    male_count = sum(1 for r in rows if str(r[6]).strip().lower() == 'male')
-    female_count = sum(1 for r in rows if str(r[6]).strip().lower() == 'female')
-    total_count = len(rows)
-
-    
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "SPES Report"
-
-    # Header: merge A1:I12
-    ws.merge_cells('A1:I12')
-    header_text = (
-        "DEPARTMENT OF LABOR AND EMPLOYMENT\n"
-        "REGION OFFICE NO. III\n"
-        "PUBLIC EMPLOYMENT SERVICE OFFICE\n"
-        "CITY GOVERNMENT OF BALANGA\n"
-        "SPECIAL PROGRAM FOR EMPLOYMENT OF STUDENTS (SPES)\n"
-        "(RA 7323, as amended by RAs 9547 and 10917)"
-    )
-    ws['A1'] = header_text
-    ws['A1'].alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
-    # Set font sizes for each line
-    for i, (text, size) in enumerate([
-        ("DEPARTMENT OF LABOR AND EMPLOYMENT", 16),
-        ("REGION OFFICE NO. III", 12),
-        ("PUBLIC EMPLOYMENT SERVICE OFFICE", 12),
-        ("CITY GOVERNMENT OF BALANGA", 16),
-        ("SPECIAL PROGRAM FOR EMPLOYMENT OF STUDENTS (SPES)", 16),
-        ("(RA 7323, as amended by RAs 9547 and 10917)", 12)
-    ]):
-        ws['A1'].font = Font(size=16, bold=True)  # Set default font for merged cell
-
-    # Insert logos
-    logo_left = os.path.join('static', 'images', 'peso_balanga_logo.png')
-    logo_right = os.path.join('static', 'images', 'spes_logo.png')
-    if os.path.exists(logo_left):
-        img_left = XLImage(logo_left)
-        img_left.height = 100
-        img_left.width = 100
-        ws.add_image(img_left, 'A4')
-    if os.path.exists(logo_right):
-        img_right = XLImage(logo_right)
-        img_right.height = 100
-        img_right.width = 100
-        ws.add_image(img_right, 'I4')
-
-    # Summary rows: B13 to B15
-    ws['B13'] = "Total Students:"
-    ws['C13'] = total_count
-    ws['B14'] = "Male:"
-    ws['C14'] = male_count
-    ws['B15'] = "Female:"
-    ws['C15'] = female_count
-    for cell in ['B13', 'B14', 'B15']:
-        ws[cell].font = Font(bold=True)
-        ws[cell].alignment = Alignment(horizontal='right')
-
-    # Table header at row 17
-    header_row = 17
-    headers = [
-        "No.", "SPES BENEFICIARY", "Student ID/SPES ID", "AGE", "SEX",
-        "ADDRESS", "CONTACT NO.", "EDUCATIONAL LEVEL", "ISKOLAR TYPE"
-    ]
-    for col_num, header in enumerate(headers, 1):
-        cell = ws.cell(row=header_row, column=col_num, value=header)
-        cell.font = Font(bold=True, color="FFFFFF")
-        cell.fill = PatternFill("solid", fgColor="808080")
-        cell.alignment = Alignment(horizontal='center', vertical='center')
-        # Borders
-        thin = Side(border_style="thin", color="000000")
-        cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
-
-    # Write student rows
-    for idx, row in enumerate(rows, 1):
-        # Full name: last_name, first_name (suffix), middle_name
-        last_name = row[1] or ""
-        first_name = row[2] or ""
-        suffix = row[4] or ""
-        middle_name = row[3] or ""
-        full_name = f"{last_name}, {first_name}"
-        if suffix:
-            full_name += f" {suffix}"
-        if middle_name:
-            full_name += f" {middle_name}"
-
-        # Age calculation
-        birth_date = row[5]
-        age = ""
-        if isinstance(birth_date, (datetime, date)):
-            today = date.today()
-            age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-
-        # Address
-        street_add = row[7] or ""
-        barangay = row[8] or ""
-        address = f"{street_add}, {barangay}".strip(", ")
-
-        # Educational Level
-        educational_attainment = row[10] or ""
-
-        # Iskolar Type
-        iskolar_type = row[11] or ""
-
-        # Table row
-        table_row = [
-            idx,
-            full_name,
-            row[0],  # student_id
-            age,
-            row[6],  # sex
-            address,
-            row[9],  # mobile_no
-            educational_attainment,
-            iskolar_type
-        ]
-        for col_num, value in enumerate(table_row, 1):
-            cell = ws.cell(row=header_row + idx, column=col_num, value=value)
-            # Borders for table
-            thin = Side(border_style="thin", color="000000")
-            cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
-            # Stretch columns for beneficiary and address
-            if col_num in [2, 6]:
-                ws.column_dimensions[get_column_letter(col_num)].width = 25
-            else:
-                ws.column_dimensions[get_column_letter(col_num)].width = 15
-
-    # Save to BytesIO and send as response
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-    return send_file(
-        output,
-        download_name="spes_report.xlsx",
-        as_attachment=True,
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )    
-    
-@reports_bp.route('/download_pending_student_registration_xlsx')
-def download_pending_student_registration_xlsx():
-    # Query student data
-    with conn.cursor() as cur:
-        cur.execute("""
-            SELECT
-                s.student_id, s.last_name, s.first_name, s.middle_name, s.suffix, s.birth_date,
-                s.sex, s.street_add, s.barangay, s.mobile_no, e.educational_attainment, s.iskolar_type
-            FROM student_application s
-            LEFT JOIN student_application_education e ON s.student_id = e.student_application_id
-            WHERE s.is_pending = TRUE AND s.is_approved = FALSE
-            ORDER BY s.last_name, s.first_name
-        """)
-        rows = cur.fetchall()
-
-    # Calculate male, female, total
-    male_count = sum(1 for r in rows if str(r[6]).strip().lower() == 'male')
-    female_count = sum(1 for r in rows if str(r[6]).strip().lower() == 'female')
-    total_count = len(rows)
-
-    
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "SPES Report"
-
-    # Header: merge A1:I12
-    ws.merge_cells('A1:I12')
-    header_text = (
-        "DEPARTMENT OF LABOR AND EMPLOYMENT\n"
-        "REGION OFFICE NO. III\n"
-        "PUBLIC EMPLOYMENT SERVICE OFFICE\n"
-        "CITY GOVERNMENT OF BALANGA\n"
-        "SPECIAL PROGRAM FOR EMPLOYMENT OF STUDENTS (SPES)\n"
-        "(RA 7323, as amended by RAs 9547 and 10917)"
-    )
-    ws['A1'] = header_text
-    ws['A1'].alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
-    # Set font sizes for each line
-    for i, (text, size) in enumerate([
-        ("DEPARTMENT OF LABOR AND EMPLOYMENT", 16),
-        ("REGION OFFICE NO. III", 12),
-        ("PUBLIC EMPLOYMENT SERVICE OFFICE", 12),
-        ("CITY GOVERNMENT OF BALANGA", 16),
-        ("SPECIAL PROGRAM FOR EMPLOYMENT OF STUDENTS (SPES)", 16),
-        ("(RA 7323, as amended by RAs 9547 and 10917)", 12)
-    ]):
-        ws['A1'].font = Font(size=16, bold=True)  # Set default font for merged cell
-
-    # Insert logos
-    logo_left = os.path.join('static', 'images', 'peso_balanga_logo.png')
-    logo_right = os.path.join('static', 'images', 'spes_logo.png')
-    if os.path.exists(logo_left):
-        img_left = XLImage(logo_left)
-        img_left.height = 100
-        img_left.width = 100
-        ws.add_image(img_left, 'A4')
-    if os.path.exists(logo_right):
-        img_right = XLImage(logo_right)
-        img_right.height = 100
-        img_right.width = 100
-        ws.add_image(img_right, 'I4')
-
-    # Summary rows: B13 to B15
-    ws['B13'] = "Total Students:"
-    ws['C13'] = total_count
-    ws['B14'] = "Male:"
-    ws['C14'] = male_count
-    ws['B15'] = "Female:"
-    ws['C15'] = female_count
-    for cell in ['B13', 'B14', 'B15']:
-        ws[cell].font = Font(bold=True)
-        ws[cell].alignment = Alignment(horizontal='right')
-
-    # Table header at row 17
-    header_row = 17
-    headers = [
-        "No.", "SPES BENEFICIARY", "Student ID/SPES ID", "AGE", "SEX",
-        "ADDRESS", "CONTACT NO.", "EDUCATIONAL LEVEL", "ISKOLAR TYPE"
-    ]
-    for col_num, header in enumerate(headers, 1):
-        cell = ws.cell(row=header_row, column=col_num, value=header)
-        cell.font = Font(bold=True, color="FFFFFF")
-        cell.fill = PatternFill("solid", fgColor="808080")
-        cell.alignment = Alignment(horizontal='center', vertical='center')
-        # Borders
-        thin = Side(border_style="thin", color="000000")
-        cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
-
-    # Write student rows
-    for idx, row in enumerate(rows, 1):
-        # Full name: last_name, first_name (suffix), middle_name
-        last_name = row[1] or ""
-        first_name = row[2] or ""
-        suffix = row[4] or ""
-        middle_name = row[3] or ""
-        full_name = f"{last_name}, {first_name}"
-        if suffix:
-            full_name += f" {suffix}"
-        if middle_name:
-            full_name += f" {middle_name}"
-
-        # Age calculation
-        birth_date = row[5]
-        age = ""
-        if isinstance(birth_date, (datetime, date)):
-            today = date.today()
-            age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-
-        # Address
-        street_add = row[7] or ""
-        barangay = row[8] or ""
-        address = f"{street_add}, {barangay}".strip(", ")
-
-        # Educational Level
-        educational_attainment = row[10] or ""
-
-        # Iskolar Type
-        iskolar_type = row[11] or ""
-
-        # Table row
-        table_row = [
-            idx,
-            full_name,
-            row[0],  # student_id
-            age,
-            row[6],  # sex
-            address,
-            row[9],  # mobile_no
-            educational_attainment,
-            iskolar_type
-        ]
-        for col_num, value in enumerate(table_row, 1):
-            cell = ws.cell(row=header_row + idx, column=col_num, value=value)
-            # Borders for table
-            thin = Side(border_style="thin", color="000000")
-            cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
-            # Stretch columns for beneficiary and address
-            if col_num in [2, 6]:
-                ws.column_dimensions[get_column_letter(col_num)].width = 25
-            else:
-                ws.column_dimensions[get_column_letter(col_num)].width = 15
-
-    # Save to BytesIO and send as response
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-    return send_file(
-        output,
-        download_name="spes_report.xlsx",
-        as_attachment=True,
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )    
-    
+reports_bp = Blueprint('reports', __name__)    
     
 @reports_bp.route('/download_final_spes_list_xlsx')
 def download_final_spes_list_xlsx():
@@ -341,8 +32,6 @@ def download_final_spes_list_xlsx():
     female_count = sum(1 for r in rows if str(r[6]).strip().lower() == 'female')
     total_count = len(rows)
 
-    
-
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "SPES Report"
@@ -383,17 +72,19 @@ def download_final_spes_list_xlsx():
         img_right.height = 100
         img_right.width = 100
         ws.add_image(img_right, 'I4')
+        
+    ws.merge_cells('B13:H15')
+    ws['B13'] = "FINAL SPES LIST REPORT"
+    ws['B13'].font = Font(size=20, bold=True)
+    ws['B13'].alignment = Alignment(horizontal='center', vertical='center')    
 
     # Summary rows: B13 to B15
-    ws['B13'] = "Total Students:"
-    ws['C13'] = total_count
-    ws['B14'] = "Male:"
-    ws['C14'] = male_count
-    ws['B15'] = "Female:"
-    ws['C15'] = female_count
-    for cell in ['B13', 'B14', 'B15']:
+    ws['G16'] = f"Total = {total_count}"
+    ws['H16'] = f"Male = {male_count}"
+    ws['I16'] = f"Female = {female_count}"
+    for cell in ['G16', 'H16', 'I16']:
         ws[cell].font = Font(bold=True)
-        ws[cell].alignment = Alignment(horizontal='right')
+        ws[cell].alignment = Alignment(horizontal='center', vertical='center')
 
     # Table header at row 17
     header_row = 17
@@ -470,11 +161,200 @@ def download_final_spes_list_xlsx():
     output.seek(0)
     return send_file(
         output,
-        download_name="spes_report.xlsx",
+        download_name="final_spes_list_report.xlsx",
         as_attachment=True,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )    
     
+@reports_bp.route('/download_student_payroll_xlsx')
+def download_student_payroll_xlsx():
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT
+                dtr_record_id, last_name, first_name, middle_name, suffix, email, student_category, mobile_no, birth_date,
+                total_worked_hours, starting_date, end_date, is_paid
+            FROM student_dtr_records
+            WHERE for_payroll = TRUE
+            ORDER BY last_name, first_name
+        """)
+        rows = cur.fetchall()
+
+    # Prepare student_id list for batch query
+    student_ids = [str(r[0]) for r in rows]
+    student_info = {}
+    if student_ids:
+        ids_str = ','.join(student_ids)
+        # Try to get from student_application first, then archive for missing
+        with conn.cursor() as cur:
+            cur.execute(f"""
+                SELECT student_id, sex, barangay, street_add
+                FROM student_application
+                WHERE student_id IN ({ids_str})
+            """)
+            for sid, sex, barangay, street_add in cur.fetchall():
+                student_info[sid] = {'sex': sex, 'barangay': barangay, 'street_add': street_add}
+            # Find missing
+            missing_ids = [sid for sid in student_ids if int(sid) not in student_info]
+            if missing_ids:
+                ids_str2 = ','.join(missing_ids)
+                cur.execute(f"""
+                    SELECT student_id, sex, barangay, street_add
+                    FROM student_application_archive
+                    WHERE student_id IN ({ids_str2})
+                """)
+                for sid, sex, barangay, street_add in cur.fetchall():
+                    student_info[int(sid)] = {'sex': sex, 'barangay': barangay, 'street_add': street_add}
+
+    paid_count = sum(1 for r in rows if r[12])
+    unpaid_count = sum(1 for r in rows if not r[12])
+    total_count = len(rows)
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Student Payroll Report"
+
+    # Header: merge A1:K12
+    ws.merge_cells('A1:K12')
+    header_text = (
+        "DEPARTMENT OF LABOR AND EMPLOYMENT\n"
+        "REGION OFFICE NO. III\n"
+        "PUBLIC EMPLOYMENT SERVICE OFFICE\n"
+        "CITY GOVERNMENT OF BALANGA\n"
+        "STUDENT PAYROLL REPORT\n"
+        "(RA 7323, as amended by RAs 9547 and 10917)"
+    )
+    ws['A1'] = header_text
+    ws['A1'].alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    ws['A1'].font = Font(size=16, bold=True)
+
+    # Insert logos
+    logo_left = os.path.join('static', 'images', 'peso_balanga_logo.png')
+    logo_right = os.path.join('static', 'images', 'spes_logo.png')
+    if os.path.exists(logo_left):
+        img_left = XLImage(logo_left)
+        img_left.height = 100
+        img_left.width = 100
+        ws.add_image(img_left, 'A4')
+    if os.path.exists(logo_right):
+        img_right = XLImage(logo_right)
+        img_right.height = 100
+        img_right.width = 100
+        ws.add_image(img_right, 'K4')
+
+    # Merge B13:J15 and add centered "STUDENT PAYROLL REPORT"
+    ws.merge_cells('B13:J15')
+    ws['B13'] = "STUDENT PAYROLL REPORT"
+    ws['B13'].font = Font(size=20, bold=True)
+    ws['B13'].alignment = Alignment(horizontal='center', vertical='center')
+
+    # Summary in I16, J16, K16
+    ws['I16'] = f"Total = {total_count}"
+    ws['J16'] = f"Paid = {paid_count}"
+    ws['K16'] = f"Unpaid = {unpaid_count}"
+    for cell in ['I16', 'J16', 'K16']:
+        ws[cell].font = Font(bold=True)
+        ws[cell].alignment = Alignment(horizontal='center', vertical='center')
+
+    # Table header at row 17
+    header_row = 17
+    headers = [
+        "No.", "NAME", "Student ID", "AGE", "SEX",
+        "ADDRESS", "TOTAL WORK HOURS", "WORK SPAN", "CONTACT NO.", "PAYROLL STATUS", "ISKOLAR TYPE"
+    ]
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=header_row, column=col_num, value=header)
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor="808080")
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+        thin = Side(border_style="thin", color="000000")
+        cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+        # Expand WORK SPAN column
+        if col_num == 8:
+            ws.column_dimensions[get_column_letter(col_num)].width = 28
+        elif col_num in [2, 6]:
+            ws.column_dimensions[get_column_letter(col_num)].width = 25
+        else:
+            ws.column_dimensions[get_column_letter(col_num)].width = 15
+
+    # Write student rows
+    for idx, row in enumerate(rows, 1):
+        student_id = row[0]
+        last_name = row[1] or ""
+        first_name = row[2] or ""
+        middle_name = row[3] or ""
+        suffix = row[4] or ""
+        full_name = f"{last_name}, {first_name}"
+        if suffix:
+            full_name += f" {suffix}"
+        if middle_name:
+            full_name += f" {middle_name}"
+
+        # Age calculation
+        birth_date = row[8]
+        age = ""
+        if isinstance(birth_date, (datetime, date)):
+            today = date.today()
+            age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+
+        # Sex and Address from student_application or archive
+        info = student_info.get(student_id, {})
+        sex = info.get('sex', '')
+        barangay = info.get('barangay', '')
+        street_add = info.get('street_add', '')
+        address = f"{street_add}, {barangay}".strip(", ")
+
+        # Total Work Hours
+        total_worked_hours = row[9] or ""
+
+        # Work Span
+        start = row[10]
+        end = row[11]
+        work_span = ""
+        if start and end:
+            try:
+                start_str = start.strftime('%Y-%m-%d')
+                end_str = end.strftime('%Y-%m-%d')
+                work_span = f"{start_str} - {end_str}"
+            except Exception:
+                work_span = f"{start} - {end}"
+
+        # Contact No.
+        contact_no = row[7] or ""
+
+        # Payroll Status
+        payroll_status = "Paid" if row[12] else "Unpaid"
+
+        # Iskolar Type
+        iskolar_type = row[6] or ""
+
+        table_row = [
+            idx,
+            full_name,
+            student_id,
+            age,
+            sex,
+            address,
+            total_worked_hours,
+            work_span,
+            contact_no,
+            payroll_status,
+            iskolar_type
+        ]
+        for col_num, value in enumerate(table_row, 1):
+            cell = ws.cell(row=header_row + idx, column=col_num, value=value)
+            thin = Side(border_style="thin", color="000000")
+            cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+
+    # Save to BytesIO and send as response
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(
+        output,
+        download_name="student_payroll_report.xlsx",
+        as_attachment=True,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
     
 @reports_bp.route('/download_student_registration_csv')
 def download_student_registration_csv():

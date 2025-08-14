@@ -151,7 +151,7 @@
                         <div class="col-md-12">
                           <label for="password" class="form-label fw-bold">Password</label>
                           <div class="input-group">
-                            <input type="password" class="form-control" id="admin_password" name="admin_password">
+                            <input type="password" class="form-control" id="admin_password" name="admin_password" required minlength="8">
                             <button type="button" class="btn btn-outline-secondary rounded-end-2" id="toggleAdminPassword"><i class="bi bi-eye"></i></button>
                             <label class="form-label w-100"><span class="text-muted">If left empty, a default password (00000) will be generated.</span></label>
                           </div>
@@ -226,7 +226,7 @@
                     <div class="col-md-12">
                         <label for="update_admin_password" class="form-label fw-bold">New Password (leave blank to keep current)</label>
                         <div class="input-group">
-                          <input type="password" class="form-control" id="update_admin_password" name="password" required minlength="8">
+                          <input type="password" class="form-control" id="update_admin_password" name="password" required minlength="8"> 
                           <button type="button" class="btn btn-outline-secondary" id="toggleUpdateAdminPassword"><i class="bi bi-eye"></i></button>
                         </div>
                     </div>

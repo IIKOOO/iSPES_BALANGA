@@ -158,7 +158,7 @@
                           <h5 class="mb-0 text-white fw-bold">{{ announcement.title }}</h5>
                       </div>
                       <div class="card-body">
-                          <p>{{ announcement.content }}</p>
+                          <div>{{ announcement.content|safe }}</div>
                           <!-- {% if announcement.date_posted %}
                           <small class="text-muted">Posted on: {{ announcement.date_posted }}</small>
                           {% endif %} -->

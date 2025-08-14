@@ -59,7 +59,7 @@
                             </li>
                             <li class="mb-3 offcanvas-list">
                                 <a class="d-flex align-items-center rounded-4 px-3 py-3 w-100"
-                                    style="background:#003366; color:#fff; text-decoration:none; font-size:1.2rem;"
+                                    style="background:#BC4A3C; color:#fff; text-decoration:none; font-size:1.2rem;"
                                     href="#" id="logoutBtn">
                                     <i class="bi bi-box-arrow-right me-3 fs-3"></i>
                                     Log-out
@@ -70,7 +70,25 @@
                 </div>
             </div>
         </nav>
-        <!-- Authentication Modal -->
+        <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                <div class="modal-header bg-danger text-dark">
+                    <h5 class="modal-title" id="logoutModalLabel"><i class="bi bi-box-arrow-right"></i> Confirm Logout</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to log out?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <a href="{{ url_for('login.logout_student') }}" class="btn btn-danger">Log-out</a>
+                </div>
+                </div>
+            </div>
+        </div>
+        
+    <!-- Authentication Modal -->
     <div class="modal fade" id="authPasswordModal" tabindex="-1" aria-labelledby="authPasswordModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">

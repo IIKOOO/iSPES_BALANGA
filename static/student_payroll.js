@@ -337,6 +337,10 @@ document.getElementById('downloadStudentPayrollCsvBtn').addEventListener('click'
     window.location.href = '/download_student_payroll_csv';
 });
 
+document.getElementById('downloadStudentPayrollXlsxBtn').addEventListener('click', function() {
+    window.location.href = 'download_student_payroll_xlsx';
+});
+
 document.addEventListener('DOMContentLoaded', fetchPayrollSummary, fetchActionLogs());
 
 

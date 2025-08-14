@@ -152,7 +152,7 @@
                         <div class="col-md-12">
                           <label for="password" class="form-label fw-bold">Password</label>
                           <div class="input-group">
-                            <input type="password" class="form-control" id="password" name="password">
+                            <input type="password" class="form-control" id="password" name="password" required minlength="8">
                             <button type="button" class="btn btn-outline-secondary rounded-end-2" id="togglePesoPassword"><i class="bi bi-eye"></i></button>
                             <label class="form-label w-100"><span class="text-muted">If left empty, a default password (00000) will be generated.</span></label>
                           </div>
@@ -227,7 +227,7 @@
                   <div class="col-md-12">
                       <label for="update_password" class="form-label fw-bold">New Password (leave blank to keep current)</label>
                       <div class="input-group">
-                        <input type="password" class="form-control" id="update_password" name="password">
+                        <input type="password" class="form-control" id="update_password" name="password" required minlength="8">
                         <button type="button" class="btn btn-outline-secondary" id="toggleUpdatePesoPassword"><i class="bi bi-eye"></i></button>
                       </div>
                   </div>
