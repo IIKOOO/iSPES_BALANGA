@@ -43,11 +43,15 @@ def admin_dashboard():
         announcement = cur.fetchone()
     general_announcement = announcement[0] if announcement else ''
     student_announcement = announcement[1] if announcement else ''
+    admin_name = f"{session.get('admin_first_name', '')}"
+    role = f"{session.get('admin_role', '')}"
     return render_template('admin.html',
         general_announcement=general_announcement,
-        student_announcement=student_announcement
+        student_announcement=student_announcement,
+        admin_name=admin_name,
+        role=role
     )
-
+    
 @login_bp.route('/peso')
 @nocache
 @require_scanner_unlocked
@@ -152,17 +156,20 @@ def login_admin():
             cur.close()
 
             if admin and check_password_hash(admin[7], password):  # admin[7] is password column
-                session['admin_logged_in'] = True
-                session['admin_id'] = admin[0] 
-                session['admin_last_name'] = admin[1]
-                session['admin_first_name'] = admin[2]
-                session['admin_birth_date'] = admin[3]
-                session['admin_sex'] = admin[4]
-                session['admin_role'] = admin[5]
-                session['admin_username'] = admin[6]
-                session['admin_email'] = admin[8]
-                session['admin_mobile_no'] = admin[9]
-                return redirect(url_for('login.admin_dashboard'))
+                if admin[10]:  # assuming admin[10] is is_active (adjust index if needed)
+                    session['admin_logged_in'] = True
+                    session['admin_id'] = admin[0] 
+                    session['admin_last_name'] = admin[1]
+                    session['admin_first_name'] = admin[2]
+                    session['admin_birth_date'] = admin[3]
+                    session['admin_sex'] = admin[4]
+                    session['admin_role'] = admin[5]
+                    session['admin_username'] = admin[6]
+                    session['admin_email'] = admin[8]
+                    session['admin_mobile_no'] = admin[9]
+                    return redirect(url_for('login.admin_dashboard'))
+                else:
+                    error_message = "Your account is disabled temporarily."
             else:
                 error_message = "The username or password you entered is incorrect. Please check and try again."
         except Exception as e:

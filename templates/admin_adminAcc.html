@@ -20,7 +20,7 @@
           <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav">
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="{{ url_for('login.login_admin') }}">Admin Dashboard</a>
+                <a class="nav-link active" aria-current="page" href="{{ url_for('login.login_admin') }}">{{ role }} {{ admin_name }} Dashboard</a>
               </li>
             </ul>
           </div>
@@ -176,7 +176,7 @@
           </div>
         </div>
 
-        <!-- Modal for updating a peso account -->
+        <!-- Modal for updating a admin account -->
       <div class="modal fade" id="updateAdminModal" tabindex="-1" aria-labelledby="updateAdminModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
           <div class="modal-content">
@@ -226,7 +226,7 @@
                     <div class="col-md-12">
                         <label for="update_admin_password" class="form-label fw-bold">New Password (leave blank to keep current)</label>
                         <div class="input-group">
-                          <input type="password" class="form-control" id="update_admin_password" name="password">
+                          <input type="password" class="form-control" id="update_admin_password" name="password" required minlength="8">
                           <button type="button" class="btn btn-outline-secondary" id="toggleUpdateAdminPassword"><i class="bi bi-eye"></i></button>
                         </div>
                     </div>

@@ -25,7 +25,7 @@
                         <a class="nav-link">|</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('peso.student_applications_archive') }}">Archive</a>
+                        <a class="nav-link" href="{{ url_for('peso.student_payroll_archive') }}">Archive</a>
                     </li>
                 </ul>
             </div>
@@ -131,7 +131,7 @@
                             <h5 class="modal-title" id="viewDtrModalLabel">DTR Details</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
-                        <div class="modal-body" id="dtr-details-content"></div>
+                        <div class="modal-body" style="background-color: beige;" id="dtr-details-content"></div>
                         <div class="modal-footer">
                             <!-- <button class="btn btn-primary" onclick="window.print()">Print DTR</button> -->
                             <button class="btn btn-primary" id="moveToPayrollBtn" data-student-id="">Move to Payroll</button>
@@ -189,7 +189,7 @@
                             </div>
                             <div class="card-body text-center">
                                 <button id="downloadFinishDtrCsvBtn" class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-download"></i> Download Student Registrations CSV
+                                    <i class="bi bi-download"></i> Download Student DTR Records CSV
                                 </button>
                             </div>
                             <p class="text-muted">Highlighted students have not uploaded their accomplishment report yet.</p>

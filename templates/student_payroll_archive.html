@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body style="background-color: beige;"">
+<body style="background-color: beige;">
     <nav class="navbar navbar-expand-lg bg-primary py-0 mb-2 sticky-top">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{url_for('index')}}">
@@ -26,19 +26,21 @@
                         <a class="nav-link">|</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('peso.peso_registration') }}">SPES List</a>
+                        <a class="nav-link" href="{{ url_for('peso.student_dtr_records') }}">SPES List</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
+    <div class="container-fluid">
     <div class="row row-cols-2 g-2 text-center mb-2">
         <div class="col">
-            <a href="{{ url_for('peso.student_applications_archive') }}" class="btn btn-lg text-dark w-100 border border-dark" style="background-color: #98c1d9;">Student Applications Archive</a>
+            <a href="{{ url_for('peso.student_applications_archive') }}" class="btn btn-lg text-white w-100 border border-white" style="background-color: #003366;">Student Applications Archive</a>
         </div>
         <div class="col">
-            <a href="{{ url_for('peso.student_payroll_archive') }}" class="btn btn-lg w-100 border border-dark text-white" style="background-color: #003366;">Student Payrolls Archive</a>
+            <a href="{{ url_for('peso.student_payroll_archive') }}" class="btn btn-lg w-100 border border-dark text-dark" style="background-color: #98c1d9;">Student Payrolls Archive</a>
         </div>
+    </div>
     </div>
     <div class="peso_container">
         <div class="left_side m-1 mt-0 border">
@@ -87,31 +89,45 @@
                 <table class="table table-secondary table-striped">
                     <thead class="table-dark sticky-top">
                         <tr>
-                            <th>ID</th>
-                            <th>Last Name</th>
-                            <th>First Name</th>
-                            <th>Middle Name</th>
-                            <th>Category</th>
+                            <th>Student ID</th>
+                            <th>Name</th>
                             <th>Email</th>
-                            <th>Application Timestamp</th>
-                            <th></th>
+                            <th>Student Category</th>
+                            <th>Mobile</th>
+                            <th>Birth Date</th>
+                            <th>Total Hours</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody id="dtr-records-table"></tbody>
                 </table>
             </div>
         </div>
-        <!-- Modal for Viewing Data -->
-        <div class="modal fade" id="viewDataModal" tabindex="-1" aria-labelledby="viewDataModalLabel" aria-hidden="true">
+        <!-- Modal for viewing DTR details -->
+        <div class="modal fade" id="viewDtrModal" tabindex="-1" aria-labelledby="viewDtrModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
                 <div class="modal-content">
-                    <div class="modal-header bg-primary text-dark">
-                        <h5 class="modal-title" id="viewDataModalLabel">Student Information</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewDtrModalLabel">DTR Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body" style="background-color: beige;">
-                        <div id="modalContent"></div>
-                    </div>
+                    <div class="modal-body"  style="background-color: #F5F5DC;" id="dtr-details-content"></div>
+                    <div class="modal-footer"></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="dtrImageModal" tabindex="-1" aria-labelledby="dtrImageModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dtrImageModalLabel">Captured Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center" id="dtr-image-modal-body">
+                    <!-- Image will be loaded here -->
+                </div>
                 </div>
             </div>
         </div>
@@ -119,7 +135,7 @@
             <div class="container-fluid">
                 <div class="card mt-3 shadow-sm">
                     <div class="card-header text-white" style="background-color: #003366;">
-                        <h5 class="mb-0">Archive Summary</h5>
+                        <h5 class="mb-0">Payroll Archive Summary</h5>
                     </div>
                     <div class="card-body text-center">
                         <h5 class="fw-bold">Data Total</h5>
@@ -136,7 +152,7 @@
             </div>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='student_applications_archive.js') }}"></script>
+    <script src="{{ url_for('static', filename='student_payroll_archive.js') }}"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

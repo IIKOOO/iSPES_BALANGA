@@ -101,6 +101,14 @@ def student_applications_archive():
         return redirect(url_for('index'))
     return render_template('student_applications_archive.html')
 
+@peso_bp.route('/student_payroll_archive')
+@nocache
+@require_scanner_unlocked
+def student_payroll_archive():
+    if 'peso_logged_in' not in session:
+        return redirect(url_for('index'))
+    return render_template('student_payroll_archive.html')
+
 @peso_bp.route('/dtr_qr_scanner')
 @nocache
 def dtr_qr_scanner():
@@ -1377,12 +1385,166 @@ def move_final_spes_list_to_archive():
                     SELECT * FROM student_application_requirements WHERE student_application_id = %s
                 """, (student_id,))
                 # Delete from main tables
-                # cur.execute("DELETE FROM student_application_requirements WHERE student_application_id = %s", (student_id,))
-                # cur.execute("DELETE FROM student_application_education WHERE student_application_id = %s", (student_id,))
-                # cur.execute("DELETE FROM student_application_parents_guardians WHERE student_application_id = %s", (student_id,))
-                # cur.execute("DELETE FROM student_application WHERE student_id = %s", (student_id,))
+                cur.execute("DELETE FROM student_application_requirements WHERE student_application_id = %s", (student_id,))
+                cur.execute("DELETE FROM student_application_education WHERE student_application_id = %s", (student_id,))
+                cur.execute("DELETE FROM student_application_parents_guardians WHERE student_application_id = %s", (student_id,))
+                cur.execute("DELETE FROM student_application WHERE student_id = %s", (student_id,))
             conn.commit()
         return jsonify({'success': True, 'archived_count': len(student_ids)})
     except Exception as e:
         conn.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@peso_bp.route('/move_student_payroll_to_archive', methods=['POST'])
+def move_student_payroll_to_archive():
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT dtr_record_id FROM student_dtr_records WHERE for_payroll = TRUE")
+            record_ids = [row[0] for row in cur.fetchall()]
+            for record_id in record_ids:
+                # Use ON CONFLICT DO NOTHING to avoid duplicate key error
+                cur.execute("""
+                    INSERT INTO student_dtr_records_archive
+                    SELECT * FROM student_dtr_records WHERE dtr_record_id = %s
+                    ON CONFLICT (dtr_record_id) DO NOTHING
+                """, (record_id,))
+                cur.execute("DELETE FROM student_dtr_records WHERE dtr_record_id = %s", (record_id,))
+            conn.commit()
+        return jsonify({'success': True, 'archived_count': len(record_ids), 'message': f"Successfully moved {len(record_ids)} payroll records to archive.", 'category': "success"})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'success': False, 'error': str(e), 'message': f"Error: {str(e)}", 'category': "danger"}), 500
+    
+@peso_bp.route('/get_student_payroll_archive', methods=['POST'])
+def get_student_payroll_archive():
+    data = request.get_json() or {}
+    category = data.get('student_category', None)
+    search = data.get('search_query', None)
+    sort = data.get('sort_option', 'last_name_asc')
+    is_paid = data.get('is_paid', None)
+
+    query = """
+        SELECT dtr_record_id, last_name, first_name, middle_name, suffix, email, student_category, mobile_no, birth_date,
+               total_worked_hours, starting_date, end_date, dtr_details, accomplishment_report, for_payroll, is_paid,
+               ar_isgood, on_hold, requested_docs, requested_docs_isgood, comment_for_dtr
+        FROM student_dtr_records_archive
+        WHERE 1=1
+    """
+    params = []
+
+    if category and category != "All":
+        query += " AND student_category = %s"
+        params.append(category)
+    if search:
+        query += " AND (CAST(dtr_record_id AS TEXT) ILIKE %s OR LOWER(last_name) ILIKE %s OR LOWER(first_name) ILIKE %s)"
+        params.extend([f"%{search}%", f"%{search.lower()}%", f"%{search.lower()}%"])
+    if is_paid is not None:
+        query += " AND is_paid = %s"
+        params.append(is_paid)
+
+    if sort == "last_name_asc":
+        query += " ORDER BY last_name ASC"
+    elif sort == "last_name_desc":
+        query += " ORDER BY last_name DESC"
+    elif sort == "timestamp_asc":
+        query += " ORDER BY starting_date ASC"
+    elif sort == "timestamp_desc":
+        query += " ORDER BY starting_date DESC"
+
+    with conn.cursor() as cur:
+        cur.execute(query, params)
+        rows = cur.fetchall()
+        data = []
+        for row in rows:
+            data.append({
+                "dtr_record_id": row[0],
+                "last_name": row[1],
+                "first_name": row[2],
+                "middle_name": row[3],
+                "suffix": row[4],
+                "email": row[5],
+                "student_category": row[6],
+                "mobile_no": row[7],
+                "birth_date": row[8],
+                "total_worked_hours": row[9],
+                "starting_date": row[10].strftime('%Y-%m-%d') if row[10] else '',
+                "end_date": row[11].strftime('%Y-%m-%d') if row[11] else '',
+                "dtr_details": row[12],
+                "accomplishment_report": bool(row[13]),
+                "for_payroll": row[14],
+                "is_paid": row[15],
+                "ar_isgood": row[16],
+                "on_hold": row[17],
+                "requested_docs": bool(row[18]),
+                "requested_docs_isgood": row[19],
+                "comment_for_dtr": row[20],
+            })
+    return jsonify(data)
+
+@peso_bp.route('/toggle_payroll_paid_archive/<int:record_id>', methods=['POST'])
+def toggle_payroll_paid_archive(record_id):
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT is_paid FROM student_dtr_records_archive WHERE dtr_record_id = %s", (record_id,))
+            is_paid = cur.fetchone()[0]
+            new_status = not is_paid
+            cur.execute("UPDATE student_dtr_records_archive SET is_paid = %s WHERE dtr_record_id = %s", (new_status, record_id))
+            conn.commit()
+        return jsonify({'success': True, 'is_paid': new_status})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@peso_bp.route('/get_accomplishment_report_archive/<int:student_id>')
+def get_accomplishment_report_archive(student_id):
+    with conn.cursor() as cur:
+        cur.execute("SELECT accomplishment_report, ar_isgood FROM student_dtr_records_archive WHERE dtr_record_id = %s", (student_id,))
+        row = cur.fetchone()
+        if not row or not row[0]:
+            return jsonify({'has_report': False})
+        return jsonify({
+            'has_report': True,
+            'filetype': 'pdf',
+            'ar_isgood': bool(row[1]) if row[1] is not None else False
+        })
+
+@peso_bp.route('/download_accomplishment_report_archive/<int:student_id>')
+def download_accomplishment_report_archive(student_id):
+    with conn.cursor() as cur:
+        cur.execute("SELECT accomplishment_report FROM student_dtr_records_archive WHERE dtr_record_id = %s", (student_id,))
+        row = cur.fetchone()
+        if not row or not row[0]:
+            return
+        file_bytes = bytes(row[0])
+        return send_file(
+            io.BytesIO(file_bytes),
+            mimetype='application/pdf',
+            as_attachment=False,
+            download_name='accomplishment_report.pdf'
+        )
+
+@peso_bp.route('/get_requested_docs_archive/<int:student_id>')
+def get_requested_docs_archive(student_id):
+    with conn.cursor() as cur:
+        cur.execute("SELECT requested_docs, requested_docs_isgood, ar_isgood FROM student_dtr_records_archive WHERE dtr_record_id = %s", (student_id,))
+        row = cur.fetchone()
+        return jsonify({
+            'has_requested_docs': bool(row and row[0]),
+            'requested_docs_isgood': bool(row[1]) if row else False,
+            'ar_isgood': bool(row[2]) if row else False
+        })
+
+@peso_bp.route('/download_requested_docs_archive/<int:student_id>')
+def download_requested_docs_archive(student_id):
+    with conn.cursor() as cur:
+        cur.execute("SELECT requested_docs FROM student_dtr_records_archive WHERE dtr_record_id = %s", (student_id,))
+        row = cur.fetchone()
+        if not row or not row[0]:
+            return
+        file_bytes = bytes(row[0])
+        return send_file(
+            io.BytesIO(file_bytes),
+            mimetype='application/pdf',
+            as_attachment=False,
+            download_name='requested_docs.pdf'
+        )

@@ -69,8 +69,8 @@ function fetchAndDisplayDtrRecords() {
                 ]).then(([dtrData, accompData, reqData, allRecords]) => {
                     // 1. Progress bar and DTR table
                     let dtrTableHtml = `
-                        <div class="card mb-4 shadow border">
-                            <div class="card-header bg-info text-dark">
+                        <div class="card mb-4 shadow">
+                            <div class="card-header text-white" style="background-color: #003366;">
                                 <h5 class="mb-0 fw-bold">${studentName} DTR (ID: ${studentId})</h5>
                             </div>
                             <div class="card-body bg-light">
@@ -149,8 +149,8 @@ function fetchAndDisplayDtrRecords() {
                     if (accompData.has_report) {
                         let fileUrl = `/download_accomplishment_report/${studentId}`;
                         reportHtml = `
-                            <div class="card mt-4 accomplishment-report-card">
-                                <div class="card-header bg-info text-dark d-flex justify-content-between align-items-center">
+                            <div class="card mt-4 accomplishment-report-card shadow">
+                                <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: #003366;">
                                     <h5 class="mb-0 fw-bold">Accomplishment Report</h5>
                                     <div class="form-check form-switch ms-auto">
                                         <input class="form-check-input ar-isgood-radio" type="checkbox"
@@ -158,7 +158,7 @@ function fetchAndDisplayDtrRecords() {
                                         <label class="form-check-label" for="isgood_ar">${accompData.ar_isgood ? 'Good' : 'Needs Reupload'}</label>
                                     </div>
                                 </div>
-                                <div class="card-body text-center" style="background-color:beige;">
+                                <div class="card-body text-center">
                                     <iframe src="${fileUrl}" width="70%" height="800px" class="rounded border"></iframe>
                                 </div>
                             </div>
@@ -170,8 +170,8 @@ function fetchAndDisplayDtrRecords() {
                     if (reqData.has_requested_docs) {
                         let reqFileUrl = `/download_requested_docs/${studentId}`;
                         requestedDocsHtml = `
-                            <div class="card mt-4 requested-docs-card">
-                                <div class="card-header bg-info text-dark d-flex justify-content-between align-items-center">
+                            <div class="card mt-4 requested-docs-card shadow">
+                                <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: #003366;">
                                     <h5 class="mb-0 fw-bold">Requested Document</h5>
                                     <div class="form-check form-switch ms-auto">
                                         <input class="form-check-input requested-docs-isgood-radio" type="checkbox"
@@ -179,7 +179,7 @@ function fetchAndDisplayDtrRecords() {
                                         <label class="form-check-label" for="isgood_requested_docs">${reqData.requested_docs_isgood ? 'Good' : 'Needs Reupload'}</label>
                                     </div>
                                 </div>
-                                <div class="card-body text-center" style="background-color:beige;">
+                                <div class="card-body text-center">
                                     <iframe src="${reqFileUrl}" width="70%" height="800px" class="rounded border"></iframe>
                                 </div>
                             </div>
@@ -190,11 +190,11 @@ function fetchAndDisplayDtrRecords() {
                     const student = allRecords.find(r => r.dtr_record_id == studentId);
                     let comment = student && student.comment_for_dtr ? student.comment_for_dtr : '';
                     let commentCard = `
-                        <div class="card mt-4 peso-comment-card">
-                            <div class="card-header bg-info text-dark">
+                        <div class="card mt-4 peso-comment-card shadow">
+                            <div class="card-header text-white" style="background-color: #003366;">
                                 <h5 class="mb-0 fw-bold">PESO Comment to DTR</h5>
                             </div>
-                            <div class="card-body" style="background-color:beige;">
+                            <div class="card-body">
                                 <textarea class="form-control mb-2" id="dtrPesoComment" rows="3" placeholder="Enter comment...">${comment || ''}</textarea>
                                 <button id="saveDtrPesoCommentBtn" type="button" class="btn btn-success">Save Comment</button>
                             </div>
@@ -361,8 +361,8 @@ function refreshDtrModalTable(studentId) {
 
             // Build the DTR card with progress bar inside
             let dtrHtml = `
-                <div class="card mb-4 shadow border">
-                    <div class="card-header bg-info text-dark">
+                <div class="card mb-4 shadow">
+                    <div class="card-header text-white" style="background-color: #003366;">
                         <h5 class="mb-0 fw-bold">DTR Records</h5>
                     </div>
                     <div class="card-body bg-light">
@@ -413,7 +413,7 @@ function refreshDtrModalTable(studentId) {
                         <td>${row.evaluation_am || '-'}</td>
                         <td>${row.evaluation_pm || '-'}</td>
                         <td>
-                            <button class="btn btn-sm btn-info view-image-btn" data-dtr-id="${row.dtr_id}">View Image</button>
+                            <button class="btn btn-sm btn-info view-image-btn" data-dtr-id="${row.dtr_id}" style="background-color: #98c1d9;">View Image</button>
                         </td>
                         <td>${row.daily_total + ' hours' || '-'}</td>
                         <td>

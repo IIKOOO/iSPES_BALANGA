@@ -19,7 +19,7 @@
           <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav">
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="{{ url_for('login.login_admin') }}">Admin Dashboard</a>
+                <a class="nav-link active" aria-current="page" href="{{ url_for('login.login_admin') }}">{{ role }} {{ admin_name }} Dashboard</a>
               </li>
             </ul>
           </div>
@@ -98,6 +98,53 @@
                 </div>
             </div>
           </div>
+        </div>
+      </div>
+      <div class="modal fade" id="adminAuthModal" tabindex="-1" aria-labelledby="adminAuthModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <form id="adminAuthForm" class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="adminAuthModalLabel">Admin Authentication</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="adminAuthUsername" class="form-label">Username</label>
+                <input type="text" class="form-control" id="adminAuthUsername" required>
+              </div>
+              <div class="mb-3">
+                <label for="adminAuthPassword" class="form-label">Password</label>
+                <input type="password" class="form-control" id="adminAuthPassword" required>
+              </div>
+              <div id="adminAuthError" class="text-danger" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Authenticate</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Student Password Update Modal -->
+      <div class="modal fade" id="studentPasswordUpdateModal" tabindex="-1" aria-labelledby="studentPasswordUpdateModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <form id="studentPasswordUpdateForm" class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="studentPasswordUpdateModalLabel">Update Student Password</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="updateStudentId">
+              <div class="mb-3">
+                <label for="newStudentPassword" class="form-label">New Password</label>
+                <input type="password" class="form-control" id="newStudentPassword" required minlength="5">
+              </div>
+              <div id="studentPasswordUpdateError" class="text-danger" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-success">Update Password</button>
+            </div>
+          </form>
         </div>
       </div>
       <!--Toast Container-->

@@ -1,4 +1,4 @@
-function fetchAndDisplayPayroll() {
+function fetchAndDisplayPayrollArchive() {
     const selectedCategory = document.getElementById('category_filter').value;
     const searchQuery = document.getElementById('search_input').value;
     const sortOption = document.getElementById('sort_option').value;
@@ -6,11 +6,10 @@ function fetchAndDisplayPayroll() {
     if (sortOption === 'paid') isPaidFilter = true;
     if (sortOption === 'unpaid') isPaidFilter = false;
 
-    fetch('/get_student_dtr_records', {
+    fetch('/get_student_payroll_archive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            status: "payroll",
             student_category: selectedCategory,
             search_query: searchQuery,
             sort_option: sortOption,
@@ -42,14 +41,18 @@ function fetchAndDisplayPayroll() {
                 </tr>
             `;
         });
+
+        // Update summary count
+        document.getElementById('totalRegistrations').textContent = data.length;
+
         document.querySelectorAll('.toggle-paid-btn').forEach(btn => {
             btn.addEventListener('click', function() {
-                const studentId = this.getAttribute('data-id');
-                fetch(`/toggle_payroll_paid/${studentId}`, { method: 'POST' })
+                const recordId = this.getAttribute('data-id');
+                fetch(`/toggle_payroll_paid_archive/${recordId}`, { method: 'POST' })
                     .then(res => res.json())
                     .then(resp => {
                         if (resp.success) {
-                            location.reload();
+                            fetchAndDisplayPayrollArchive();
                         } else {
                             alert('Failed to update payroll status.');
                         }
@@ -65,12 +68,11 @@ function fetchAndDisplayPayroll() {
                     .then(res => res.json())
                     .then(dtrData => {
                         let html = `
-                            <div class="card mb-4 shadow">
+                            <div class="card mb-4 shadow border">
                                 <div class="card-header text-white" style="background-color: #003366;">
                                     <h5 class="mb-0 fw-bold">DTR Records</h5>
                                 </div>
                                 <div class="card-body bg-light">
-                                    <!-- Progress Bar -->
                                     <div class="container mb-3">
                                         <h6 class="text-center">Progress Tracker</h6>
                                         <div class="progress">
@@ -80,7 +82,6 @@ function fetchAndDisplayPayroll() {
                                             <span id="modalDtrProgressText">0 hours completed, 160 hours remaining</span>
                                         </div>
                                     </div>
-                                    <!-- DTR Table -->
                                     <div class="table-responsive">
                                         <table class="table table-bordered text-center bg-light">
                                             <thead class="table-dark">
@@ -115,25 +116,26 @@ function fetchAndDisplayPayroll() {
                                     <td>${row.evaluation_am || '-'}</td>
                                     <td>${row.evaluation_pm || '-'}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-info view-image-btn" data-dtr-id="${row.dtr_id}" style="background-color: #98c1d9;">View Image</button>
+                                        <button class="btn btn-sm btn-info view-image-btn" style="background-color: #98c1d9;" data-dtr-id="${row.dtr_id}">View Image</button>
                                     </td>
                                     <td>${row.daily_total + ' hours' || '-'}</td>
                                 </tr>
                             `;
                         });
                         html += `
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="text-center">
-                                        <button class="btn btn-success" onclick="window.print()">Print DTR</button>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="text-center">
+                                            <button class="btn btn-success" onclick="window.print()">Print DTR</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         `;
                         document.getElementById('dtr-details-content').innerHTML = html;
 
-                        // Update progress bar
+                        // Progress bar update
                         let totalWorkedHours = 0;
                         dtrData.forEach(row => {
                             let hours = parseFloat(row.daily_total) || 0;
@@ -153,24 +155,25 @@ function fetchAndDisplayPayroll() {
                             }
                         }, 100);
 
+                        // Fetch archive accomplishment report, requested docs, and comment
                         Promise.all([
-                            fetch(`/get_accomplishment_report/${studentId}`).then(res => res.json()),
-                            fetch(`/get_requested_docs/${studentId}`).then(res => res.json()),
-                            fetch(`/get_student_dtr_records`, {
+                            fetch(`/get_accomplishment_report_archive/${studentId}`).then(res => res.json()),
+                            fetch(`/get_requested_docs_archive/${studentId}`).then(res => res.json()),
+                            fetch('/get_student_payroll_archive', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ status: "payroll" })
+                                body: JSON.stringify({})
                             }).then(res => res.json())
                         ]).then(([accompData, reqData, allRecords]) => {
                             // 1. Accomplishment Report
                             if (accompData.has_report) {
-                                let fileUrl = `/download_accomplishment_report/${studentId}`;
+                                let fileUrl = `/download_accomplishment_report_archive/${studentId}`;
                                 let reportHtml = `
                                     <div class="card mt-4 accomplishment-report-card shadow">
                                         <div class="card-header text-white" style="background-color: #003366;">
                                             <h5 class="mb-0 fw-bold">Accomplishment Report</h5>
                                         </div>
-                                        <div class="card-body text-center">
+                                        <div class="card-body text-center bg-light">
                                             <iframe src="${fileUrl}" width="70%" height="800px" class="rounded border"></iframe>
                                         </div>
                                     </div>
@@ -179,13 +182,13 @@ function fetchAndDisplayPayroll() {
                             }
                             // 2. Requested Docs
                             if (reqData.has_requested_docs) {
-                                let reqFileUrl = `/download_requested_docs/${studentId}`;
+                                let reqFileUrl = `/download_requested_docs_archive/${studentId}`;
                                 let requestedDocsHtml = `
                                     <div class="card mt-4 requested-docs-card shadow">
                                         <div class="card-header text-white" style="background-color: #003366;">
                                             <h5 class="mb-0 fw-bold">Requested Document</h5>
                                         </div>
-                                        <div class="card-body text-center">
+                                        <div class="card-body text-center bg-light">
                                             <iframe src="${reqFileUrl}" width="70%" height="800px" class="rounded border"></iframe>
                                         </div>
                                     </div>
@@ -196,11 +199,11 @@ function fetchAndDisplayPayroll() {
                             const student = allRecords.find(r => r.dtr_record_id == studentId);
                             let comment = student && student.comment_for_dtr ? student.comment_for_dtr : '';
                             let commentCard = `
-                                <div class="card mt-4">
+                                <div class="card mt-4 shadow">
                                     <div class="card-header text-white" style="background-color: #003366;">
                                         <h5 class="mb-0 fw-bold">PESO Comment to Student</h5>
                                     </div>
-                                    <div class="card-body">
+                                    <div class="card-body bg-light">
                                         <textarea class="form-control mb-2" id="dtrPesoComment" rows="3" placeholder="No comment yet..." readonly>${comment || ''}</textarea>
                                     </div>
                                 </div>
@@ -208,21 +211,7 @@ function fetchAndDisplayPayroll() {
                             document.getElementById('dtr-details-content').innerHTML += commentCard;
                         });
 
-                        document.querySelectorAll('.toggle-onhold-btn').forEach(btn => {
-                            btn.addEventListener('click', function() {
-                                const studentId = this.getAttribute('data-id');
-                                fetch(`/toggle_payroll_on_hold/${studentId}`, { method: 'POST' })
-                                    .then(res => res.json())
-                                    .then(resp => {
-                                        if (resp.success) {
-                                            location.reload();
-                                        } else {
-                                            alert('Failed to update on hold status.');
-                                        }
-                                    });
-                            });
-                        });
-
+                        // View image handler
                         document.addEventListener('click', function(e) {
                             if (e.target.classList.contains('view-image-btn')) {
                                 const dtrId = e.target.getAttribute('data-dtr-id');
@@ -246,161 +235,22 @@ function fetchAndDisplayPayroll() {
                     });
             });
         });
-
-        document.querySelectorAll('.toggle-onhold-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const studentId = this.getAttribute('data-id');
-                fetch(`/toggle_payroll_on_hold/${studentId}`, { method: 'POST' })
-                    .then(res => res.json())
-                    .then(resp => {
-                        if (resp.success) {
-                            location.reload();
-                        } else {
-                            alert('Failed to update on hold status.');
-                        }
-                    });
-            });
-        });
-
-        document.querySelectorAll('.view-image-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const dtrId = this.getAttribute('data-dtr-id');
-                fetch(`/get_dtr_images/${dtrId}`)
-                    .then(res => res.json())
-                    .then(images => {
-                        let html = '';
-                        if (images.length === 0) {
-                            html = '<p>No image captured for this DTR entry.</p>';
-                        } else {
-                            images.forEach(img => {
-                                html += `<img src="data:image/png;base64,${img.image_data}" class="img-fluid mb-2" style="max-width:100%;max-height:400px;" alt="DTR Image"><br>`;
-                                html += `<small class="text-muted">Captured at: ${img.captured_at}</small><hr>`;
-                            });
-                        }
-                        document.getElementById('dtr-image-modal-body').innerHTML = html;
-                        new bootstrap.Modal(document.getElementById('dtrImageModal')).show();
-                    });
-            });
-        });
     });
 }
-
-document.addEventListener('DOMContentLoaded', fetchAndDisplayPayroll);
-document.getElementById('category_filter').addEventListener('change', fetchAndDisplayPayroll);
-document.getElementById('sort_option').addEventListener('change', fetchAndDisplayPayroll);
-document.getElementById('search_input').addEventListener('input', fetchAndDisplayPayroll);
-
-// ...existing summary and logs
-
-function fetchPayrollSummary() {
-    fetch('/payroll_summary')
-        .then(res => res.json())
-        .then (data => {
-            document.getElementById('payrollTotal').textContent = data.total;
-            document.getElementById('payrollPaid').textContent = data.paid;
-            document.getElementById('payrollUnpaid').textContent = data.unpaid;
-        });
-}
-
-function fetchActionLogs() {
-    fetch('/peso_action_logs_summary')
-    .then(res => res.json())
-    .then(data => {
-        const logsList = document.getElementById('actionLogsList');
-        logsList.innerHTML = '';
-        if (data.logs && data.logs.length > 0) {
-            data.logs.forEach(log => {
-                const li = document.createElement('li');
-                li.className = 'list-group-item px-2 py-2';
-                li.innerHTML = `
-                    <div class="d-flex flex-column">
-                        <div>
-                            <span class="badge bg-secondary ">#${log.student_id}</span>
-                            <span class="fw-bold text-primary">-- ${log.username}</span>
-                            <span class="text-dark">performed</span>
-                            <span class="fw-semibold text-danger">${log.action}</span>
-                        </div>
-                        <div class="text-muted small ms-1">
-                            <i class="bi bi-clock"></i> ${log.performed_at}
-                        </div>
-                    </div>
-                `;
-                logsList.appendChild(li);
-            });
-        } else {
-            logsList.innerHTML = '<li class="list-group-item">No recent actions.</li>';
-        }
-    });
-}
-
-document.getElementById('downloadStudentPayrollCsvBtn').addEventListener('click', function() {
-    window.location.href = '/download_student_payroll_csv';
-});
-
-document.addEventListener('DOMContentLoaded', fetchPayrollSummary, fetchActionLogs());
-
-
 function formatTime(datetimeStr) {
     if (!datetimeStr) return '-';
-    // Handles formats like "2025-07-20T08:00" or "2025-07-20T08:00:00"
     const tIndex = datetimeStr.indexOf('T');
     if (tIndex !== -1) {
         return datetimeStr.substring(tIndex + 1, tIndex + 6).replace(':', ' : ');
     }
-    // Handles formats like "2025-07-20 08:00:00"
     const spaceIndex = datetimeStr.indexOf(' ');
     if (spaceIndex !== -1) {
         return datetimeStr.substring(spaceIndex + 1, spaceIndex + 6).replace(':', ' : ');
     }
-    return datetimeStr; // fallback
+    return datetimeStr;
 }
 
-document.getElementById('moveStudentPayrollToArchiveBtn').addEventListener('click', function() {
-    new bootstrap.Modal(document.getElementById('movePayrollArchiveModal')).show();
-});
-
-document.getElementById('confirmMovePayrollArchiveBtn').addEventListener('click', function() {
-    fetch('/move_student_payroll_to_archive', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(res => res.json())
-    .then(data => {
-        // Hide modal
-        bootstrap.Modal.getInstance(document.getElementById('movePayrollArchiveModal')).hide();
-
-        // Show toast with returned message
-        showMsgToast(data.message, data.category);
-
-        // Optionally reload after a delay
-        setTimeout(() => location.reload(), 2000);
-    });
-});
-
-function showPayrollActionToast(message, isSuccess) {
-    const toastEl = document.getElementById('payrollActionToast');
-    const toastBody = document.getElementById('payrollActionToastBody');
-    toastBody.textContent = message;
-    toastEl.classList.remove('text-bg-success', 'text-bg-danger', 'show');
-    toastEl.classList.add(isSuccess ? 'text-bg-success' : 'text-bg-danger');
-    const bsToast = new bootstrap.Toast(toastEl, { delay: 4000 });
-    bsToast.show();
-}
-
-document.getElementById('confirmMovePayrollArchiveBtn').addEventListener('click', function() {
-    fetch('/move_student_payroll_to_archive', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(res => res.json())
-    .then(data => {
-        // Hide modal
-        bootstrap.Modal.getInstance(document.getElementById('movePayrollArchiveModal')).hide();
-
-        // Show toast with returned message
-        showPayrollActionToast(data.message, data.success);
-
-        // Optionally reload after a delay
-        setTimeout(() => location.reload(), 4000);
-    });
-});
+document.addEventListener('DOMContentLoaded', fetchAndDisplayPayrollArchive);
+document.getElementById('category_filter').addEventListener('change', fetchAndDisplayPayrollArchive);
+document.getElementById('sort_option').addEventListener('change', fetchAndDisplayPayrollArchive);
+document.getElementById('search_input').addEventListener('input', fetchAndDisplayPayrollArchive);

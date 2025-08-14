@@ -25,22 +25,28 @@ def nocache(view):
 @nocache
 def admin_studentAcc():
     if 'admin_logged_in' not in session:
-        return redirect(url_for('login.login_admin'))    
-    return render_template('admin_studentAcc.html')
+        return redirect(url_for('index'))
+    admin_name = session.get('admin_first_name', '')
+    role = session.get('admin_role', '')
+    return render_template('admin_studentAcc.html', admin_name=admin_name, role=role)
 
 @admin_bp.route('/admin_pesoAcc')
 @nocache
 def admin_pesoAcc():
     if 'admin_logged_in' not in session:
-        return redirect(url_for('login.login_admin'))
-    return render_template('admin_pesoAcc.html')
+        return redirect(url_for('index'))
+    admin_name = session.get('admin_first_name', '')
+    role = session.get('admin_role', '')
+    return render_template('admin_pesoAcc.html', admin_name=admin_name, role=role)
 
 @admin_bp.route('/admin_adminAcc')
 @nocache
 def admin_adminAcc():
     if 'admin_logged_in' not in session:
-        return redirect(url_for('login.login_admin'))
-    return render_template('admin_adminAcc.html')
+        return redirect(url_for('index'))
+    admin_name = session.get('admin_first_name', '')
+    role = session.get('admin_role', '')
+    return render_template('admin_adminAcc.html', admin_name=admin_name, role=role)
 
 @admin_bp.route('/retrieve_peso_accounts', methods=['POST'])
 def retrieve_peso_accounts():
@@ -742,3 +748,38 @@ def upload_ar_template():
         conn.rollback()
         flash('Failed to upload template: ' + str(e), 'danger')
     return redirect(url_for('login.login_admin'))
+
+@admin_bp.route('/admin_authenticate', methods=['POST'])
+def admin_authenticate():
+    if 'admin_logged_in' not in session or 'admin_username' not in session:
+        return jsonify({'success': False, 'error': 'Not authenticated.'})
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    # Only allow the currently logged-in admin
+    if username != session['admin_username']:
+        return jsonify({'success': False, 'error': 'You can only authenticate as the currently logged-in admin.'})
+    with conn.cursor() as cur:
+        cur.execute("SELECT password FROM admin_login WHERE username=%s AND is_active=TRUE", (username,))
+        row = cur.fetchone()
+        if row and check_password_hash(row[0], password):
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Invalid admin credentials.'})
+
+@admin_bp.route('/update_student_password', methods=['POST'])
+def update_student_password():
+    data = request.get_json()
+    student_id = data.get('student_id')
+    new_password = data.get('new_password')
+    if not new_password or len(new_password) < 5:
+        return jsonify({'success': False, 'error': 'Password must be at least 5 characters.'})
+    hashed_password = generate_password_hash(new_password)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE student_login SET password=%s WHERE student_id=%s", (hashed_password, student_id))
+            conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'success': False, 'error': str(e)})

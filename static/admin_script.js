@@ -122,6 +122,9 @@ function fetchAndDisplayStudentAccounts() {
                     <td>${row.email}</td>
                     <td>${row.mobile_no}</td>
                     <td>
+                        <button class="btn btn-primary btn-sm update-student-password-btn" data-id="${row.student_id}">
+                            Update
+                        </button>
                         <button class="btn ${row.is_active ? 'btn-success' : 'btn-danger'} btn-sm toggle-student-active-btn" data-id="${row.student_id}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                             ${row.is_active ? 'Activated' : 'Deactivated'}
                         </button>
@@ -130,7 +133,18 @@ function fetchAndDisplayStudentAccounts() {
             `;
         });
 
-        document.querySelectorAll('.toggle-student-active-btn').forEach(btn => {
+        tbody.querySelectorAll('.update-student-password-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const studentId = btn.getAttribute('data-id');
+                document.getElementById('updateStudentId').value = studentId;
+                document.getElementById('adminAuthUsername').value = '';
+                document.getElementById('adminAuthPassword').value = '';
+                document.getElementById('adminAuthError').style.display = 'none';
+                new bootstrap.Modal(document.getElementById('adminAuthModal')).show();
+            });
+        });
+
+        tbody.querySelectorAll('.toggle-student-active-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const studentId = this.getAttribute('data-id');
                 fetch(`/toggle_student_active/${studentId}`, { method: 'POST' })
@@ -411,8 +425,8 @@ function loadSummaryCarousel() {
         const carouselInner = document.getElementById('summaryCarouselInner');
         carouselInner.innerHTML = items.map((item, idx) => `
             <div class="carousel-item${idx === 0 ? ' active' : ''}">
-                <div class="card border-0 shadow-lg bg-light">
-                    <div class="card-header bg-info text-dark text-center">
+                <div class="card border-1 border-dark shadow-lg bg-light">
+                    <div class="card-header text-dark text-center" style="background-color: #98c1d9;">
                         <h5 class="mb-0">${item.title}</h5>
                     </div>
                     <div class="card-body text-center" h-100">
@@ -799,3 +813,61 @@ if (addAdminForm) {
         if (err) err.textContent = '';
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle Update Password button click
+    document.querySelectorAll('.update-student-password-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const studentId = btn.getAttribute('data-id');
+            document.getElementById('updateStudentId').value = studentId;
+            // Show admin authentication modal
+            new bootstrap.Modal(document.getElementById('adminAuthModal')).show();
+        });
+    });
+
+    // Handle admin authentication
+    document.getElementById('adminAuthForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const username = document.getElementById('adminAuthUsername').value;
+        const password = document.getElementById('adminAuthPassword').value;
+        fetch('/admin_authenticate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('adminAuthModal')).hide();
+                new bootstrap.Modal(document.getElementById('studentPasswordUpdateModal')).show();
+            } else {
+                const err = document.getElementById('adminAuthError');
+                err.textContent = data.error || 'Authentication failed.';
+                err.style.display = 'block';
+            }
+        });
+    });
+
+    // Handle student password update
+    document.getElementById('studentPasswordUpdateForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const studentId = document.getElementById('updateStudentId').value;
+        const newPassword = document.getElementById('newStudentPassword').value;
+        fetch('/update_student_password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ student_id: studentId, new_password: newPassword })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('studentPasswordUpdateModal')).hide();
+                location.reload();
+            } else {
+                const err = document.getElementById('studentPasswordUpdateError');
+                err.textContent = data.error || 'Failed to update password.';
+                err.style.display = 'block';
+            }
+        });
+    });
+});

@@ -80,8 +80,8 @@ document.addEventListener('click', function (e) {
                 } else {
                     const modalContent = document.getElementById('modalContent');
                     let html = `
-                    <div class="card mb-4">
-                        <div class="card-header bg-info text-dark">
+                    <div class="card mb-4 shadow">
+                        <div class="card-header text-white" style="background-color: #003366;">
                             <h5 class="mb-0 fw-bold">Personal Information</h5>
                         </div>
                         <div class="card-body bg-light">
@@ -112,7 +112,7 @@ document.addEventListener('click', function (e) {
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-4"><strong>Birth Date:</strong></div>
-                                <div class="col-md-8">${data.birth_date}</div>
+                                <div class="col-md-8">${formatBirthDate(data.birth_date)}</div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-4"><strong>Birth Place:</strong></div>
@@ -172,8 +172,8 @@ document.addEventListener('click', function (e) {
                             </div>
                         </div>
                     </div>
-                    <div class="card mb-4">
-                        <div class="card-header bg-info text-dark">
+                    <div class="card mb-4 shadow">
+                        <div class="card-header text-white" style="background-color: #003366;">
                             <h5 class="mb-0 fw-bold">Guardian and Parents Information</h5>
                         </div>
                         <div class="card-body bg-light">
@@ -182,7 +182,7 @@ document.addEventListener('click', function (e) {
                                 <div class="col-md-8">${data.living_with}</div>
                             </div>
                             ${renderRow('Guardian Full Name', data.guardian_full_name)}
-                            ${renderRow('Guardian Birth Date', data.guardian_birth_date)}
+                            ${renderRow('Guardian Birth Date', formatBirthDate(data.guardian_birth_date))}
                             ${renderRow('Guardian Occupation', data.guardian_occupation)}
                             ${renderRow('Relationship with Guardian', data.relationship_with_guardian)}
                             ${renderRow('Guardian TIN No', data.guardian_tin_no)}
@@ -196,7 +196,7 @@ document.addEventListener('click', function (e) {
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-4"><strong>Father Birth Date:</strong></div>
-                                <div class="col-md-8">${data.father_birth_date}</div>
+                                <div class="col-md-8">${formatBirthDate(data.father_birth_date)}</div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-4"><strong>Father Occupation:</strong></div>
@@ -216,7 +216,7 @@ document.addEventListener('click', function (e) {
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-4"><strong>Mother Birth Date:</strong></div>
-                                <div class="col-md-8">${data.mother_birth_date}</div>
+                                <div class="col-md-8">${formatBirthDate(data.mother_birth_date)}</div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-4"><strong>Mother Occupation:</strong></div>
@@ -228,8 +228,8 @@ document.addEventListener('click', function (e) {
                             </div>
                         </div>    
                     </div>
-                    <div class="card mb-4">
-                        <div class="card-header bg-info text-dark">
+                    <div class="card mb-4 shadow">
+                        <div class="card-header text-white" style="background-color: #003366;">
                             <h5 class="mb-0 fw-bold">Education Informations</h5>
                         </div>
                         <div class="card-body bg-light">
@@ -275,10 +275,10 @@ document.addEventListener('click', function (e) {
                     `;
                     let requirementsHtml = `
                     <div class="card mb-4">
-                        <div class="card-header bg-info text-dark">
+                        <div class="card-header text-white" style="background-color: #003366;">
                             <h5 class="mb-0 fw-bold">Requirements</h5>
                         </div>
-                        <div class="card-body" style="background-color: beige;">
+                        <div class="card-body bg-light">
                             ${summaryHtml}
                             <div id="requirementsCarousel" class="carousel slide" data-bs-ride="carousel">
                                 <div class="carousel-inner">
@@ -560,9 +560,9 @@ document.getElementById('downloadCsvBtn').addEventListener('click', function() {
     window.location.href = '/download_student_registration_csv';
 });
 
-document.getElementById('downloadXlsxBtn').addEventListener('click', function() {
-    window.location.href = '/download_student_registration_xlsx';
-});
+// document.getElementById('downloadXlsxBtn').addEventListener('click', function() {
+//     window.location.href = '/download_student_registration_xlsx';
+// });
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchAndDisplayRegistrations();
@@ -599,3 +599,13 @@ document.addEventListener('change', function(e) {
         .catch(() => showActionToast('Error updating status.', false));
     }
 });
+
+
+function formatBirthDate(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    if (isNaN(date)) return dateStr;
+    const options = { month: 'long', day: '2-digit', year: 'numeric' };
+    // e.g. "October 01, 2002"
+    return date.toLocaleDateString('en-US', options);
+}
