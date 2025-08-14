@@ -202,14 +202,7 @@ def register():
 
                 conn.commit()
                 sms_message = (
-                    f"""Good day, {first_name}!
-                This is SPES Balanga. Your registration is successful.
-
-                You may now log in and upload the required documents.
-
-                Note: Submitting documents does not guarantee acceptance as a SPES beneficiary. Please wait for further updates.
-
-                Thank you."""
+                    f"Good day, {first_name}! Your SPES Balanga registration is successful. Please log in and upload your documents. Wait for further updates. Thank you."
                 )
                 send_sms(mobile_no, sms_message)
                 flash('Registration successful!', 'success')
