@@ -217,7 +217,19 @@ def login_peso():
             conn.rollback()
             error_message = "A database error occurred. Please try again."
 
-    return render_template('index.html', acc_error=error_message, open_modal='peso_login')
+        if error_message:
+            # Fetch general_announcement here and pass to render_template
+            with conn.cursor() as cur:
+                cur.execute("SELECT general_announcements FROM announcements WHERE announcement_id = 1")
+                row = cur.fetchone()
+                general_announcement = row[0] if row and row[0] else ""
+            return render_template('index.html', disabled=error_message, open_modal='peso_login', general_announcement=general_announcement)
+    # At the end, also fetch and pass general_announcement for GET requests
+    with conn.cursor() as cur:
+        cur.execute("SELECT general_announcements FROM announcements WHERE announcement_id = 1")
+        row = cur.fetchone()
+        general_announcement = row[0] if row and row[0] else ""
+    return render_template('index.html', acc_error=error_message, open_modal='peso_login', general_announcement=general_announcement)
 
 
 @login_bp.route('/student_main', methods=['GET', 'POST'])
@@ -262,7 +274,19 @@ def login_student():
             conn.rollback()
             error_message = "A database error occurred. Please try again."
 
-    return render_template('index.html', acc_error=error_message, open_modal='student_login')
+        if error_message:
+            # Fetch general_announcement here and pass to render_template
+            with conn.cursor() as cur:
+                cur.execute("SELECT general_announcements FROM announcements WHERE announcement_id = 1")
+                row = cur.fetchone()
+                general_announcement = row[0] if row and row[0] else ""
+            return render_template('index.html', disabled=error_message, open_modal='student_login', general_announcement=general_announcement)
+    # At the end, also fetch and pass general_announcement for GET requests
+    with conn.cursor() as cur:
+        cur.execute("SELECT general_announcements FROM announcements WHERE announcement_id = 1")
+        row = cur.fetchone()
+        general_announcement = row[0] if row and row[0] else ""
+    return render_template('index.html', acc_error=error_message, open_modal='student_login', general_announcement=general_announcement)
 
 @login_bp.route('/admin_logout')
 def logout_admin():

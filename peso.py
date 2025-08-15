@@ -1389,6 +1389,7 @@ def move_final_spes_list_to_archive():
                 cur.execute("DELETE FROM student_application_education WHERE student_application_id = %s", (student_id,))
                 cur.execute("DELETE FROM student_application_parents_guardians WHERE student_application_id = %s", (student_id,))
                 cur.execute("DELETE FROM student_application WHERE student_id = %s", (student_id,))
+                cur.execute("DELETE FROM student_login WHERE student_id = %s", (student_id,))
             conn.commit()
         return jsonify({'success': True, 'archived_count': len(student_ids)})
     except Exception as e:

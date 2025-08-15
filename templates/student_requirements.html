@@ -152,49 +152,49 @@
             <h5 class="mb-0">Required Documents</h5>
         </div>
         <div class="card-body">
-            <form id="requiredDocsForm" method="POST" action="{{ url_for('student.upload_required_docs') }}" enctype="multipart/form-data" enctype="multipart/form-data">
-              <div class="mb-3 p-2 rounded-3" id="passportPhotoSection">
-                <label for="passportPhoto" class="form-label fw-bold">Passport Size Photo <span class="text-danger">*</span></label>
-                <input type="file" class="form-control" id="passportPhoto" name="passportPhoto" accept=".jpg,.jpeg,.png" required>
-              </div>
-              <div class="mb-3 p-2 rounded-3" id="birthCertificateSection">
-                  <label for="birthCertificate" class="form-label fw-bold">Birth Certificate <span class="text-danger">*</span></label>
-                  <input type="file" class="form-control" id="birthCertificate" name="birthCertificate" accept=".pdf,.jpg,.jpeg,.png" required>
-              </div>
-              <div class="mb-3 p-2 rounded-3" id="parentsIDSection">
-                <label for="parentsID" class="form-label fw-bold">Parents/Guardian and student ID with 3 Signatures <span class="text-danger">*</span></label>
-                <input type="file" class="form-control" id="parentsID" name="parentsID" accept=".pdf,.jpg,.jpeg,.png" required>
-              </div>
-              <div class="mb-3 p-2 rounded-3" id="reportCardSection">
-                <label for="reportCard" class="form-label fw-bold">CTC of Grades Report <span class="text-danger">*</span></label>
-                <input type="file" class="form-control" id="reportCard" name="reportCard" accept=".pdf,.jpg,.jpeg,.png" required>
-              </div>
-              <div class="mb-3 p-2 rounded-3" id="itrSection">
-                  <label for="itr" class="form-label fw-bold">ITR of Employed Parents <span class="text-danger">*</span></label>
-                  <input type="file" class="form-control" id="itr" name="itr" accept=".pdf,.jpg,.jpeg,.png" required>
-              </div>
-              <div class="text-center">
-                <button type="submit" class="btn btn-primary btn-lg">Submit</button>
-              </div>
-            </form>
-          </div>
+          <form id="requiredDocsForm" method="POST" action="{{ url_for('student.upload_required_docs') }}" enctype="multipart/form-data">
+            <div class="mb-3 p-2 rounded-3" id="passportPhotoSection">
+              <label for="passportPhoto" class="form-label fw-bold">Passport Size Photo <span class="text-danger">*</span></label>
+              <input type="file" class="form-control" id="passportPhoto" name="passportPhoto" accept=".jpg,.jpeg,.png,image/*" required>
+            </div>
+            <div class="mb-3 p-2 rounded-3" id="birthCertificateSection">
+              <label for="birthCertificate" class="form-label fw-bold">Birth Certificate <span class="text-danger">*</span></label>
+              <input type="file" class="form-control" id="birthCertificate" name="birthCertificate" accept=".pdf,application/pdf" required>
+            </div>
+            <div class="mb-3 p-2 rounded-3" id="parentsIDSection">
+              <label for="parentsID" class="form-label fw-bold">Parents/Guardian and student ID with 3 Signatures <span class="text-danger">*</span></label>
+              <input type="file" class="form-control" id="parentsID" name="parentsID" accept=".pdf,application/pdf" required>
+            </div>
+            <div class="mb-3 p-2 rounded-3" id="reportCardSection">
+              <label for="reportCard" class="form-label fw-bold">CTC of Grades Report <span class="text-danger">*</span></label>
+              <input type="file" class="form-control" id="reportCard" name="reportCard" accept=".pdf,application/pdf" required>
+            </div>
+            <div class="mb-3 p-2 rounded-3" id="itrSection">
+              <label for="itr" class="form-label fw-bold">ITR of Employed Parents <span class="text-danger">*</span></label>
+              <input type="file" class="form-control" id="itr" name="itr" accept=".pdf,application/pdf" required>
+            </div>
+            <div class="text-center">
+              <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+            </div>
+          </form>
         </div>
       </div>
-      <div class="container mt-5">
-        <div class="card shadow-sm">
-          <div class="card-header text-white" style="background-color: #003366;">
-              <h5 class="mb-0">Additional Requirements</h5>
-          </div>
-          <div class="card-body">
-              <form id="additionalDocsForm" method="POST" action="{{ url_for('student.upload_additional_docs') }}" enctype="multipart/form-data">
-                  <div class="mb-3">
-                    <label for="itr" class="form-label fw-bold">Additional Files<span class="text-danger">*</span></label>
-                    <input type="file" class="form-control" id="additionalFiles" name="additionalFiles" accept=".pdf,.jpg,.jpeg,.png" required>
-                  </div>
-                  <div class="text-center">
-                    <button type="submit" class="btn btn-primary btn-lg">Submit</button>
-                  </div>
-              </form>
+    </div>
+    <div class="container mt-5">
+      <div class="card shadow-sm">
+        <div class="card-header text-white" style="background-color: #003366;">
+            <h5 class="mb-0">Additional Requirements</h5>
+        </div>
+        <div class="card-body">
+            <form id="additionalDocsForm" method="POST" action="{{ url_for('student.upload_additional_docs') }}" enctype="multipart/form-data">
+                <div class="mb-3">
+                  <label for="itr" class="form-label fw-bold">Additional Files<span class="text-danger">*</span></label>
+                  <input type="file" class="form-control" id="additionalFiles" name="additionalFiles" accept=".pdf,application/pdf" required>
+                </div>
+                <div class="text-center">
+                  <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+                </div>
+            </form>
           </div>
         </div>
       </div>

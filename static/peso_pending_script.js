@@ -413,7 +413,7 @@ document.getElementById('confirmPendingBtn').addEventListener('click', function(
     let url = '';
     let successMsg = '';
     if (pendingActionType === 'reject') {
-        url = `/reject_student_from_pending/${pendingTargetStudentId}`;
+        url = `/reject_student/${pendingTargetStudentId}`;
         successMsg = 'Student rejected and deleted from pending.';
     } else if (pendingActionType === 'final') {
         url = `/move_to_final_list_from_pending/${pendingTargetStudentId}`;

@@ -197,7 +197,7 @@
                             <form id="accomplishmentForm" method="POST" action="{{ url_for('student.upload_accomplishment_report') }}" enctype="multipart/form-data">
                                 <div class="mb-3">
                                   <label for="accomplishment_report" class="form-label fw-bold">Upload Accomplishment Report (PDF/Image):<span class="text-danger">you wont be moved to  payroll if accomplishment report is missing*</span></label>
-                                  <input type="file" class="form-control" id="accomplishment_report" name="accomplishment_report" accept=".pdf,.jpg,.jpeg,.png" required>
+                                  <input type="file" class="form-control" id="accomplishment_report" name="accomplishment_report" accept=".pdf,application/pdf" required>
                                 </div>
                                 <div class="text-center mb-3">
                                     <a href="{{ url_for('student.download_ar_template') }}" class="btn btn-outline-primary">Download AR Template (DOCX)</a>
@@ -218,7 +218,7 @@
                             <form id="requestedDocsForm" method="POST" action="{{ url_for('student.upload_requested_docs') }}" enctype="multipart/form-data">
                                 <div class="mb-3">
                                   <label for="requested_docs" class="form-label fw-bold">Upload Requested Documents (PDF/Image):<span class="text-danger">you wont be moved to  payroll if failed to comply*</span></label>
-                                  <input type="file" class="form-control" id="requested_docs" name="requested_docs" accept=".pdf,.jpg,.jpeg,.png" required>
+                                  <input type="file" class="form-control" id="requested_docs" name="requested_docs" accept=".pdf,application/pdf" required>
                                 </div>
                                 <div class="text-center">
                                   <button type="submit" class="btn btn-primary btn-lg">Submit</button>
