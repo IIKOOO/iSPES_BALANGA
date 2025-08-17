@@ -196,7 +196,7 @@ function fetchAndDisplayPayroll() {
                             const student = allRecords.find(r => r.dtr_record_id == studentId);
                             let comment = student && student.comment_for_dtr ? student.comment_for_dtr : '';
                             let commentCard = `
-                                <div class="card mt-4">
+                                <div class="card mt-4 peso-comment-card shadow">
                                     <div class="card-header text-white" style="background-color: #003366;">
                                         <h5 class="mb-0 fw-bold">PESO Comment to Student</h5>
                                     </div>
