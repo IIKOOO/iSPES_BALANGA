@@ -126,7 +126,9 @@ function fetchAndDisplayPayroll() {
                                         </table>
                                     </div>
                                     <div class="text-center">
-                                        <button class="btn btn-success" onclick="window.print()">Print DTR</button>
+                                        <a class="btn btn-primary ms-2" href="/download_csc_dtr_xlsx/${studentId}" target="_blank">
+                                            Download DTR
+                                        </a>
                                     </div>
                                 </div>
                             </div>

@@ -145,7 +145,7 @@ button {
   box-shadow: 0 4px 24px rgba(0,0,0,0.2);
 }
 
-@media print {
+/* @media print {
     @page {
         size: Letter portrait;
         margin: 8mm;
@@ -210,12 +210,12 @@ button {
     text-transform: uppercase;
 }
 
-/* Remove uppercase for email_address only */
+/* Remove uppercase for email_address only 
 #registration_form input#email_address,
 #registration_form input#registration_username,
 #registration_form input#registration_password,
 #registration_form input#confirm_password,
 #registration_form input#social_media_account {
     text-transform: none;
-}
+} */
 

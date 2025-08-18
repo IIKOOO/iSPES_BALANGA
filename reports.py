@@ -3,9 +3,11 @@ import openpyxl
 from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.utils import get_column_letter
+from openpyxl import Workbook
 from io import BytesIO
 from app import conn
 from datetime import datetime, date
+from collections import defaultdict
 import os
 import csv
 import io
@@ -633,3 +635,165 @@ def download_student_payroll_csv():
         )
     except Exception as e:
         return str(e), 500
+    
+    
+@reports_bp.route('/download_csc_dtr_xlsx/<int:dtr_record_id>')
+def download_csc_dtr_xlsx(dtr_record_id):
+    # --- 1. Fetch student and DTR data ---
+    with conn.cursor() as cur:
+        # Get student info
+        cur.execute("""
+            SELECT last_name, first_name, middle_name, suffix, starting_date, end_date
+            FROM student_dtr_records WHERE dtr_record_id = %s
+        """, (dtr_record_id,))
+        student = cur.fetchone()
+        if not student:
+            return "Student not found", 404
+        last_name, first_name, middle_name, suffix, starting_date, end_date = student
+
+        # Get all DTR entries for this student
+        cur.execute("""
+            SELECT date, time_in_am, time_out_am, time_in_pm, time_out_pm
+            FROM student_dtr WHERE student_id = %s
+            ORDER BY date
+        """, (dtr_record_id,))
+        dtr_rows = cur.fetchall()
+
+    # --- 2. Group DTRs by (year, month) ---
+    dtr_by_month = defaultdict(dict)
+    for row in dtr_rows:
+        date, am_in, am_out, pm_in, pm_out = row
+        month_key = (date.year, date.month)
+        dtr_by_month[month_key][date.day] = {
+            "am_in": am_in,
+            "am_out": am_out,
+            "pm_in": pm_in,
+            "pm_out": pm_out,
+            "under_hours": 0,
+            "under_minutes": 0
+        }
+
+    # --- helper to format time ---
+    def format_time(dt, military=False):
+        if not dt:
+            return ''
+        return dt.strftime("%H:%M:%S") if military else dt.strftime("%I:%M %p")
+
+    # --- 3. Prepare workbook ---
+    wb = Workbook()
+    first_sheet = True
+
+    for (year, month), dtr_by_day in sorted(dtr_by_month.items()):
+        # Create new sheet (or reuse first one)
+        if first_sheet:
+            ws = wb.active
+            first_sheet = False
+        else:
+            ws = wb.create_sheet()
+        ws.title = f"{datetime(year, month, 1).strftime('%B %Y')}"
+
+        # --- 4. Header and meta ---
+        ws.merge_cells('A1:H1')
+        ws['A1'] = "Civil Service Form No. 48"
+        ws['A1'].font = Font(italic=True, size=10)
+        ws['A1'].alignment = Alignment(horizontal='left')
+
+        ws.merge_cells('A2:H2')
+        ws['A2'] = "DAILY TIME RECORD"
+        ws['A2'].font = Font(bold=True, size=16)
+        ws['A2'].alignment = Alignment(horizontal='center')
+
+        ws.merge_cells('A3:H3')
+        full_name = f"{last_name}, {first_name} {middle_name or ''} {suffix or ''}".strip()
+        ws['A3'] = f"(Name): {full_name}"
+        ws['A3'].alignment = Alignment(horizontal='center')
+        ws['A3'].font = Font(italic=True)
+
+        ws['A4'] = f"For the month of {datetime(year, month, 1).strftime('%B')}, {year}"
+        ws['E4'] = "Regular Days ______"
+        ws['G4'] = "Saturdays ______"
+
+        # --- 5. Table headers ---
+        ws['A6'] = "Days"
+        ws.merge_cells('B6:C6')
+        ws['B6'] = "A.M."
+        ws.merge_cells('D6:E6')
+        ws['D6'] = "P.M."
+        ws.merge_cells('F6:G6')
+        ws['F6'] = "UNDER TIME"
+        ws['H6'] = ""
+        ws['A7'] = ""
+        ws['B7'] = "ARRIVAL"
+        ws['C7'] = "DEPARTURE"
+        ws['D7'] = "ARRIVAL"
+        ws['E7'] = "DEPARTURE"
+        ws['F7'] = "Hours"
+        ws['G7'] = "Minutes"
+        ws['H7'] = ""
+
+        # --- 6. Fill DTR rows (1-31) ---
+        thin = Side(border_style="thin", color="000000")
+        total_hours = 0
+        total_minutes = 0
+
+        for i in range(1, 32):
+            row_idx = 7 + i
+            ws[f'A{row_idx}'] = i
+            dtr = dtr_by_day.get(i, {})
+            ws[f'B{row_idx}'] = format_time(dtr.get('am_in'))
+            ws[f'C{row_idx}'] = format_time(dtr.get('am_out'))
+            ws[f'D{row_idx}'] = format_time(dtr.get('pm_in'))
+            ws[f'E{row_idx}'] = format_time(dtr.get('pm_out'))
+            ws[f'F{row_idx}'] = dtr.get('under_hours') or ''
+            ws[f'G{row_idx}'] = dtr.get('under_minutes') or ''
+
+            # Sum total under time
+            try:
+                total_hours += int(dtr.get('under_hours') or 0)
+                total_minutes += int(dtr.get('under_minutes') or 0)
+            except Exception:
+                pass
+
+            # Borders
+            for col in range(1, 8):
+                ws.cell(row=row_idx, column=col).border = Border(
+                    top=thin, left=thin, right=thin, bottom=thin
+                )
+                ws.cell(row=row_idx, column=col).alignment = Alignment(horizontal='center', vertical='center')
+
+        # --- 7. Total row ---
+        ws[f'A{39}'] = "TOTAL"
+        ws[f'F{39}'] = total_hours + (total_minutes // 60)
+        ws[f'G{39}'] = total_minutes % 60
+        for col in range(1, 8):
+            ws.cell(row=39, column=col).border = Border(top=thin, left=thin, right=thin, bottom=thin)
+            ws.cell(row=39, column=col).alignment = Alignment(horizontal='center', vertical='center')
+
+        # --- 8. Certification ---
+        ws.merge_cells('A41:G41')
+        ws['A41'] = (
+            "I CERTIFY on my honor that the above is a true and correct report of the hours of work performed, "
+        )
+        ws.merge_cells('A42:G42')
+        ws['A42'] = (
+            "record of which was made daily at the time of arrival and departure from office."
+        )
+        ws['A41'].alignment = Alignment(wrap_text=True)
+        ws['A42'].alignment = Alignment(wrap_text=True)
+
+        # --- 9. Adjust column widths ---
+        ws.column_dimensions['A'].width = 5
+        for col in 'BCDEFG':
+            ws.column_dimensions[col].width = 14
+
+    # --- 10. Save and send file ---
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    filename = f"CSC_Form_48_DTR_{full_name.replace(' ', '_')}.xlsx"
+    return send_file(
+        output,
+        download_name=filename,
+        as_attachment=True,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
