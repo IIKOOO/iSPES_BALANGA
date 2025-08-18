@@ -197,12 +197,6 @@ button {
         display: none !important;
     }
 }
-.table td, .table th {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 180px;
-}
 #registration_form input[type="text"],
   #registration_form input[type="email"],
   #registration_form textarea,
@@ -219,3 +213,9 @@ button {
     text-transform: none;
 } */
 
+.table td, .table th {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
