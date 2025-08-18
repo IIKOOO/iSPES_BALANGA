@@ -424,14 +424,28 @@ def admin_dtr_cutoff():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
+    category = data.get('category', '')
+    if category not in ['college', 'senior_high']:
+        return jsonify({'success': False, 'error': 'Please select a category.'})
+
     with conn.cursor() as cur:
         cur.execute("SELECT password FROM admin_login WHERE username=%s", (username,))
         row = cur.fetchone()
         if not row or not check_password_hash(row[0], password):
             return jsonify({'success': False, 'error': 'Invalid admin credentials.'})
-        cur.execute("""
-            SELECT id FROM final_spes_list
-            WHERE id NOT IN (SELECT id FROM student_dtr_records)
+
+        # Build category filter
+        if category == 'senior_high':
+            category_filter = "AND sa.student_category = 'SENIOR HIGH SCHOOL'"
+        else:  # college
+            category_filter = "AND sa.student_category <> 'SENIOR HIGH SCHOOL'"
+
+        cur.execute(f"""
+            SELECT sa.student_id
+            FROM student_application sa
+            WHERE sa.student_id NOT IN (SELECT dtr_record_id FROM student_dtr_records)
+              AND sa.is_approved = TRUE
+              {category_filter}
         """)
         student_ids = [r[0] for r in cur.fetchall()]
         import json
@@ -444,32 +458,26 @@ def admin_dtr_cutoff():
             if not dtr_rows:
                 continue
             total_hours = sum(float(r[7]) for r in dtr_rows if r[7] and str(r[7]).replace('.', '', 1).isdigit())
-            total_late = sum(
-                1 for r in dtr_rows
-                if (str(r[5]).strip().lower() == 'late' or str(r[6]).strip().lower() == 'late')
-            )
-            total_ontime = sum(
-                1 for r in dtr_rows
-                if (str(r[5]).strip().lower() == 'on-time' or str(r[6]).strip().lower() == 'on-time')
-            )
+            if total_hours <= 0:
+                continue
             starting_date = dtr_rows[0][0] if dtr_rows else None
             end_date = dtr_rows[-1][0] if dtr_rows else None
             cur.execute("""
-                SELECT final_student_id, last_name, first_name, middle_name, suffix, email, student_category, mobile_no, birth_date
-                FROM final_spes_list WHERE final_student_id=%s
+                SELECT student_id, last_name, first_name, middle_name, suffix, email, student_category, mobile_no, birth_date
+                FROM student_application WHERE student_id=%s
             """, (student_id,))
             student = cur.fetchone()
             if not student:
                 continue
             cur.execute("""
                 INSERT INTO student_dtr_records (
-                    id, last_name, first_name, middle_name, suffix, email, student_category, mobile_no, birth_date,
-                    total_late, total_ontime, total_worked_hours, starting_date, end_date, dtr_details
-                ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                ON CONFLICT (id) DO NOTHING
+                    dtr_record_id, last_name, first_name, middle_name, suffix, email, student_category, mobile_no, birth_date,
+                    total_worked_hours, starting_date, end_date, dtr_details
+                ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                ON CONFLICT (dtr_record_id) DO NOTHING
             """, (
                 student[0], student[1], student[2], student[3], student[4], student[5], student[6], student[7], student[8],
-                str(total_late), str(total_ontime), str(total_hours),
+                str(total_hours),
                 starting_date, end_date,
                 json.dumps([
                     [
@@ -482,37 +490,8 @@ def admin_dtr_cutoff():
                     ] for r in dtr_rows
                 ])
             ))
-            
-            # --- Archive student data ---
-            # Archive student_application
-            cur.execute("""
-                INSERT INTO student_application_archive
-                SELECT * FROM student_application WHERE student_id = %s
-            """, (student_id,))
-            # Archive education
-            cur.execute("""
-                INSERT INTO student_application_archive_education
-                SELECT * FROM student_application_education WHERE student_application_id = %s
-            """, (student_id,))
-            # Archive parents/guardians
-            cur.execute("""
-                INSERT INTO student_application_archive_parents_guardians
-                SELECT * FROM student_application_parents_guardians WHERE student_application_id = %s
-            """, (student_id,))
-            # Archive requirements
-            cur.execute("""
-                INSERT INTO student_application_archive_requirements
-                SELECT * FROM student_application_requirements WHERE student_application_id = %s
-            """, (student_id,))
-
-            # --- Delete from main tables ---
-            cur.execute("DELETE FROM student_application_requirements WHERE student_application_id = %s", (student_id,))
-            cur.execute("DELETE FROM student_application_education WHERE student_application_id = %s", (student_id,))
-            cur.execute("DELETE FROM student_application_parents_guardians WHERE student_application_id = %s", (student_id,))
-            cur.execute("DELETE FROM student_application WHERE student_id = %s", (student_id,))
-            
         conn.commit()
-    flash('DTR cut-off complete. All ongoing students have been resigned.', 'success')
+    flash('DTR cut-off complete. Selected students have been moved to records.', 'success')
     return jsonify({'success': True})
 
 @admin_bp.route('/retrieve_admin_accounts', methods=['POST'])

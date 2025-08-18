@@ -67,14 +67,14 @@ function fetchAndDisplayPayroll() {
                         let html = `
                             <div class="card mb-4 shadow">
                                 <div class="card-header text-white" style="background-color: #003366;">
-                                    <h5 class="mb-0 fw-bold">DTR Records</h5>
+                                    <h5 class="mb-0 fw-bold">${studentName} DTR (ID: ${studentId})</h5>
                                 </div>
                                 <div class="card-body bg-light">
                                     <!-- Progress Bar -->
                                     <div class="container mb-3">
                                         <h6 class="text-center">Progress Tracker</h6>
                                         <div class="progress">
-                                            <div id="modalDtrProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="160">0% Complete</div>
+                                            <div id="modalDtrProgressBar" class="progress-bar bg-success text-dark fw-bold ps-3 pe-3" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="160">0% Complete</div>
                                         </div>
                                         <div class="text-center mt-2">
                                             <span id="modalDtrProgressText">0 hours completed, 160 hours remaining</span>

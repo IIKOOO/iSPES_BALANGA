@@ -440,30 +440,82 @@ function loadSummaryCarousel() {
 
 document.addEventListener('DOMContentLoaded', loadSummaryCarousel);
 
+// document.addEventListener('DOMContentLoaded', function() {
+//     const dtrCutoffBtn = document.getElementById('DtrCutOffBtn');
+//     if (dtrCutoffBtn) {
+//         dtrCutoffBtn.addEventListener('click', function() {
+//             new bootstrap.Modal(document.getElementById('dtrCutoffConfirmModal')).show();
+//         });
+//     }
+//     const proceedBtn = document.getElementById('proceedDtrCutoffBtn');
+//     if (proceedBtn) {
+//         proceedBtn.addEventListener('click', function() {
+//             bootstrap.Modal.getInstance(document.getElementById('dtrCutoffConfirmModal')).hide();
+//             new bootstrap.Modal(document.getElementById('dtrCutoffLoginModal')).show();
+//         });
+//     }
+//     const loginForm = document.getElementById('dtrCutoffLoginForm');
+//     if (loginForm) {
+//         loginForm.addEventListener('submit', function(e) {
+//             e.preventDefault();
+//             const username = document.getElementById('adminUsername').value;
+//             const password = document.getElementById('adminPassword').value;
+//             fetch('/admin_dtr_cutoff', {
+//                 method: 'POST',
+//                 headers: { 'Content-Type': 'application/json' },
+//                 body: JSON.stringify({ username, password })
+//             })
+//             .then(res => res.json())
+//             .then(data => {
+//                 if (data.success) {
+//                     bootstrap.Modal.getInstance(document.getElementById('dtrCutoffLoginModal')).hide();
+//                     location.reload();
+//                 } else {
+//                     const err = document.getElementById('dtrCutoffLoginError');
+//                     err.textContent = data.error || 'Authentication failed.';
+//                     err.style.display = 'block';
+//                 }
+//             });
+//         });
+//     }
+// });
+
 document.addEventListener('DOMContentLoaded', function() {
+    const categorySelect = document.getElementById('dtrCutoffCategory');
+    const proceedBtn = document.getElementById('proceedDtrCutoffBtn');
     const dtrCutoffBtn = document.getElementById('DtrCutOffBtn');
+    if (categorySelect && proceedBtn) {
+        categorySelect.addEventListener('change', function() {
+            proceedBtn.disabled = !categorySelect.value;
+        });
+    }
     if (dtrCutoffBtn) {
         dtrCutoffBtn.addEventListener('click', function() {
             new bootstrap.Modal(document.getElementById('dtrCutoffConfirmModal')).show();
         });
     }
-    const proceedBtn = document.getElementById('proceedDtrCutoffBtn');
+
     if (proceedBtn) {
         proceedBtn.addEventListener('click', function() {
+            if (!categorySelect.value) return;
             bootstrap.Modal.getInstance(document.getElementById('dtrCutoffConfirmModal')).hide();
+            // Pass the selected category to the login modal for later use
+            document.getElementById('dtrCutoffLoginForm').dataset.category = categorySelect.value;
             new bootstrap.Modal(document.getElementById('dtrCutoffLoginModal')).show();
         });
     }
+
     const loginForm = document.getElementById('dtrCutoffLoginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const username = document.getElementById('adminUsername').value;
             const password = document.getElementById('adminPassword').value;
+            const category = loginForm.dataset.category || '';
             fetch('/admin_dtr_cutoff', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ username, password, category })
             })
             .then(res => res.json())
             .then(data => {

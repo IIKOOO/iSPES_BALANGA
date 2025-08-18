@@ -80,7 +80,7 @@ document.addEventListener('click', function (e) {
                         <div class="container mb-3">
                             <h6 class="text-center">Progress Tracker</h6>
                             <div class="progress">
-                                <div id="modalDtrProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="160">0% Complete</div>
+                                <div id="modalDtrProgressBar" class="progress-bar bg-success text-dark fw-bold ps-3 pe-3" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="160">0% Complete</div>
                             </div>
                             <div class="text-center mt-2">
                                 <span id="modalDtrProgressText">0 hours completed, 160 hours remaining</span>
@@ -441,7 +441,7 @@ function refreshDtrModalTable(studentId) {
                         <div class="container mb-3">
                             <h6 class="text-center">Progress Tracker</h6>
                             <div class="progress">
-                                <div id="modalDtrProgressBar" class="progress-bar bg-success" role="progressbar" style="width: ${percent}%;" aria-valuenow="${totalWorkedHours}" aria-valuemin="0" aria-valuemax="160">${Math.round(percent)}% Complete</div>
+                                <div id="modalDtrProgressBar" class="progress-bar bg-success text-dark fw-bold ps-3 pe-3" role="progressbar" style="width: ${percent}%;" aria-valuenow="${totalWorkedHours}" aria-valuemin="0" aria-valuemax="160">${Math.round(percent)}% Complete</div>
                             </div>
                             <div class="text-center mt-2">
                                 <span id="modalDtrProgressText">${totalWorkedHours} hours completed, ${Math.max(0, maxHours - totalWorkedHours)} hours remaining</span>
