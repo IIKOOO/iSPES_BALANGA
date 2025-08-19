@@ -190,7 +190,7 @@ def dtr_scan():
             cur.execute("SELECT 1 FROM student_dtr_records WHERE dtr_record_id = %s", (student_id,))
             if cur.fetchone():
                 conn.commit()
-                return jsonify({'success': False, 'error': 'You have completed your work. DTR logging is closed.'})
+                return jsonify({'success': True, 'message': 'You have completed your work. DTR logging is closed.'})
             
             # --- Calculate and update daily total hours ---
             # After updating time_out_am or time_out_pm
@@ -266,10 +266,10 @@ def dtr_scan():
                 ))
                 
                 conn.commit()
-                return jsonify({'success': False, 'error': 'You have reached the maximum 160 hours. DTR logging is now closed.'})
+                return jsonify({'success': True, 'message': 'You have reached the maximum 160 hours. DTR logging is now closed.'})
 
             conn.commit()
-            return jsonify({'success': True})
+            return jsonify({'success': True, 'scan_time': now.strftime('%Y-%m-%d %H:%M:%S')})
     except Exception as e:
         conn.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500

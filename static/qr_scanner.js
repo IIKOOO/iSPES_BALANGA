@@ -58,7 +58,17 @@ function onScanSuccess(decodedText, decodedResult) {
     .then(res => res.json())
     .then(data => {
         if(data.success) {
-            document.getElementById('qr-result').innerHTML = `<div class="alert alert-success">DTR logged successfully!</div>`;
+            let msg = `<div class="alert alert-success">`;
+            if (data.message) {
+                msg += data.message;
+            } else {
+                msg += `DTR logged successfully!`;
+            }
+            if (data.scan_time) {
+                msg += `<br><b>Scan Time:</b> ${data.scan_time}`;
+            }
+            msg += `</div>`;
+            document.getElementById('qr-result').innerHTML = msg;
         } else {
             document.getElementById('qr-result').innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`;
         }
