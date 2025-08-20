@@ -41,6 +41,7 @@ def download_final_spes_list_xlsx():
     # Header: merge A1:I12
     ws.merge_cells('A1:I12')
     header_text = (
+        "REPUBLIC OF THE PHILIPPINES\n"
         "DEPARTMENT OF LABOR AND EMPLOYMENT\n"
         "REGION OFFICE NO. III\n"
         "PUBLIC EMPLOYMENT SERVICE OFFICE\n"
@@ -187,6 +188,7 @@ def download_student_payroll_xlsx():
     # Header: merge A1:C10
     ws.merge_cells('A1:C10')
     header_text = (
+        "REPUBLIC OF THE PHILIPPINES\n"
         "DEPARTMENT OF LABOR AND EMPLOYMENT\n"
         "REGION OFFICE NO. III\n"
         "PUBLIC EMPLOYMENT SERVICE OFFICE\n"
@@ -548,7 +550,7 @@ def download_student_payroll_csv():
     
 @reports_bp.route('/download_csc_dtr_xlsx/<int:dtr_record_id>')
 def download_csc_dtr_xlsx(dtr_record_id):
-    # --- 1. Fetch student and DTR data ---
+    # --- Fetch student and DTR data ---
     with conn.cursor() as cur:
         # Get student info
         cur.execute("""
@@ -568,7 +570,7 @@ def download_csc_dtr_xlsx(dtr_record_id):
         """, (dtr_record_id,))
         dtr_rows = cur.fetchall()
 
-    # --- 2. Group DTRs by (year, month) ---
+    # --- Group DTRs by (year, month) ---
     dtr_by_month = defaultdict(dict)
     for row in dtr_rows:
         date, am_in, am_out, pm_in, pm_out = row
@@ -582,13 +584,13 @@ def download_csc_dtr_xlsx(dtr_record_id):
             "under_minutes": 0
         }
 
-    # --- helper to format time ---
+    #helper to format time ---
     def format_time(dt, military=False):
         if not dt:
             return ''
         return dt.strftime("%H:%M:%S") if military else dt.strftime("%I:%M %p")
 
-    # --- 3. Prepare workbook ---
+    #Prepare workbook ---
     wb = Workbook()
     first_sheet = True
 
@@ -640,7 +642,7 @@ def download_csc_dtr_xlsx(dtr_record_id):
         ws['G7'] = "Minutes"
         ws['H7'] = ""
 
-        # --- 6. Fill DTR rows (1-31) ---
+        #Fill DTR rows (1-31) ---
         thin = Side(border_style="thin", color="000000")
         total_hours = 0
         total_minutes = 0
@@ -670,7 +672,7 @@ def download_csc_dtr_xlsx(dtr_record_id):
                 )
                 ws.cell(row=row_idx, column=col).alignment = Alignment(horizontal='center', vertical='center')
 
-        # --- 7. Total row ---
+        #Total row ---
         ws[f'A{39}'] = "TOTAL"
         ws[f'F{39}'] = total_hours + (total_minutes // 60)
         ws[f'G{39}'] = total_minutes % 60
@@ -678,7 +680,7 @@ def download_csc_dtr_xlsx(dtr_record_id):
             ws.cell(row=39, column=col).border = Border(top=thin, left=thin, right=thin, bottom=thin)
             ws.cell(row=39, column=col).alignment = Alignment(horizontal='center', vertical='center')
 
-        # --- 8. Certification ---
+        #Certification ---
         ws.merge_cells('A41:G41')
         ws['A41'] = (
             "I CERTIFY on my honor that the above is a true and correct report of the hours of work performed, "
@@ -690,12 +692,12 @@ def download_csc_dtr_xlsx(dtr_record_id):
         ws['A41'].alignment = Alignment(wrap_text=True)
         ws['A42'].alignment = Alignment(wrap_text=True)
 
-        # --- 9. Adjust column widths ---
+        #Adjust column widths ---
         ws.column_dimensions['A'].width = 5
         for col in 'BCDEFG':
             ws.column_dimensions[col].width = 14
 
-    # --- 10. Save and send file ---
+    #Save and send file ---
     output = BytesIO()
     wb.save(output)
     output.seek(0)
@@ -735,6 +737,7 @@ def download_gsis_report_xlsx():
     # Header: merge A1:P12
     ws.merge_cells('A1:P12')
     header_text = (
+        "REPUBLIC OF THE PHILIPPINES\n"
         "DEPARTMENT OF LABOR AND EMPLOYMENT\n"
         "REGION OFFICE NO. III\n"
         "PUBLIC EMPLOYMENT SERVICE OFFICE\n"
