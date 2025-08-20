@@ -173,14 +173,31 @@ def retrieve_applications():
 
             # Sibling logic (optional, adjust as needed)
             cur.execute("""
-                SELECT p1.student_application_id
+                SELECT DISTINCT p1.student_application_id
                 FROM student_application_parents_guardians p1
                 JOIN student_application_parents_guardians p2
-                    ON LOWER(TRIM(p1.father_full_name)) = LOWER(TRIM(p2.father_full_name))
-                    AND LOWER(TRIM(p1.mother_full_name)) = LOWER(TRIM(p2.mother_full_name))
-                WHERE p1.student_application_id <> p2.student_application_id
-                    AND p1.father_full_name NOT IN ('', 'N/A', 'Unknown')
-                    AND p1.mother_full_name NOT IN ('', 'N/A', 'Unknown')
+                    ON p1.student_application_id <> p2.student_application_id
+                    AND (
+                        (
+                            -- Both father and mother present, match both
+                            p1.father_full_name NOT IN ('', 'N/A', 'Unknown') AND p2.father_full_name NOT IN ('', 'N/A', 'Unknown')
+                            AND p1.mother_full_name NOT IN ('', 'N/A', 'Unknown') AND p2.mother_full_name NOT IN ('', 'N/A', 'Unknown')
+                            AND LOWER(TRIM(p1.father_full_name)) = LOWER(TRIM(p2.father_full_name))
+                            AND LOWER(TRIM(p1.mother_full_name)) = LOWER(TRIM(p2.mother_full_name))
+                        )
+                        OR
+                        (
+                            -- Only mother present, match mother (father missing or different)
+                            p1.mother_full_name NOT IN ('', 'N/A', 'Unknown') AND p2.mother_full_name NOT IN ('', 'N/A', 'Unknown')
+                            AND LOWER(TRIM(p1.mother_full_name)) = LOWER(TRIM(p2.mother_full_name))
+                        )
+                        OR
+                        (
+                            -- Only father present, match father (mother missing or different)
+                            p1.father_full_name NOT IN ('', 'N/A', 'Unknown') AND p2.father_full_name NOT IN ('', 'N/A', 'Unknown')
+                            AND LOWER(TRIM(p1.father_full_name)) = LOWER(TRIM(p2.father_full_name))
+                        )
+                    )
                 GROUP BY p1.student_application_id
             """)
             sibling_ids = set(row[0] for row in cur.fetchall())

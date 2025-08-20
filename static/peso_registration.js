@@ -182,30 +182,16 @@ document.addEventListener('click', function (e) {
                                 <div class="col-md-8">${data.living_with}</div>
                             </div>
                             ${renderRow('Guardian Full Name', data.guardian_full_name)}
+                            ${renderRow('Guardian Contact No', data.guardian_contact_no)}
                             ${renderRow('Guardian Birth Date', formatBirthDate(data.guardian_birth_date))}
                             ${renderRow('Guardian Occupation', data.guardian_occupation)}
                             ${renderRow('Relationship with Guardian', data.relationship_with_guardian)}
                             ${renderRow('Guardian TIN No', data.guardian_tin_no)}
-                            <div class="row mb-3">
-                                <div class="col-md-4"><strong>Father Full Name:</strong></div>
-                                <div class="col-md-8">${data.father_full_name}</div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-4"><strong>Father Contact No:</strong></div>
-                                <div class="col-md-8">${data.father_contact_no}</div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-4"><strong>Father Birth Date:</strong></div>
-                                <div class="col-md-8">${formatBirthDate(data.father_birth_date)}</div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-4"><strong>Father Occupation:</strong></div>
-                                <div class="col-md-8">${data.father_occupation}</div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-4"><strong>Father TIN No:</strong></div>
-                                <div class="col-md-8">${data.father_tin_no}</div>
-                            </div>
+                            ${renderRow('Guardian Full Name', data.father_full_name)}
+                            ${renderRow('Guardian Contact No', data.father_contact_no)}
+                            ${renderRow('Guardian Birth Date', formatBirthDate(data.father_birth_date))}
+                            ${renderRow('Guardian Occupation', data.father_occupation)}
+                            ${renderRow('Guardian TIN No', data.guardian_tin_no)}
                             <div class="row mb-3">
                                 <div class="col-md-4"><strong>Mother Full Name:</strong></div>
                                 <div class="col-md-8">${data.mother_full_name}</div>

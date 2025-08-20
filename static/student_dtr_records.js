@@ -121,7 +121,7 @@ function fetchAndDisplayDtrRecords() {
                                 <td>${row.evaluation_am || '-'}</td>
                                 <td>${row.evaluation_pm || '-'}</td>
                                 <td>
-                                    <button class="btn btn-sm btn-info view-image-btn" data-dtr-id="${row.dtr_id}" style="background-color: #98c1d9;">View Image</button>
+                                    <button class="btn btn-sm btn-info view-image-btn" data-dtr-id="${row.dtr_id}" style="background-color: #20c997;">View Image</button>
                                 </td>
                                 <td>${row.daily_total + ' hours' || '-'}</td>
                                 <td>
@@ -415,7 +415,7 @@ function refreshDtrModalTable(studentId) {
                         <td>${row.evaluation_am || '-'}</td>
                         <td>${row.evaluation_pm || '-'}</td>
                         <td>
-                            <button class="btn btn-sm btn-info view-image-btn" data-dtr-id="${row.dtr_id}" style="background-color: #98c1d9;">View Image</button>
+                            <button class="btn btn-sm btn-info view-image-btn" data-dtr-id="${row.dtr_id}" style="background-color: #20c997;">View Image</button>
                         </td>
                         <td>${row.daily_total + ' hours' || '-'}</td>
                         <td>

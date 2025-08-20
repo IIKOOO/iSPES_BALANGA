@@ -115,7 +115,7 @@ function fetchAndDisplayPayroll() {
                                     <td>${row.evaluation_am || '-'}</td>
                                     <td>${row.evaluation_pm || '-'}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-info view-image-btn" data-dtr-id="${row.dtr_id}" style="background-color: #98c1d9;">View Image</button>
+                                        <button class="btn btn-sm btn-info view-image-btn" data-dtr-id="${row.dtr_id}" style="background-color: #20c997;">View Image</button>
                                     </td>
                                     <td>${row.daily_total + ' hours' || '-'}</td>
                                 </tr>
@@ -341,6 +341,10 @@ document.getElementById('downloadStudentPayrollCsvBtn').addEventListener('click'
 
 document.getElementById('downloadStudentPayrollXlsxBtn').addEventListener('click', function() {
     window.location.href = 'download_student_payroll_xlsx';
+});
+
+document.getElementById('downloadGSISXlsxBtn').addEventListener('click', function() {
+    window.location.href = 'download_gsis_report_xlsx';
 });
 
 document.addEventListener('DOMContentLoaded', fetchPayrollSummary, fetchActionLogs());
