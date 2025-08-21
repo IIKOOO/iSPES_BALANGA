@@ -254,7 +254,7 @@ document.addEventListener('click', function (e) {
                             ${renderRow('Father Contact No', data.father_contact_no)}
                             ${renderRow('Father Birth Date', formatBirthDate(data.father_birth_date))}
                             ${renderRow('Father Occupation', data.father_occupation)}
-                            ${renderRow('Father TIN No', data.guardian_tin_no)}
+                            ${renderRow('Father TIN No', data.father_tin_no)}
                             <div class="row mb-3">
                                 <div class="col-md-4"><strong>Mother Full Name:</strong></div>
                                 <div class="col-md-8">${data.mother_full_name}</div>
