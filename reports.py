@@ -714,20 +714,18 @@ def download_gsis_report_xlsx():
     with conn.cursor() as cur:
         cur.execute("""
             SELECT
-                dtr.dtr_record_id, dtr.last_name, dtr.first_name, dtr.middle_name, dtr.suffix, dtr.email, dtr.student_category, dtr.mobile_no, dtr.birth_date,
-                dtr.starting_date, dtr.end_date, dtr.is_paid, app.iskolar_type, app.sex,
-                app.student_id, edu.educational_attainment, app.street_add, app.barangay
-            FROM student_dtr_records dtr
-            LEFT JOIN student_application app ON dtr.dtr_record_id = app.student_id
-            LEFT JOIN student_application_education edu ON app.student_id = edu.student_application_id
-            WHERE dtr.for_payroll = TRUE
-            ORDER BY dtr.last_name, dtr.first_name
+                s.student_id, s.last_name, s.first_name, s.middle_name, s.suffix, s.email, s.student_category, s.mobile_no, s.birth_date,
+                s.iskolar_type, s.sex, e.educational_attainment, s.street_add, s.barangay, s.name_of_beneficiary
+            FROM student_application s
+            LEFT JOIN student_application_education e ON s.student_id = e.student_application_id
+            WHERE s.is_approved = TRUE
+            ORDER BY s.last_name, s.first_name
         """)
         rows = cur.fetchall()
 
     # Count male/female/total
-    male_count = sum(1 for r in rows if str(r[13]).strip().lower() == 'male')
-    female_count = sum(1 for r in rows if str(r[13]).strip().lower() == 'female')
+    male_count = sum(1 for r in rows if str(r[10]).strip().lower() == 'male')
+    female_count = sum(1 for r in rows if str(r[10]).strip().lower() == 'female')
     total_count = len(rows)
 
     wb = openpyxl.Workbook()
@@ -799,7 +797,7 @@ def download_gsis_report_xlsx():
     header_row = 18
     headers = [
         "No.",
-        "SPES Benefeciary",
+        "SPES BENEFICIARY",
         "Student ID",
         "AGE",
         "SEX",
@@ -862,21 +860,24 @@ def download_gsis_report_xlsx():
             age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
 
         # Address: street_add, barangay
-        street_add = row[16] or ""
-        barangay = row[17] or ""
+        street_add = row[12] or ""
+        barangay = row[13] or ""
         address = f"{street_add}, {barangay}".strip(", ")
 
         # Contact No.
         contact_no = row[7] or ""
 
         # Educational Level (educational_attainment)
-        educational_attainment = row[15] or ""
+        educational_attainment = row[11] or ""
 
         # Iskolar Type
-        iskolar_type = row[12] or ""
+        iskolar_type = row[9] or ""
 
         # Sex
-        sex = row[13] or ""
+        sex = row[10] or ""
+
+        # GSIS Beneficiary
+        gsis_beneficiary = row[14] or ""
 
         # Table row
         table_row = [
@@ -895,17 +896,8 @@ def download_gsis_report_xlsx():
             "",  # EMPLOYMENT PERIOD (blank)
             "",  # Total Amount to be earned/received as salary/wages (blank)
             "",  # GSIS Policy No. (blank)
-            full_name  # GSIS BENEFICIARY (same as NAME)
+            gsis_beneficiary  # GSIS BENEFICIARY (from name_of_beneficiary)
         ]
-        for col_num, value in enumerate(table_row, 1):
-            cell = ws.cell(row=header_row + idx, column=col_num, value=value)
-            thin = Side(border_style="thin", color="000000")
-            cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
-            cell.font = Font(name='Calibri')
-            cell.alignment = Alignment(horizontal='center', vertical='center')
-            
-    for idx, row in enumerate(rows, 1):
-        # ...existing code for writing table_row...
         for col_num, value in enumerate(table_row, 1):
             cell = ws.cell(row=header_row + idx, column=col_num, value=value)
             thin = Side(border_style="thin", color="000000")
@@ -923,7 +915,7 @@ def download_gsis_report_xlsx():
     note_cell = ws.cell(row=note_row, column=1)
     note_cell.value = "Note: This form shall be accomplished by the Public Employment Service Office to be submitted to the DOLE Regional Office at least ten (10) days prior to the date of employment."
     note_cell.font = Font(italic=True, size=8)
-    note_cell.alignment = Alignment(wrap_text=True, horizontal='left', vertical='top')
+    note_cell.alignment = Alignment(wrap_text=False, horizontal='left', vertical='top')
 
     # Two rows after note, merge A-E and L-P for 7 rows each
     prepared_start = note_row + 2

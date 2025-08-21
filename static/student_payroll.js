@@ -343,10 +343,6 @@ document.getElementById('downloadStudentPayrollXlsxBtn').addEventListener('click
     window.location.href = 'download_student_payroll_xlsx';
 });
 
-document.getElementById('downloadGSISXlsxBtn').addEventListener('click', function() {
-    window.location.href = 'download_gsis_report_xlsx';
-});
-
 document.addEventListener('DOMContentLoaded', fetchPayrollSummary, fetchActionLogs());
 
 

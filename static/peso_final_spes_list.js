@@ -561,8 +561,12 @@ document.getElementById('downloadFinalSpesListCsvBtn').addEventListener('click',
     window.location.href = '/download_final_spes_list_csv';
 });
 
-document.getElementById('downloadFinalSpesListXlsxBtn').addEventListener('click', function() {
-    window.location.href = '/download_final_spes_list_xlsx';
+// document.getElementById('downloadFinalSpesListXlsxBtn').addEventListener('click', function() {
+//     window.location.href = '/download_final_spes_list_xlsx';
+// });
+
+document.getElementById('downloadGSISXlsxBtn').addEventListener('click', function() {
+    window.location.href = 'download_gsis_report_xlsx';
 });
 
 document.addEventListener('DOMContentLoaded', fetchFinalSummary, fetchActionLogs());
