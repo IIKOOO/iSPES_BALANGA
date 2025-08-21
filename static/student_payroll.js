@@ -340,7 +340,23 @@ document.getElementById('downloadStudentPayrollCsvBtn').addEventListener('click'
 });
 
 document.getElementById('downloadStudentPayrollXlsxBtn').addEventListener('click', function() {
-    window.location.href = 'download_student_payroll_xlsx';
+    new bootstrap.Modal(document.getElementById('downloadStudentPayrollXlsxModal')).show();
+});
+
+// Enable confirm button only if an option is selected
+document.querySelectorAll('input[name="payrollDownloadCategory"]').forEach(el => {
+    el.addEventListener('change', function() {
+        document.getElementById('confirmDownloadStudentPayrollXlsxBtn').disabled = false;
+    });
+});
+
+// Handle download on confirm
+document.getElementById('confirmDownloadStudentPayrollXlsxBtn').addEventListener('click', function() {
+    const selected = document.querySelector('input[name="payrollDownloadCategory"]:checked');
+    if (!selected) return;
+    let url = '/download_student_payroll_xlsx?category=' + selected.value;
+    window.location.href = url;
+    bootstrap.Modal.getInstance(document.getElementById('downloadStudentPayrollXlsxModal')).hide();
 });
 
 document.addEventListener('DOMContentLoaded', fetchPayrollSummary, fetchActionLogs());

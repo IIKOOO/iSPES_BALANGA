@@ -5,6 +5,7 @@ from openpyxl.drawing.image import Image as XLImage
 from openpyxl.utils import get_column_letter
 from openpyxl import Workbook
 from io import BytesIO
+from flask import request
 from app import conn
 from datetime import datetime, date
 from collections import defaultdict
@@ -12,151 +13,113 @@ import os
 import csv
 import io
 
+
 reports_bp = Blueprint('reports', __name__)    
-    
+
 @reports_bp.route('/download_final_spes_list_xlsx')
 def download_final_spes_list_xlsx():
-    # Query student data
-    with conn.cursor() as cur:
-        cur.execute("""
-            SELECT
-                s.student_id, s.last_name, s.first_name, s.middle_name, s.suffix, s.birth_date,
-                s.sex, s.street_add, s.barangay, s.mobile_no, e.educational_attainment, s.iskolar_type
-            FROM student_application s
-            LEFT JOIN student_application_education e ON s.student_id = e.student_application_id
-            WHERE s.is_pending = FALSE AND s.is_approved = TRUE
-            ORDER BY s.last_name, s.first_name
-        """)
-        rows = cur.fetchall()
+    category = request.args.get('category', 'all')
+    query = """
+        SELECT s.student_id, s.last_name, s.first_name, s.middle_name, s.suffix, s.student_category
+        FROM student_application s
+        WHERE s.is_pending = FALSE AND s.is_approved = TRUE
+    """
+    params = []
+    if category == 'senior_high':
+        query += " AND s.student_category = %s"
+        params.append('SENIOR HIGH SCHOOL')
+    elif category == 'college':
+        query += " AND s.student_category <> %s"
+        params.append('SENIOR HIGH SCHOOL')
+    query += " ORDER BY s.last_name, s.first_name"
 
-    # Calculate male, female, total
-    male_count = sum(1 for r in rows if str(r[6]).strip().lower() == 'male')
-    female_count = sum(1 for r in rows if str(r[6]).strip().lower() == 'female')
-    total_count = len(rows)
+    with conn.cursor() as cur:
+        cur.execute(query, params)
+        rows = cur.fetchall()
 
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = "SPES Report"
+    ws.title = "Final SPES List"
 
-    # Header: merge A1:I12
-    ws.merge_cells('A1:I12')
+    # Header: merge A1:C10
+    ws.merge_cells('A1:C10')
     header_text = (
         "REPUBLIC OF THE PHILIPPINES\n"
         "DEPARTMENT OF LABOR AND EMPLOYMENT\n"
         "REGION OFFICE NO. III\n"
         "PUBLIC EMPLOYMENT SERVICE OFFICE\n"
         "CITY GOVERNMENT OF BALANGA\n"
-        "SPECIAL PROGRAM FOR EMPLOYMENT OF STUDENTS (SPES)\n"
+        "FINAL SPES LIST\n"
         "(RA 7323, as amended by RAs 9547 and 10917)"
     )
     ws['A1'] = header_text
     ws['A1'].alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
-    # Set font sizes for each line
-    for i, (text, size) in enumerate([
-        ("DEPARTMENT OF LABOR AND EMPLOYMENT", 16),
-        ("REGION OFFICE NO. III", 12),
-        ("PUBLIC EMPLOYMENT SERVICE OFFICE", 12),
-        ("CITY GOVERNMENT OF BALANGA", 16),
-        ("SPECIAL PROGRAM FOR EMPLOYMENT OF STUDENTS (SPES)", 16),
-        ("(RA 7323, as amended by RAs 9547 and 10917)", 12)
-    ]):
-        ws['A1'].font = Font(size=16, bold=True)  # Set default font for merged cell
+    ws['A1'].font = Font(size=14, bold=True)
 
-    # Insert logos
+    # Insert logos (optional, adjust as needed)
     logo_left = os.path.join('static', 'images', 'peso_balanga_logo.png')
     logo_right = os.path.join('static', 'images', 'spes_logo.png')
     if os.path.exists(logo_left):
         img_left = XLImage(logo_left)
-        img_left.height = 100
-        img_left.width = 100
+        img_left.height = 80
+        img_left.width = 80
         ws.add_image(img_left, 'A4')
     if os.path.exists(logo_right):
         img_right = XLImage(logo_right)
-        img_right.height = 100
-        img_right.width = 100
-        ws.add_image(img_right, 'I4')
-        
-    ws.merge_cells('B13:H15')
-    ws['B13'] = "FINAL SPES LIST REPORT"
-    ws['B13'].font = Font(size=20, bold=True)
-    ws['B13'].alignment = Alignment(horizontal='center', vertical='center')    
+        img_right.height = 80
+        img_right.width = 80
+        ws.add_image(img_right, 'C4')
 
-    # Summary rows: B13 to B15
-    ws['G16'] = f"Total = {total_count}"
-    ws['H16'] = f"Male = {male_count}"
-    ws['I16'] = f"Female = {female_count}"
-    for cell in ['G16', 'H16', 'I16']:
-        ws[cell].font = Font(bold=True)
-        ws[cell].alignment = Alignment(horizontal='center', vertical='center')
+    # Title: merge A11:C11, text "FINAL SPES LIST"
+    ws.merge_cells('A11:C11')
+    if category == 'senior_high':
+        title = "FINAL SPES LIST - Senior High School"
+    elif category == 'college':
+        title = "FINAL SPES LIST - College"
+    else:
+        title = "FINAL SPES LIST"
+    ws['A11'] = title
+    ws['A11'].font = Font(size=18, bold=True)
+    ws['A11'].alignment = Alignment(horizontal='center', vertical='center')
 
-    # Table header at row 17
-    header_row = 17
-    headers = [
-        "No.", "SPES BENEFICIARY", "Student ID/SPES ID", "AGE", "SEX",
-        "ADDRESS", "CONTACT NO.", "EDUCATIONAL LEVEL", "ISKOLAR TYPE"
-    ]
+    # Table header at row 13
+    header_row = 13
+    headers = ["No.", "Name", "SPES ID"]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=header_row, column=col_num, value=header)
         cell.font = Font(bold=True, color="FFFFFF")
         cell.fill = PatternFill("solid", fgColor="808080")
         cell.alignment = Alignment(horizontal='center', vertical='center')
-        # Borders
         thin = Side(border_style="thin", color="000000")
         cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+        # Set column widths
+        if col_num == 1:
+            ws.column_dimensions[get_column_letter(col_num)].width = 10  # No.
+        else:
+            ws.column_dimensions[get_column_letter(col_num)].width = 50  # Name, SPES ID
 
     # Write student rows
     for idx, row in enumerate(rows, 1):
-        # Full name: last_name, first_name (suffix), middle_name
         last_name = row[1] or ""
         first_name = row[2] or ""
-        suffix = row[4] or ""
         middle_name = row[3] or ""
+        suffix = row[4] or ""
         full_name = f"{last_name}, {first_name}"
         if suffix:
             full_name += f" {suffix}"
         if middle_name:
             full_name += f" {middle_name}"
 
-        # Age calculation
-        birth_date = row[5]
-        age = ""
-        if isinstance(birth_date, (datetime, date)):
-            today = date.today()
-            age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+        ws.cell(row=header_row + idx, column=1, value=idx).alignment = Alignment(horizontal='center', vertical='center')
+        ws.cell(row=header_row + idx, column=2, value=full_name)
+        spes_id_cell = ws.cell(row=header_row + idx, column=3, value=row[0])
+        spes_id_cell.alignment = Alignment(horizontal='center', vertical='center')
 
-        # Address
-        street_add = row[7] or ""
-        barangay = row[8] or ""
-        address = f"{street_add}, {barangay}".strip(", ")
-
-        # Educational Level
-        educational_attainment = row[10] or ""
-
-        # Iskolar Type
-        iskolar_type = row[11] or ""
-
-        # Table row
-        table_row = [
-            idx,
-            full_name,
-            row[0],  # student_id
-            age,
-            row[6],  # sex
-            address,
-            row[9],  # mobile_no
-            educational_attainment,
-            iskolar_type
-        ]
-        for col_num, value in enumerate(table_row, 1):
-            cell = ws.cell(row=header_row + idx, column=col_num, value=value)
-            # Borders for table
+        # Borders for all cells
+        for col_num in range(1, 4):
+            cell = ws.cell(row=header_row + idx, column=col_num)
             thin = Side(border_style="thin", color="000000")
             cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
-            # Stretch columns for beneficiary and address
-            if col_num in [2, 6]:
-                ws.column_dimensions[get_column_letter(col_num)].width = 25
-            else:
-                ws.column_dimensions[get_column_letter(col_num)].width = 15
 
     # Save to BytesIO and send as response
     output = BytesIO()
@@ -164,21 +127,30 @@ def download_final_spes_list_xlsx():
     output.seek(0)
     return send_file(
         output,
-        download_name="final_spes_list_report.xlsx",
+        download_name="final_spes_list.xlsx",
         as_attachment=True,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )    
     
 @reports_bp.route('/download_student_payroll_xlsx')
 def download_student_payroll_xlsx():
+    category = request.args.get('category', 'all')
+    query = """
+        SELECT dtr_record_id, last_name, first_name, middle_name, suffix, student_category
+        FROM student_dtr_records
+        WHERE for_payroll = TRUE
+    """
+    params = []
+    if category == 'senior_high':
+        query += " AND student_category = %s"
+        params.append('SENIOR HIGH SCHOOL')
+    elif category == 'college':
+        query += " AND student_category <> %s"
+        params.append('SENIOR HIGH SCHOOL')
+    query += " ORDER BY last_name, first_name"
+
     with conn.cursor() as cur:
-        cur.execute("""
-            SELECT
-                dtr_record_id, last_name, first_name, middle_name, suffix
-            FROM student_dtr_records
-            WHERE for_payroll = TRUE
-            ORDER BY last_name, first_name
-        """)
+        cur.execute(query, params)
         rows = cur.fetchall()
 
     wb = openpyxl.Workbook()
@@ -212,16 +184,21 @@ def download_student_payroll_xlsx():
         img_right = XLImage(logo_right)
         img_right.height = 80
         img_right.width = 80
-        # Place at the end center of the header (C7 for center of A1:C10)
         ws.add_image(img_right, 'C4')
 
     # Title: merge A11:C11, text "STUDENT PAYROLL LIST"
     ws.merge_cells('A11:C11')
-    ws['A11'] = "STUDENT PAYROLL LIST"
+    if category == 'senior_high':
+        title = "STUDENT PAYROLL LIST - Senior High School"
+    elif category == 'college':
+        title = "STUDENT PAYROLL LIST - College"
+    else:
+        title = "STUDENT PAYROLL LIST"
+    ws['A11'] = title
     ws['A11'].font = Font(size=18, bold=True)
     ws['A11'].alignment = Alignment(horizontal='center', vertical='center')
 
-    # Table header at row 13 (was 16)
+    # Table header at row 13
     header_row = 13
     headers = ["No.", "Name", "Cashier Number"]
     for col_num, header in enumerate(headers, 1):
@@ -711,16 +688,26 @@ def download_csc_dtr_xlsx(dtr_record_id):
     
 @reports_bp.route('/download_gsis_report_xlsx')
 def download_gsis_report_xlsx():
+    category = request.args.get('category', 'all')
+    query = """
+        SELECT
+            s.student_id, s.last_name, s.first_name, s.middle_name, s.suffix, s.email, s.student_category, s.mobile_no, s.birth_date,
+            s.iskolar_type, s.sex, e.educational_attainment, s.street_add, s.barangay, s.name_of_beneficiary, s.participation_count
+        FROM student_application s
+        LEFT JOIN student_application_education e ON s.student_id = e.student_application_id
+        WHERE s.is_approved = TRUE
+    """
+    params = []
+    if category == 'senior_high':
+        query += " AND s.student_category = %s"
+        params.append('SENIOR HIGH SCHOOL')
+    elif category == 'college':
+        query += " AND s.student_category <> %s"
+        params.append('SENIOR HIGH SCHOOL')
+    query += " ORDER BY s.last_name, s.first_name"
+
     with conn.cursor() as cur:
-        cur.execute("""
-            SELECT
-                s.student_id, s.last_name, s.first_name, s.middle_name, s.suffix, s.email, s.student_category, s.mobile_no, s.birth_date,
-                s.iskolar_type, s.sex, e.educational_attainment, s.street_add, s.barangay, s.name_of_beneficiary
-            FROM student_application s
-            LEFT JOIN student_application_education e ON s.student_id = e.student_application_id
-            WHERE s.is_approved = TRUE
-            ORDER BY s.last_name, s.first_name
-        """)
+        cur.execute(query, params)
         rows = cur.fetchall()
 
     # Count male/female/total
@@ -841,7 +828,6 @@ def download_gsis_report_xlsx():
 
     # Write student rows
     for idx, row in enumerate(rows, 1):
-        # Full name: last_name, first_name (suffix), middle_name
         last_name = row[1] or ""
         first_name = row[2] or ""
         middle_name = row[3] or ""
@@ -852,34 +838,30 @@ def download_gsis_report_xlsx():
         if middle_name:
             full_name += f" {middle_name}"
 
-        # Age calculation
         birth_date = row[8]
         age = ""
         if isinstance(birth_date, (datetime, date)):
             today = date.today()
             age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
 
-        # Address: street_add, barangay
         street_add = row[12] or ""
         barangay = row[13] or ""
         address = f"{street_add}, {barangay}".strip(", ")
-
-        # Contact No.
         contact_no = row[7] or ""
-
-        # Educational Level (educational_attainment)
         educational_attainment = row[11] or ""
-
-        # Iskolar Type
         iskolar_type = row[9] or ""
-
-        # Sex
         sex = row[10] or ""
-
-        # GSIS Beneficiary
         gsis_beneficiary = row[14] or ""
+        participation_count = row[15] if len(row) > 15 else 0
 
-        # Table row
+        # New/ SPES Baby logic
+        if participation_count is None:
+            new_spes_baby = ""
+        elif int(participation_count) <= 1:
+            new_spes_baby = "New Baby"
+        else:
+            new_spes_baby = "Spes Baby"
+
         table_row = [
             idx,
             full_name,
@@ -890,7 +872,7 @@ def download_gsis_report_xlsx():
             contact_no,
             "",  # Student/ OSY/ Dependent of Displaced Worker (blank)
             educational_attainment,
-            iskolar_type,  # New/ SPES Baby
+            new_spes_baby,  # New/ SPES Baby
             "",  # Occupational Code & Position (blank)
             "",  # Wage Rate per Day (blank)
             "",  # EMPLOYMENT PERIOD (blank)

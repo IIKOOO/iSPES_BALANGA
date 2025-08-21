@@ -561,12 +561,43 @@ document.getElementById('downloadFinalSpesListCsvBtn').addEventListener('click',
     window.location.href = '/download_final_spes_list_csv';
 });
 
-// document.getElementById('downloadFinalSpesListXlsxBtn').addEventListener('click', function() {
-//     window.location.href = '/download_final_spes_list_xlsx';
-// });
+document.getElementById('downloadFinalSpesListXlsxBtn').addEventListener('click', function() {
+    new bootstrap.Modal(document.getElementById('downloadFinalSpesListXlsxModal')).show();
+});
+
+// Enable confirm button only if an option is selected
+document.querySelectorAll('input[name="spesDownloadCategory"]').forEach(el => {
+    el.addEventListener('change', function() {
+        document.getElementById('confirmDownloadFinalSpesListXlsxBtn').disabled = false;
+    });
+});
+
+// Handle download on confirm
+document.getElementById('confirmDownloadFinalSpesListXlsxBtn').addEventListener('click', function() {
+    const selected = document.querySelector('input[name="spesDownloadCategory"]:checked');
+    if (!selected) return;
+    let url = '/download_final_spes_list_xlsx?category=' + selected.value;
+    window.location.href = url;
+    bootstrap.Modal.getInstance(document.getElementById('downloadFinalSpesListXlsxModal')).hide();
+});
 
 document.getElementById('downloadGSISXlsxBtn').addEventListener('click', function() {
-    window.location.href = 'download_gsis_report_xlsx';
+    // You can reuse the same modal as Final SPES List, just change the confirm handler
+    new bootstrap.Modal(document.getElementById('downloadFinalSpesListXlsxModal')).show();
+
+    // Change confirm button handler for GSIS
+    const confirmBtn = document.getElementById('confirmDownloadFinalSpesListXlsxBtn');
+    // Remove previous click handlers
+    const newBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+
+    newBtn.addEventListener('click', function() {
+        const selected = document.querySelector('input[name="spesDownloadCategory"]:checked');
+        if (!selected) return;
+        let url = '/download_gsis_report_xlsx?category=' + selected.value;
+        window.location.href = url;
+        bootstrap.Modal.getInstance(document.getElementById('downloadFinalSpesListXlsxModal')).hide();
+    });
 });
 
 document.addEventListener('DOMContentLoaded', fetchFinalSummary, fetchActionLogs());

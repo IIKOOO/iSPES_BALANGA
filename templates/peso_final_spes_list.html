@@ -156,9 +156,9 @@
                         <button id="downloadFinalSpesListCsvBtn" class="btn btn-outline-primary btn-sm">
                             <i class="bi bi-download"></i> Download Final SPES List CSV
                         </button>
-                        <!-- <button id="downloadFinalSpesListXlsxBtn" class="btn btn-outline-primary btn-sm mt-3">
+                        <button id="downloadFinalSpesListXlsxBtn" class="btn btn-outline-primary btn-sm mt-3">
                             <i class="bi bi-download"></i> Generate Final SPES List xlsx
-                        </button> -->
+                        </button>
                         <button id="downloadGSISXlsxBtn" class="btn btn-outline-primary btn-sm mt-3">
                             <i class="bi bi-download"></i> Generate GSIS Report xlsx
                         </button>
@@ -171,7 +171,7 @@
                     <div class="card-header text-white" style="background-color: #003366;">
                         <h5 class="mb-0">Recent Action Logs</h5>
                     </div>
-                    <div class="card-body" style="max-height: 470px; overflow-y: auto;">
+                    <div class="card-body" style="max-height: 425px; overflow-y: auto;">
                     <ul class="list-group list-group-flush" id="actionLogsList"></ul>
                 </div>
             </div>
@@ -238,6 +238,36 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             </div>
             </form>
+        </div>
+    </div>
+    <!-- xlsx confirmation modal -->
+    <div class="modal fade" id="downloadFinalSpesListXlsxModal" tabindex="-1" aria-labelledby="downloadFinalSpesListXlsxModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="downloadFinalSpesListXlsxModalLabel">Download Final SPES List</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label fw-bold">Select Category to Generate:</label>
+                    <div>
+                        <input type="radio" name="spesDownloadCategory" id="spesDownloadAll" value="all">
+                        <label for="spesDownloadAll">All</label>
+                    </div>
+                    <div>
+                        <input type="radio" name="spesDownloadCategory" id="spesDownloadSHS" value="senior_high">
+                        <label for="spesDownloadSHS">Senior High School</label>
+                    </div>
+                    <div>
+                        <input type="radio" name="spesDownloadCategory" id="spesDownloadCollege" value="college">
+                        <label for="spesDownloadCollege">College</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="confirmDownloadFinalSpesListXlsxBtn" type="button" class="btn btn-success" disabled>Generate</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
         </div>
     </div>
     <!-- Toast -->

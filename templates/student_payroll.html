@@ -238,12 +238,42 @@
                     <div class="card-header text-white" style="background-color: #003366;">
                         <h5 class="mb-0">Recent Action Logs</h5>
                     </div>
-                    <div class="card-body" style="max-height: 375px; overflow-y: auto;">
+                    <div class="card-body" style="max-height: 360px; overflow-y: auto;">
                         <ul class="list-group list-group-flush" id="actionLogsList"></ul>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+    <!-- Student Payroll XLSX Download Modal -->
+    <div class="modal fade" id="downloadStudentPayrollXlsxModal" tabindex="-1" aria-labelledby="downloadStudentPayrollXlsxModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="downloadStudentPayrollXlsxModalLabel">Download Student Payroll List</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label fw-bold">Select Category to Generate:</label>
+                <div>
+                    <input type="radio" name="payrollDownloadCategory" id="payrollDownloadAll" value="all">
+                    <label for="payrollDownloadAll">All</label>
+                </div>
+                <div>
+                    <input type="radio" name="payrollDownloadCategory" id="payrollDownloadSHS" value="senior_high">
+                    <label for="payrollDownloadSHS">Senior High School</label>
+                </div>
+                <div>
+                    <input type="radio" name="payrollDownloadCategory" id="payrollDownloadCollege" value="college">
+                    <label for="payrollDownloadCollege">College</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmDownloadStudentPayrollXlsxBtn" type="button" class="btn btn-success" disabled>Generate</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
     </div>
     <script src="{{ url_for('static', filename='student_payroll.js') }}"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
