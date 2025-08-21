@@ -7,15 +7,17 @@ import pytz
 
 
 qr_bp = Blueprint('qr', __name__) 
-url = os.getenv('DATABASE_URL')
-conn = psycopg2.connect(url)
+def get_conn():
+    url = os.getenv('DATABASE_URL')
+    return psycopg2.connect(url)
 
 @qr_bp.route('/dtr_scan', methods=['POST'])
 def dtr_scan():
     data = request.get_json()
     student_id = data.get('student_id')
     captured_image = data.get('captured_image')
-    scanner_location = data.get('scanner_location')  # <-- NEW
+    scanner_location = data.get('scanner_location')
+    conn = get_conn()
     print("Captured image received:", bool(captured_image))
     if not student_id:
         return jsonify({'success': False, 'error': 'No student_id'}), 400
@@ -273,9 +275,12 @@ def dtr_scan():
     except Exception as e:
         conn.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
+    finally:
+        conn.close()
     
 @qr_bp.route('/get_student_info/<int:student_id>')
 def get_student_info(student_id):
+    conn = get_conn()
     try:
         with conn.cursor() as cur:
             cur.execute("""
@@ -308,10 +313,13 @@ def get_student_info(student_id):
             })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+    finally:
+        conn.close()
     
     
 @qr_bp.route('/scanner_lock', methods=['POST'])
 def scanner_lock():
+    conn = get_conn()
     try:
         with conn.cursor() as cur:
             cur.execute("UPDATE registration_restrictions SET scanner_islocked=TRUE WHERE restriction_id=1")
@@ -320,12 +328,15 @@ def scanner_lock():
     except Exception as e:
         conn.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
+    finally:
+        conn.close()
 
 @qr_bp.route('/scanner_unlock', methods=['POST'])
 def scanner_unlock():
     if 'peso_logged_in' not in session or 'peso_id' not in session:
         return jsonify({'success': False, 'error': 'Not logged in'}), 401
 
+    conn = get_conn()
     data = request.get_json()
     password = data.get('password')
     if not password:
@@ -342,9 +353,12 @@ def scanner_unlock():
     except Exception as e:
         conn.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
+    finally:
+        conn.close()
 
 @qr_bp.route('/scanner_lock_status')
 def scanner_lock_status():
+    conn = get_conn()
     try:
         with conn.cursor() as cur:
             cur.execute("SELECT scanner_islocked FROM registration_restrictions WHERE restriction_id=1")
@@ -352,3 +366,5 @@ def scanner_lock_status():
             return jsonify({'locked': bool(row[0])})
     except Exception as e:
         return jsonify({'locked': False, 'error': str(e)}), 500
+    finally:
+        conn.close()
