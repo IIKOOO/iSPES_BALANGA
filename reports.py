@@ -6,250 +6,267 @@ from openpyxl.utils import get_column_letter
 from openpyxl import Workbook
 from io import BytesIO
 from flask import request
-from app import conn
 from datetime import datetime, date
 from collections import defaultdict
 import os
 import csv
 import io
+import psycopg2
 
 
 reports_bp = Blueprint('reports', __name__)    
 
+def get_conn():
+    url = os.getenv('DATABASE_URL')
+    return psycopg2.connect(url)
+
 @reports_bp.route('/download_final_spes_list_xlsx')
 def download_final_spes_list_xlsx():
-    category = request.args.get('category', 'all')
-    query = """
-        SELECT s.student_id, s.last_name, s.first_name, s.middle_name, s.suffix, s.student_category
-        FROM student_application s
-        WHERE s.is_pending = FALSE AND s.is_approved = TRUE
-    """
-    params = []
-    if category == 'senior_high':
-        query += " AND s.student_category = %s"
-        params.append('SENIOR HIGH SCHOOL')
-    elif category == 'college':
-        query += " AND s.student_category <> %s"
-        params.append('SENIOR HIGH SCHOOL')
-    query += " ORDER BY s.last_name, s.first_name"
+    conn = get_conn()
+    try:
+        category = request.args.get('category', 'all')
+        query = """
+            SELECT s.student_id, s.last_name, s.first_name, s.middle_name, s.suffix, s.student_category
+            FROM student_application s
+            WHERE s.is_pending = FALSE AND s.is_approved = TRUE
+        """
+        params = []
+        if category == 'senior_high':
+            query += " AND s.student_category = %s"
+            params.append('SENIOR HIGH SCHOOL')
+        elif category == 'college':
+            query += " AND s.student_category <> %s"
+            params.append('SENIOR HIGH SCHOOL')
+        query += " ORDER BY s.last_name, s.first_name"
 
-    with conn.cursor() as cur:
-        cur.execute(query, params)
-        rows = cur.fetchall()
+        with conn.cursor() as cur:
+            cur.execute(query, params)
+            rows = cur.fetchall()
 
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Final SPES List"
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Final SPES List"
 
-    # Header: merge A1:C10
-    ws.merge_cells('A1:C10')
-    header_text = (
-        "REPUBLIC OF THE PHILIPPINES\n"
-        "DEPARTMENT OF LABOR AND EMPLOYMENT\n"
-        "REGION OFFICE NO. III\n"
-        "PUBLIC EMPLOYMENT SERVICE OFFICE\n"
-        "CITY GOVERNMENT OF BALANGA\n"
-        "FINAL SPES LIST\n"
-        "(RA 7323, as amended by RAs 9547 and 10917)"
-    )
-    ws['A1'] = header_text
-    ws['A1'].alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
-    ws['A1'].font = Font(size=14, bold=True)
+        # Header: merge A1:C10
+        ws.merge_cells('A1:C10')
+        header_text = (
+            "REPUBLIC OF THE PHILIPPINES\n"
+            "DEPARTMENT OF LABOR AND EMPLOYMENT\n"
+            "REGION OFFICE NO. III\n"
+            "PUBLIC EMPLOYMENT SERVICE OFFICE\n"
+            "CITY GOVERNMENT OF BALANGA\n"
+            "FINAL SPES LIST\n"
+            "(RA 7323, as amended by RAs 9547 and 10917)"
+        )
+        ws['A1'] = header_text
+        ws['A1'].alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        ws['A1'].font = Font(size=14, bold=True)
 
-    # Insert logos (optional, adjust as needed)
-    logo_left = os.path.join('static', 'images', 'peso_balanga_logo.png')
-    logo_right = os.path.join('static', 'images', 'spes_logo.png')
-    if os.path.exists(logo_left):
-        img_left = XLImage(logo_left)
-        img_left.height = 80
-        img_left.width = 80
-        ws.add_image(img_left, 'A4')
-    if os.path.exists(logo_right):
-        img_right = XLImage(logo_right)
-        img_right.height = 80
-        img_right.width = 80
-        ws.add_image(img_right, 'C4')
+        # Insert logos (optional, adjust as needed)
+        logo_left = os.path.join('static', 'images', 'peso_balanga_logo.png')
+        logo_right = os.path.join('static', 'images', 'spes_logo.png')
+        if os.path.exists(logo_left):
+            img_left = XLImage(logo_left)
+            img_left.height = 80
+            img_left.width = 80
+            ws.add_image(img_left, 'A4')
+        if os.path.exists(logo_right):
+            img_right = XLImage(logo_right)
+            img_right.height = 80
+            img_right.width = 80
+            ws.add_image(img_right, 'C4')
 
-    # Title: merge A11:C11, text "FINAL SPES LIST"
-    ws.merge_cells('A11:C11')
-    if category == 'senior_high':
-        title = "FINAL SPES LIST - Senior High School"
-    elif category == 'college':
-        title = "FINAL SPES LIST - College"
-    else:
-        title = "FINAL SPES LIST"
-    ws['A11'] = title
-    ws['A11'].font = Font(size=18, bold=True)
-    ws['A11'].alignment = Alignment(horizontal='center', vertical='center')
-
-    # Table header at row 13
-    header_row = 13
-    headers = ["No.", "Name", "SPES ID"]
-    for col_num, header in enumerate(headers, 1):
-        cell = ws.cell(row=header_row, column=col_num, value=header)
-        cell.font = Font(bold=True, color="FFFFFF")
-        cell.fill = PatternFill("solid", fgColor="808080")
-        cell.alignment = Alignment(horizontal='center', vertical='center')
-        thin = Side(border_style="thin", color="000000")
-        cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
-        # Set column widths
-        if col_num == 1:
-            ws.column_dimensions[get_column_letter(col_num)].width = 10  # No.
+        # Title: merge A11:C11, text "FINAL SPES LIST"
+        ws.merge_cells('A11:C11')
+        if category == 'senior_high':
+            title = "FINAL SPES LIST - Senior High School"
+        elif category == 'college':
+            title = "FINAL SPES LIST - College"
         else:
-            ws.column_dimensions[get_column_letter(col_num)].width = 50  # Name, SPES ID
+            title = "FINAL SPES LIST"
+        ws['A11'] = title
+        ws['A11'].font = Font(size=18, bold=True)
+        ws['A11'].alignment = Alignment(horizontal='center', vertical='center')
 
-    # Write student rows
-    for idx, row in enumerate(rows, 1):
-        last_name = row[1] or ""
-        first_name = row[2] or ""
-        middle_name = row[3] or ""
-        suffix = row[4] or ""
-        full_name = f"{last_name}, {first_name}"
-        if suffix:
-            full_name += f" {suffix}"
-        if middle_name:
-            full_name += f" {middle_name}"
-
-        ws.cell(row=header_row + idx, column=1, value=idx).alignment = Alignment(horizontal='center', vertical='center')
-        ws.cell(row=header_row + idx, column=2, value=full_name)
-        spes_id_cell = ws.cell(row=header_row + idx, column=3, value=row[0])
-        spes_id_cell.alignment = Alignment(horizontal='center', vertical='center')
-
-        # Borders for all cells
-        for col_num in range(1, 4):
-            cell = ws.cell(row=header_row + idx, column=col_num)
+        # Table header at row 13
+        header_row = 13
+        headers = ["No.", "Name", "SPES ID"]
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=header_row, column=col_num, value=header)
+            cell.font = Font(bold=True, color="FFFFFF")
+            cell.fill = PatternFill("solid", fgColor="808080")
+            cell.alignment = Alignment(horizontal='center', vertical='center')
             thin = Side(border_style="thin", color="000000")
             cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+            # Set column widths
+            if col_num == 1:
+                ws.column_dimensions[get_column_letter(col_num)].width = 10  # No.
+            else:
+                ws.column_dimensions[get_column_letter(col_num)].width = 50  # Name, SPES ID
 
-    # Save to BytesIO and send as response
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-    return send_file(
-        output,
-        download_name="final_spes_list.xlsx",
-        as_attachment=True,
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )    
+        # Write student rows
+        for idx, row in enumerate(rows, 1):
+            last_name = row[1] or ""
+            first_name = row[2] or ""
+            middle_name = row[3] or ""
+            suffix = row[4] or ""
+            full_name = f"{last_name}, {first_name}"
+            if suffix:
+                full_name += f" {suffix}"
+            if middle_name:
+                full_name += f" {middle_name}"
+
+            ws.cell(row=header_row + idx, column=1, value=idx).alignment = Alignment(horizontal='center', vertical='center')
+            ws.cell(row=header_row + idx, column=2, value=full_name)
+            spes_id_cell = ws.cell(row=header_row + idx, column=3, value=row[0])
+            spes_id_cell.alignment = Alignment(horizontal='center', vertical='center')
+
+            # Borders for all cells
+            for col_num in range(1, 4):
+                cell = ws.cell(row=header_row + idx, column=col_num)
+                thin = Side(border_style="thin", color="000000")
+                cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+
+        # Save to BytesIO and send as response
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        return send_file(
+            output,
+            download_name="final_spes_list.xlsx",
+            as_attachment=True,
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )    
+    except Exception as e:
+        return str(e), 500
+    finally:
+        conn.close()
     
 @reports_bp.route('/download_student_payroll_xlsx')
 def download_student_payroll_xlsx():
-    category = request.args.get('category', 'all')
-    query = """
-        SELECT dtr_record_id, last_name, first_name, middle_name, suffix, student_category
-        FROM student_dtr_records
-        WHERE for_payroll = TRUE
-    """
-    params = []
-    if category == 'senior_high':
-        query += " AND student_category = %s"
-        params.append('SENIOR HIGH SCHOOL')
-    elif category == 'college':
-        query += " AND student_category <> %s"
-        params.append('SENIOR HIGH SCHOOL')
-    query += " ORDER BY last_name, first_name"
+    conn = get_conn()
+    try:
+        category = request.args.get('category', 'all')
+        query = """
+            SELECT dtr_record_id, last_name, first_name, middle_name, suffix, student_category
+            FROM student_dtr_records
+            WHERE for_payroll = TRUE
+        """
+        params = []
+        if category == 'senior_high':
+            query += " AND student_category = %s"
+            params.append('SENIOR HIGH SCHOOL')
+        elif category == 'college':
+            query += " AND student_category <> %s"
+            params.append('SENIOR HIGH SCHOOL')
+        query += " ORDER BY last_name, first_name"
 
-    with conn.cursor() as cur:
-        cur.execute(query, params)
-        rows = cur.fetchall()
+        with conn.cursor() as cur:
+            cur.execute(query, params)
+            rows = cur.fetchall()
 
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Student Payroll List"
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Student Payroll List"
 
-    # Header: merge A1:C10
-    ws.merge_cells('A1:C10')
-    header_text = (
-        "REPUBLIC OF THE PHILIPPINES\n"
-        "DEPARTMENT OF LABOR AND EMPLOYMENT\n"
-        "REGION OFFICE NO. III\n"
-        "PUBLIC EMPLOYMENT SERVICE OFFICE\n"
-        "CITY GOVERNMENT OF BALANGA\n"
-        "STUDENT PAYROLL LIST\n"
-        "(RA 7323, as amended by RAs 9547 and 10917)"
-    )
-    ws['A1'] = header_text
-    ws['A1'].alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
-    ws['A1'].font = Font(size=14, bold=True)
+        # Header: merge A1:C10
+        ws.merge_cells('A1:C10')
+        header_text = (
+            "REPUBLIC OF THE PHILIPPINES\n"
+            "DEPARTMENT OF LABOR AND EMPLOYMENT\n"
+            "REGION OFFICE NO. III\n"
+            "PUBLIC EMPLOYMENT SERVICE OFFICE\n"
+            "CITY GOVERNMENT OF BALANGA\n"
+            "STUDENT PAYROLL LIST\n"
+            "(RA 7323, as amended by RAs 9547 and 10917)"
+        )
+        ws['A1'] = header_text
+        ws['A1'].alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        ws['A1'].font = Font(size=14, bold=True)
 
-    # Insert logos (optional, adjust as needed)
-    logo_left = os.path.join('static', 'images', 'peso_balanga_logo.png')
-    logo_right = os.path.join('static', 'images', 'spes_logo.png')
-    if os.path.exists(logo_left):
-        img_left = XLImage(logo_left)
-        img_left.height = 80
-        img_left.width = 80
-        ws.add_image(img_left, 'A4')
-    if os.path.exists(logo_right):
-        img_right = XLImage(logo_right)
-        img_right.height = 80
-        img_right.width = 80
-        ws.add_image(img_right, 'C4')
+        # Insert logos (optional, adjust as needed)
+        logo_left = os.path.join('static', 'images', 'peso_balanga_logo.png')
+        logo_right = os.path.join('static', 'images', 'spes_logo.png')
+        if os.path.exists(logo_left):
+            img_left = XLImage(logo_left)
+            img_left.height = 80
+            img_left.width = 80
+            ws.add_image(img_left, 'A4')
+        if os.path.exists(logo_right):
+            img_right = XLImage(logo_right)
+            img_right.height = 80
+            img_right.width = 80
+            ws.add_image(img_right, 'C4')
 
-    # Title: merge A11:C11, text "STUDENT PAYROLL LIST"
-    ws.merge_cells('A11:C11')
-    if category == 'senior_high':
-        title = "STUDENT PAYROLL LIST - Senior High School"
-    elif category == 'college':
-        title = "STUDENT PAYROLL LIST - College"
-    else:
-        title = "STUDENT PAYROLL LIST"
-    ws['A11'] = title
-    ws['A11'].font = Font(size=18, bold=True)
-    ws['A11'].alignment = Alignment(horizontal='center', vertical='center')
-
-    # Table header at row 13
-    header_row = 13
-    headers = ["No.", "Name", "Cashier Number"]
-    for col_num, header in enumerate(headers, 1):
-        cell = ws.cell(row=header_row, column=col_num, value=header)
-        cell.font = Font(bold=True, color="FFFFFF")
-        cell.fill = PatternFill("solid", fgColor="808080")
-        cell.alignment = Alignment(horizontal='center', vertical='center')
-        thin = Side(border_style="thin", color="000000")
-        cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
-        # Set column widths
-        if col_num == 1:
-            ws.column_dimensions[get_column_letter(col_num)].width = 10  # No.
+        # Title: merge A11:C11, text "STUDENT PAYROLL LIST"
+        ws.merge_cells('A11:C11')
+        if category == 'senior_high':
+            title = "STUDENT PAYROLL LIST - Senior High School"
+        elif category == 'college':
+            title = "STUDENT PAYROLL LIST - College"
         else:
-            ws.column_dimensions[get_column_letter(col_num)].width = 50  # Name, Cashier Number (longer)
+            title = "STUDENT PAYROLL LIST"
+        ws['A11'] = title
+        ws['A11'].font = Font(size=18, bold=True)
+        ws['A11'].alignment = Alignment(horizontal='center', vertical='center')
 
-    # Write student rows
-    for idx, row in enumerate(rows, 1):
-        last_name = row[1] or ""
-        first_name = row[2] or ""
-        middle_name = row[3] or ""
-        suffix = row[4] or ""
-        full_name = f"{last_name}, {first_name}"
-        if suffix:
-            full_name += f" {suffix}"
-        if middle_name:
-            full_name += f" {middle_name}"
-
-        ws.cell(row=header_row + idx, column=1, value=idx).alignment = Alignment(horizontal='center', vertical='center')
-        ws.cell(row=header_row + idx, column=2, value=full_name)
-        cashier_cell = ws.cell(row=header_row + idx, column=3, value="")
-        cashier_cell.alignment = Alignment(horizontal='center', vertical='center')
-
-        # Borders for all cells
-        for col_num in range(1, 4):
-            cell = ws.cell(row=header_row + idx, column=col_num)
+        # Table header at row 13
+        header_row = 13
+        headers = ["No.", "Name", "Cashier Number"]
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=header_row, column=col_num, value=header)
+            cell.font = Font(bold=True, color="FFFFFF")
+            cell.fill = PatternFill("solid", fgColor="808080")
+            cell.alignment = Alignment(horizontal='center', vertical='center')
             thin = Side(border_style="thin", color="000000")
             cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+            # Set column widths
+            if col_num == 1:
+                ws.column_dimensions[get_column_letter(col_num)].width = 10  # No.
+            else:
+                ws.column_dimensions[get_column_letter(col_num)].width = 50  # Name, Cashier Number (longer)
 
-    # Save to BytesIO and send as response
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-    return send_file(
-        output,
-        download_name="student_payroll_list.xlsx",
-        as_attachment=True,
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+        # Write student rows
+        for idx, row in enumerate(rows, 1):
+            last_name = row[1] or ""
+            first_name = row[2] or ""
+            middle_name = row[3] or ""
+            suffix = row[4] or ""
+            full_name = f"{last_name}, {first_name}"
+            if suffix:
+                full_name += f" {suffix}"
+            if middle_name:
+                full_name += f" {middle_name}"
+
+            ws.cell(row=header_row + idx, column=1, value=idx).alignment = Alignment(horizontal='center', vertical='center')
+            ws.cell(row=header_row + idx, column=2, value=full_name)
+            cashier_cell = ws.cell(row=header_row + idx, column=3, value="")
+            cashier_cell.alignment = Alignment(horizontal='center', vertical='center')
+
+            # Borders for all cells
+            for col_num in range(1, 4):
+                cell = ws.cell(row=header_row + idx, column=col_num)
+                thin = Side(border_style="thin", color="000000")
+                cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+
+        # Save to BytesIO and send as response
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        return send_file(
+            output,
+            download_name="student_payroll_list.xlsx",
+            as_attachment=True,
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    except Exception as e:
+        return str(e), 500
+    finally:
+        conn.close()
     
 @reports_bp.route('/download_student_registration_csv')
 def download_student_registration_csv():
+    conn = get_conn()
     try:
         with conn.cursor() as cur:
             cur.execute("""
@@ -311,9 +328,12 @@ def download_student_registration_csv():
         )
     except Exception as e:
         return str(e), 500
+    finally:
+        conn.close()
     
 @reports_bp.route('/download_pending_student_registration_csv')
 def download_pending_student_registration_csv():
+    conn = get_conn()
     try:
         with conn.cursor() as cur:
             cur.execute("""
@@ -375,9 +395,12 @@ def download_pending_student_registration_csv():
         )
     except Exception as e:
         return str(e), 500
+    finally:
+        conn.close()
 
 @reports_bp.route('/download_final_spes_list_csv')
 def download_final_spes_list_csv():
+    conn = get_conn()
     try:
         with conn.cursor() as cur:
             cur.execute("""
@@ -439,9 +462,12 @@ def download_final_spes_list_csv():
         )
     except Exception as e:
         return str(e), 500    
+    finally:
+        conn.close()
 
 @reports_bp.route('/download_student_dtr_records_csv')
 def download_student_dtr_records_csv():
+    conn = get_conn()
     try:
         with conn.cursor() as cur:
             cur.execute("""
@@ -482,9 +508,12 @@ def download_student_dtr_records_csv():
         )
     except Exception as e:
         return str(e), 500
+    finally:
+        conn.close()
 
 @reports_bp.route('/download_student_payroll_csv')
 def download_student_payroll_csv():
+    conn = get_conn()
     try:
         with conn.cursor() as cur:
             cur.execute("""
@@ -524,421 +553,435 @@ def download_student_payroll_csv():
         )
     except Exception as e:
         return str(e), 500
+    finally:
+        conn.close()
     
 @reports_bp.route('/download_csc_dtr_xlsx/<int:dtr_record_id>')
 def download_csc_dtr_xlsx(dtr_record_id):
-    # --- Fetch student and DTR data ---
-    with conn.cursor() as cur:
-        # Get student info
-        cur.execute("""
-            SELECT last_name, first_name, middle_name, suffix, starting_date, end_date
-            FROM student_dtr_records WHERE dtr_record_id = %s
-        """, (dtr_record_id,))
-        student = cur.fetchone()
-        if not student:
-            return "Student not found", 404
-        last_name, first_name, middle_name, suffix, starting_date, end_date = student
+    conn = get_conn()
+    try:
+        # --- Fetch student and DTR data ---
+        with conn.cursor() as cur:
+            # Get student info
+            cur.execute("""
+                SELECT last_name, first_name, middle_name, suffix, starting_date, end_date
+                FROM student_dtr_records WHERE dtr_record_id = %s
+            """, (dtr_record_id,))
+            student = cur.fetchone()
+            if not student:
+                return "Student not found", 404
+            last_name, first_name, middle_name, suffix, starting_date, end_date = student
 
-        # Get all DTR entries for this student
-        cur.execute("""
-            SELECT date, time_in_am, time_out_am, time_in_pm, time_out_pm
-            FROM student_dtr WHERE student_id = %s
-            ORDER BY date
-        """, (dtr_record_id,))
-        dtr_rows = cur.fetchall()
+            # Get all DTR entries for this student
+            cur.execute("""
+                SELECT date, time_in_am, time_out_am, time_in_pm, time_out_pm
+                FROM student_dtr WHERE student_id = %s
+                ORDER BY date
+            """, (dtr_record_id,))
+            dtr_rows = cur.fetchall()
 
-    # --- Group DTRs by (year, month) ---
-    dtr_by_month = defaultdict(dict)
-    for row in dtr_rows:
-        date, am_in, am_out, pm_in, pm_out = row
-        month_key = (date.year, date.month)
-        dtr_by_month[month_key][date.day] = {
-            "am_in": am_in,
-            "am_out": am_out,
-            "pm_in": pm_in,
-            "pm_out": pm_out,
-            "under_hours": 0,
-            "under_minutes": 0
-        }
+        # --- Group DTRs by (year, month) ---
+        dtr_by_month = defaultdict(dict)
+        for row in dtr_rows:
+            date, am_in, am_out, pm_in, pm_out = row
+            month_key = (date.year, date.month)
+            dtr_by_month[month_key][date.day] = {
+                "am_in": am_in,
+                "am_out": am_out,
+                "pm_in": pm_in,
+                "pm_out": pm_out,
+                "under_hours": 0,
+                "under_minutes": 0
+            }
 
-    #helper to format time ---
-    def format_time(dt, military=False):
-        if not dt:
-            return ''
-        return dt.strftime("%H:%M:%S") if military else dt.strftime("%I:%M %p")
+        #helper to format time ---
+        def format_time(dt, military=False):
+            if not dt:
+                return ''
+            return dt.strftime("%H:%M:%S") if military else dt.strftime("%I:%M %p")
 
-    #Prepare workbook ---
-    wb = Workbook()
-    first_sheet = True
+        #Prepare workbook ---
+        wb = Workbook()
+        first_sheet = True
 
-    for (year, month), dtr_by_day in sorted(dtr_by_month.items()):
-        # Create new sheet (or reuse first one)
-        if first_sheet:
-            ws = wb.active
-            first_sheet = False
-        else:
-            ws = wb.create_sheet()
-        ws.title = f"{datetime(year, month, 1).strftime('%B %Y')}"
+        for (year, month), dtr_by_day in sorted(dtr_by_month.items()):
+            # Create new sheet (or reuse first one)
+            if first_sheet:
+                ws = wb.active
+                first_sheet = False
+            else:
+                ws = wb.create_sheet()
+            ws.title = f"{datetime(year, month, 1).strftime('%B %Y')}"
 
-        # --- 4. Header and meta ---
-        ws.merge_cells('A1:H1')
-        ws['A1'] = "Civil Service Form No. 48"
-        ws['A1'].font = Font(italic=True, size=10)
-        ws['A1'].alignment = Alignment(horizontal='left')
+            # --- 4. Header and meta ---
+            ws.merge_cells('A1:H1')
+            ws['A1'] = "Civil Service Form No. 48"
+            ws['A1'].font = Font(italic=True, size=10)
+            ws['A1'].alignment = Alignment(horizontal='left')
 
-        ws.merge_cells('A2:H2')
-        ws['A2'] = "DAILY TIME RECORD"
-        ws['A2'].font = Font(bold=True, size=16)
-        ws['A2'].alignment = Alignment(horizontal='center')
+            ws.merge_cells('A2:H2')
+            ws['A2'] = "DAILY TIME RECORD"
+            ws['A2'].font = Font(bold=True, size=16)
+            ws['A2'].alignment = Alignment(horizontal='center')
 
-        ws.merge_cells('A3:H3')
-        full_name = f"{last_name}, {first_name} {middle_name or ''} {suffix or ''}".strip()
-        ws['A3'] = f"(Name): {full_name}"
-        ws['A3'].alignment = Alignment(horizontal='center')
-        ws['A3'].font = Font(italic=True)
+            ws.merge_cells('A3:H3')
+            full_name = f"{last_name}, {first_name} {middle_name or ''} {suffix or ''}".strip()
+            ws['A3'] = f"(Name): {full_name}"
+            ws['A3'].alignment = Alignment(horizontal='center')
+            ws['A3'].font = Font(italic=True)
 
-        ws['A4'] = f"For the month of {datetime(year, month, 1).strftime('%B')}, {year}"
-        ws['E4'] = "Regular Days ______"
-        ws['G4'] = "Saturdays ______"
+            ws['A4'] = f"For the month of {datetime(year, month, 1).strftime('%B')}, {year}"
+            ws['E4'] = "Regular Days ______"
+            ws['G4'] = "Saturdays ______"
 
-        # --- 5. Table headers ---
-        ws['A6'] = "Days"
-        ws.merge_cells('B6:C6')
-        ws['B6'] = "A.M."
-        ws.merge_cells('D6:E6')
-        ws['D6'] = "P.M."
-        ws.merge_cells('F6:G6')
-        ws['F6'] = "UNDER TIME"
-        ws['H6'] = ""
-        ws['A7'] = ""
-        ws['B7'] = "ARRIVAL"
-        ws['C7'] = "DEPARTURE"
-        ws['D7'] = "ARRIVAL"
-        ws['E7'] = "DEPARTURE"
-        ws['F7'] = "Hours"
-        ws['G7'] = "Minutes"
-        ws['H7'] = ""
+            # --- 5. Table headers ---
+            ws['A6'] = "Days"
+            ws.merge_cells('B6:C6')
+            ws['B6'] = "A.M."
+            ws.merge_cells('D6:E6')
+            ws['D6'] = "P.M."
+            ws.merge_cells('F6:G6')
+            ws['F6'] = "UNDER TIME"
+            ws['H6'] = ""
+            ws['A7'] = ""
+            ws['B7'] = "ARRIVAL"
+            ws['C7'] = "DEPARTURE"
+            ws['D7'] = "ARRIVAL"
+            ws['E7'] = "DEPARTURE"
+            ws['F7'] = "Hours"
+            ws['G7'] = "Minutes"
+            ws['H7'] = ""
 
-        #Fill DTR rows (1-31) ---
-        thin = Side(border_style="thin", color="000000")
-        total_hours = 0
-        total_minutes = 0
+            #Fill DTR rows (1-31) ---
+            thin = Side(border_style="thin", color="000000")
+            total_hours = 0
+            total_minutes = 0
 
-        for i in range(1, 32):
-            row_idx = 7 + i
-            ws[f'A{row_idx}'] = i
-            dtr = dtr_by_day.get(i, {})
-            ws[f'B{row_idx}'] = format_time(dtr.get('am_in'))
-            ws[f'C{row_idx}'] = format_time(dtr.get('am_out'))
-            ws[f'D{row_idx}'] = format_time(dtr.get('pm_in'))
-            ws[f'E{row_idx}'] = format_time(dtr.get('pm_out'))
-            ws[f'F{row_idx}'] = dtr.get('under_hours') or ''
-            ws[f'G{row_idx}'] = dtr.get('under_minutes') or ''
+            for i in range(1, 32):
+                row_idx = 7 + i
+                ws[f'A{row_idx}'] = i
+                dtr = dtr_by_day.get(i, {})
+                ws[f'B{row_idx}'] = format_time(dtr.get('am_in'))
+                ws[f'C{row_idx}'] = format_time(dtr.get('am_out'))
+                ws[f'D{row_idx}'] = format_time(dtr.get('pm_in'))
+                ws[f'E{row_idx}'] = format_time(dtr.get('pm_out'))
+                ws[f'F{row_idx}'] = dtr.get('under_hours') or ''
+                ws[f'G{row_idx}'] = dtr.get('under_minutes') or ''
 
-            # Sum total under time
-            try:
-                total_hours += int(dtr.get('under_hours') or 0)
-                total_minutes += int(dtr.get('under_minutes') or 0)
-            except Exception:
-                pass
+                # Sum total under time
+                try:
+                    total_hours += int(dtr.get('under_hours') or 0)
+                    total_minutes += int(dtr.get('under_minutes') or 0)
+                except Exception:
+                    pass
 
-            # Borders
+                # Borders
+                for col in range(1, 8):
+                    ws.cell(row=row_idx, column=col).border = Border(
+                        top=thin, left=thin, right=thin, bottom=thin
+                    )
+                    ws.cell(row=row_idx, column=col).alignment = Alignment(horizontal='center', vertical='center')
+
+            #Total row ---
+            ws[f'A{39}'] = "TOTAL"
+            ws[f'F{39}'] = total_hours + (total_minutes // 60)
+            ws[f'G{39}'] = total_minutes % 60
             for col in range(1, 8):
-                ws.cell(row=row_idx, column=col).border = Border(
-                    top=thin, left=thin, right=thin, bottom=thin
-                )
-                ws.cell(row=row_idx, column=col).alignment = Alignment(horizontal='center', vertical='center')
+                ws.cell(row=39, column=col).border = Border(top=thin, left=thin, right=thin, bottom=thin)
+                ws.cell(row=39, column=col).alignment = Alignment(horizontal='center', vertical='center')
 
-        #Total row ---
-        ws[f'A{39}'] = "TOTAL"
-        ws[f'F{39}'] = total_hours + (total_minutes // 60)
-        ws[f'G{39}'] = total_minutes % 60
-        for col in range(1, 8):
-            ws.cell(row=39, column=col).border = Border(top=thin, left=thin, right=thin, bottom=thin)
-            ws.cell(row=39, column=col).alignment = Alignment(horizontal='center', vertical='center')
+            #Certification ---
+            ws.merge_cells('A41:G41')
+            ws['A41'] = (
+                "I CERTIFY on my honor that the above is a true and correct report of the hours of work performed, "
+            )
+            ws.merge_cells('A42:G42')
+            ws['A42'] = (
+                "record of which was made daily at the time of arrival and departure from office."
+            )
+            ws['A41'].alignment = Alignment(wrap_text=True)
+            ws['A42'].alignment = Alignment(wrap_text=True)
 
-        #Certification ---
-        ws.merge_cells('A41:G41')
-        ws['A41'] = (
-            "I CERTIFY on my honor that the above is a true and correct report of the hours of work performed, "
+            #Adjust column widths ---
+            ws.column_dimensions['A'].width = 5
+            for col in 'BCDEFG':
+                ws.column_dimensions[col].width = 14
+
+        #Save and send file ---
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        filename = f"CSC_Form_48_DTR_{full_name.replace(' ', '_')}.xlsx"
+        return send_file(
+            output,
+            download_name=filename,
+            as_attachment=True,
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        ws.merge_cells('A42:G42')
-        ws['A42'] = (
-            "record of which was made daily at the time of arrival and departure from office."
-        )
-        ws['A41'].alignment = Alignment(wrap_text=True)
-        ws['A42'].alignment = Alignment(wrap_text=True)
-
-        #Adjust column widths ---
-        ws.column_dimensions['A'].width = 5
-        for col in 'BCDEFG':
-            ws.column_dimensions[col].width = 14
-
-    #Save and send file ---
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-    filename = f"CSC_Form_48_DTR_{full_name.replace(' ', '_')}.xlsx"
-    return send_file(
-        output,
-        download_name=filename,
-        as_attachment=True,
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+    except Exception as e:
+        return str(e), 500    
+    finally:
+        conn.close()
     
 @reports_bp.route('/download_gsis_report_xlsx')
 def download_gsis_report_xlsx():
-    category = request.args.get('category', 'all')
-    query = """
-        SELECT
-            s.student_id, s.last_name, s.first_name, s.middle_name, s.suffix, s.email, s.student_category, s.mobile_no, s.birth_date,
-            s.iskolar_type, s.sex, e.educational_attainment, s.street_add, s.barangay, s.name_of_beneficiary, s.participation_count
-        FROM student_application s
-        LEFT JOIN student_application_education e ON s.student_id = e.student_application_id
-        WHERE s.is_approved = TRUE
-    """
-    params = []
-    if category == 'senior_high':
-        query += " AND s.student_category = %s"
-        params.append('SENIOR HIGH SCHOOL')
-    elif category == 'college':
-        query += " AND s.student_category <> %s"
-        params.append('SENIOR HIGH SCHOOL')
-    query += " ORDER BY s.last_name, s.first_name"
+    conn = get_conn()
+    try:
+        category = request.args.get('category', 'all')
+        query = """
+            SELECT
+                s.student_id, s.last_name, s.first_name, s.middle_name, s.suffix, s.email, s.student_category, s.mobile_no, s.birth_date,
+                s.iskolar_type, s.sex, e.educational_attainment, s.street_add, s.barangay, s.name_of_beneficiary, s.participation_count
+            FROM student_application s
+            LEFT JOIN student_application_education e ON s.student_id = e.student_application_id
+            WHERE s.is_approved = TRUE
+        """
+        params = []
+        if category == 'senior_high':
+            query += " AND s.student_category = %s"
+            params.append('SENIOR HIGH SCHOOL')
+        elif category == 'college':
+            query += " AND s.student_category <> %s"
+            params.append('SENIOR HIGH SCHOOL')
+        query += " ORDER BY s.last_name, s.first_name"
 
-    with conn.cursor() as cur:
-        cur.execute(query, params)
-        rows = cur.fetchall()
+        with conn.cursor() as cur:
+            cur.execute(query, params)
+            rows = cur.fetchall()
 
-    # Count male/female/total
-    male_count = sum(1 for r in rows if str(r[10]).strip().lower() == 'male')
-    female_count = sum(1 for r in rows if str(r[10]).strip().lower() == 'female')
-    total_count = len(rows)
+        # Count male/female/total
+        male_count = sum(1 for r in rows if str(r[10]).strip().lower() == 'male')
+        female_count = sum(1 for r in rows if str(r[10]).strip().lower() == 'female')
+        total_count = len(rows)
 
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "GSIS Placement Report"
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "GSIS Placement Report"
 
-    # Header: merge A1:P12
-    ws.merge_cells('A1:P12')
-    header_text = (
-        "REPUBLIC OF THE PHILIPPINES\n"
-        "DEPARTMENT OF LABOR AND EMPLOYMENT\n"
-        "REGION OFFICE NO. III\n"
-        "PUBLIC EMPLOYMENT SERVICE OFFICE\n"
-        "CITY GOVERNMENT OF BALANGA\n"
-        "PLACEMENT REPORT CUM GSIS INSURANCE COVERAGE\n"
-        "(RA 7323, as amended by RAs 9547 and 10917)"
-    )
-    ws['A1'] = header_text
-    ws['A1'].alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
-    ws['A1'].font = Font(size=16, bold=True, name='Calibri')
+        # Header: merge A1:P12
+        ws.merge_cells('A1:P12')
+        header_text = (
+            "REPUBLIC OF THE PHILIPPINES\n"
+            "DEPARTMENT OF LABOR AND EMPLOYMENT\n"
+            "REGION OFFICE NO. III\n"
+            "PUBLIC EMPLOYMENT SERVICE OFFICE\n"
+            "CITY GOVERNMENT OF BALANGA\n"
+            "PLACEMENT REPORT CUM GSIS INSURANCE COVERAGE\n"
+            "(RA 7323, as amended by RAs 9547 and 10917)"
+        )
+        ws['A1'] = header_text
+        ws['A1'].alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        ws['A1'].font = Font(size=16, bold=True, name='Calibri')
 
-    # Insert logos
-    logo_left = os.path.join('static', 'images', 'peso_balanga_logo.png')
-    logo_right = os.path.join('static', 'images', 'spes_logo.png')
-    if os.path.exists(logo_left):
-        img_left = XLImage(logo_left)
-        img_left.height = 100
-        img_left.width = 100
-        ws.add_image(img_left, 'A4')
-    if os.path.exists(logo_right):
-        img_right = XLImage(logo_right)
-        img_right.height = 100
-        img_right.width = 100
-        ws.add_image(img_right, 'P4')
+        # Insert logos
+        logo_left = os.path.join('static', 'images', 'peso_balanga_logo.png')
+        logo_right = os.path.join('static', 'images', 'spes_logo.png')
+        if os.path.exists(logo_left):
+            img_left = XLImage(logo_left)
+            img_left.height = 100
+            img_left.width = 100
+            ws.add_image(img_left, 'A4')
+        if os.path.exists(logo_right):
+            img_right = XLImage(logo_right)
+            img_right.height = 100
+            img_right.width = 100
+            ws.add_image(img_right, 'P4')
 
-    # Title: merge A13:P13, text "PLACEMENT REPORT CUM GSIS INSURANCE COVERAGE"
-    ws.merge_cells('A13:P13')
-    ws['A13'] = "PLACEMENT REPORT CUM GSIS INSURANCE COVERAGE"
-    ws['A13'].font = Font(size=18, bold=True, name='Calibri')
-    ws['A13'].alignment = Alignment(horizontal='center', vertical='center')
+        # Title: merge A13:P13, text "PLACEMENT REPORT CUM GSIS INSURANCE COVERAGE"
+        ws.merge_cells('A13:P13')
+        ws['A13'] = "PLACEMENT REPORT CUM GSIS INSURANCE COVERAGE"
+        ws['A13'].font = Font(size=18, bold=True, name='Calibri')
+        ws['A13'].alignment = Alignment(horizontal='center', vertical='center')
 
-    # Employer Info: merge B14-G16
-    ws.merge_cells('B14:G16')
-    ws['B14'] = (
-        "Name of Establishment/Employer: LGU BALANGA CITY\n"
-        "Address: 2ND FLOOR NEGOSYO CENTER, ST. JOSEPH ST., POBLACION, BALANGA CITY, BATAAN\n"
-        "Business Activity: GOVERNMENT"
-    )
-    ws['B14'].font = Font(size=11, bold=True, name='Calibri')
-    ws['B14'].alignment = Alignment(wrap_text=True, vertical='top')
+        # Employer Info: merge B14-G16
+        ws.merge_cells('B14:G16')
+        ws['B14'] = (
+            "Name of Establishment/Employer: LGU BALANGA CITY\n"
+            "Address: 2ND FLOOR NEGOSYO CENTER, ST. JOSEPH ST., POBLACION, BALANGA CITY, BATAAN\n"
+            "Business Activity: GOVERNMENT"
+        )
+        ws['B14'].font = Font(size=11, bold=True, name='Calibri')
+        ws['B14'].alignment = Alignment(wrap_text=True, vertical='top')
 
-    # Industry Code: merge H16-J16
-    ws.merge_cells('H16:J16')
-    ws['H16'] = "Industry Code:_________"
-    ws['H16'].font = Font(size=11, bold=True, name='Calibri')
-    ws['H16'].alignment = Alignment(wrap_text=True, horizontal='center', vertical='top')
+        # Industry Code: merge H16-J16
+        ws.merge_cells('H16:J16')
+        ws['H16'] = "Industry Code:_________"
+        ws['H16'].font = Font(size=11, bold=True, name='Calibri')
+        ws['H16'].alignment = Alignment(wrap_text=True, horizontal='center', vertical='top')
 
-    # Beneficiaries/Contact: merge K14:P16
-    ws.merge_cells('K14:P16')
-    ws['K14'] = (
-        f"Number of Beneficiaries: Female: {female_count} + Male: {male_count} = {total_count}\n"
-        "Contact Person: NORIEL D. DACION JR/ City Government Department Head I (PESO Manager)\n"
-        "Tel. No./Mobile No.: 237-0718"
-    )
-    ws['K14'].font = Font(size=11, bold=True, name='Calibri')
-    ws['K14'].alignment = Alignment(wrap_text=True, vertical='top')
+        # Beneficiaries/Contact: merge K14:P16
+        ws.merge_cells('K14:P16')
+        ws['K14'] = (
+            f"Number of Beneficiaries: Female: {female_count} + Male: {male_count} = {total_count}\n"
+            "Contact Person: NORIEL D. DACION JR/ City Government Department Head I (PESO Manager)\n"
+            "Tel. No./Mobile No.: 237-0718"
+        )
+        ws['K14'].font = Font(size=11, bold=True, name='Calibri')
+        ws['K14'].alignment = Alignment(wrap_text=True, vertical='top')
 
-    # Table header at row 18
-    header_row = 18
-    headers = [
-        "No.",
-        "SPES BENEFICIARY",
-        "Student ID",
-        "AGE",
-        "SEX",
-        "ADDRESS",
-        "Contact No.",
-        "Student/ OSY/\nDependent of\nDisplaced Worker",
-        "EDUCATIONAL LEVEL",
-        "New/ SPES Baby",
-        "Occupational Code\n& Position",
-        "Wage Rate\nper Day",
-        "EMPLOYMENT PERIOD",
-        "Total Amount to be\nearned/received\nas salary/wages",
-        "GSIS Policy\nNo.",
-        "GSIS BENEFICIARY"
-    ]
-    ws.row_dimensions[header_row].height = 50  # Make header row taller
-
-    for col_num, header in enumerate(headers, 1):
-        cell = ws.cell(row=header_row, column=col_num, value=header)
-        # Set font size 9 for columns 8, 11, 12, 14, 15
-        if col_num in [8, 11, 12, 14, 15]:
-            cell.font = Font(bold=True, color="FFFFFF", name='Calibri', size=9)
-            cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
-        else:
-            cell.font = Font(bold=True, color="FFFFFF", name='Calibri')
-            cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
-        cell.fill = PatternFill("solid", fgColor="808080")
-        thin = Side(border_style="thin", color="000000")
-        cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
-        # Stretch columns for name, address, educational level, beneficiary
-        if col_num == [1, 15]:
-            ws.column_dimensions[get_column_letter(col_num)].width = 5
-        if col_num in [2, 10, 11, 13, 16]:
-            ws.column_dimensions[get_column_letter(col_num)].width = 25
-        if col_num in [3, 4, 5]:
-            ws.column_dimensions[get_column_letter(col_num)].width = 10
-        if col_num in [6, 9]:
-            ws.column_dimensions[get_column_letter(col_num)].width = 45
-        if col_num in [7, 8, 14]:
-            ws.column_dimensions[get_column_letter(col_num)].width = 15
-
-    # Write student rows
-    for idx, row in enumerate(rows, 1):
-        last_name = row[1] or ""
-        first_name = row[2] or ""
-        middle_name = row[3] or ""
-        suffix = row[4] or ""
-        full_name = f"{last_name}, {first_name}"
-        if suffix:
-            full_name += f" {suffix}"
-        if middle_name:
-            full_name += f" {middle_name}"
-
-        birth_date = row[8]
-        age = ""
-        if isinstance(birth_date, (datetime, date)):
-            today = date.today()
-            age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-
-        street_add = row[12] or ""
-        barangay = row[13] or ""
-        address = f"{street_add}, {barangay}".strip(", ")
-        contact_no = row[7] or ""
-        educational_attainment = row[11] or ""
-        iskolar_type = row[9] or ""
-        sex = row[10] or ""
-        gsis_beneficiary = row[14] or ""
-        participation_count = row[15] if len(row) > 15 else 0
-
-        # New/ SPES Baby logic
-        if participation_count is None:
-            new_spes_baby = ""
-        elif int(participation_count) <= 1:
-            new_spes_baby = "New Baby"
-        else:
-            new_spes_baby = "Spes Baby"
-
-        table_row = [
-            idx,
-            full_name,
-            row[0],  # student_id
-            age,
-            sex,
-            address,
-            contact_no,
-            "",  # Student/ OSY/ Dependent of Displaced Worker (blank)
-            educational_attainment,
-            new_spes_baby,  # New/ SPES Baby
-            "",  # Occupational Code & Position (blank)
-            "",  # Wage Rate per Day (blank)
-            "",  # EMPLOYMENT PERIOD (blank)
-            "",  # Total Amount to be earned/received as salary/wages (blank)
-            "",  # GSIS Policy No. (blank)
-            gsis_beneficiary  # GSIS BENEFICIARY (from name_of_beneficiary)
+        # Table header at row 18
+        header_row = 18
+        headers = [
+            "No.",
+            "SPES BENEFICIARY",
+            "Student ID",
+            "AGE",
+            "SEX",
+            "ADDRESS",
+            "Contact No.",
+            "Student/ OSY/\nDependent of\nDisplaced Worker",
+            "EDUCATIONAL LEVEL",
+            "New/ SPES Baby",
+            "Occupational Code\n& Position",
+            "Wage Rate\nper Day",
+            "EMPLOYMENT PERIOD",
+            "Total Amount to be\nearned/received\nas salary/wages",
+            "GSIS Policy\nNo.",
+            "GSIS BENEFICIARY"
         ]
-        for col_num, value in enumerate(table_row, 1):
-            cell = ws.cell(row=header_row + idx, column=col_num, value=value)
+        ws.row_dimensions[header_row].height = 50  # Make header row taller
+
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=header_row, column=col_num, value=header)
+            # Set font size 9 for columns 8, 11, 12, 14, 15
+            if col_num in [8, 11, 12, 14, 15]:
+                cell.font = Font(bold=True, color="FFFFFF", name='Calibri', size=9)
+                cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+            else:
+                cell.font = Font(bold=True, color="FFFFFF", name='Calibri')
+                cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+            cell.fill = PatternFill("solid", fgColor="808080")
             thin = Side(border_style="thin", color="000000")
             cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
-            cell.font = Font(name='Calibri')
-            cell.alignment = Alignment(horizontal='center', vertical='center')
+            # Stretch columns for name, address, educational level, beneficiary
+            if col_num == [1, 15]:
+                ws.column_dimensions[get_column_letter(col_num)].width = 5
+            if col_num in [2, 10, 11, 13, 16]:
+                ws.column_dimensions[get_column_letter(col_num)].width = 25
+            if col_num in [3, 4, 5]:
+                ws.column_dimensions[get_column_letter(col_num)].width = 10
+            if col_num in [6, 9]:
+                ws.column_dimensions[get_column_letter(col_num)].width = 45
+            if col_num in [7, 8, 14]:
+                ws.column_dimensions[get_column_letter(col_num)].width = 15
 
-    # --- Append contents after the table ---
-    last_table_row = header_row + len(rows)
-    note_row = last_table_row + 2
+        # Write student rows
+        for idx, row in enumerate(rows, 1):
+            last_name = row[1] or ""
+            first_name = row[2] or ""
+            middle_name = row[3] or ""
+            suffix = row[4] or ""
+            full_name = f"{last_name}, {first_name}"
+            if suffix:
+                full_name += f" {suffix}"
+            if middle_name:
+                full_name += f" {middle_name}"
 
-    # Merge A:P for the note row so it spans the whole table width
-    ws.merge_cells(start_row=note_row, start_column=1, end_row=note_row, end_column=16)  # A:P
+            birth_date = row[8]
+            age = ""
+            if isinstance(birth_date, (datetime, date)):
+                today = date.today()
+                age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
 
-    note_cell = ws.cell(row=note_row, column=1)
-    note_cell.value = "Note: This form shall be accomplished by the Public Employment Service Office to be submitted to the DOLE Regional Office at least ten (10) days prior to the date of employment."
-    note_cell.font = Font(italic=True, size=8)
-    note_cell.alignment = Alignment(wrap_text=False, horizontal='left', vertical='top')
+            street_add = row[12] or ""
+            barangay = row[13] or ""
+            address = f"{street_add}, {barangay}".strip(", ")
+            contact_no = row[7] or ""
+            educational_attainment = row[11] or ""
+            iskolar_type = row[9] or ""
+            sex = row[10] or ""
+            gsis_beneficiary = row[14] or ""
+            participation_count = row[15] if len(row) > 15 else 0
 
-    # Two rows after note, merge A-E and L-P for 7 rows each
-    prepared_start = note_row + 2
-    prepared_end = prepared_start + 6
-    submitted_start = prepared_start
-    submitted_end = prepared_end
+            # New/ SPES Baby logic
+            if participation_count is None:
+                new_spes_baby = ""
+            elif int(participation_count) <= 1:
+                new_spes_baby = "New Baby"
+            else:
+                new_spes_baby = "Spes Baby"
 
-    ws.merge_cells(start_row=prepared_start, start_column=1, end_row=prepared_end, end_column=5)  # A-E
-    ws.merge_cells(start_row=submitted_start, start_column=12, end_row=submitted_end, end_column=16)  # L-P
+            table_row = [
+                idx,
+                full_name,
+                row[0],  # student_id
+                age,
+                sex,
+                address,
+                contact_no,
+                "",  # Student/ OSY/ Dependent of Displaced Worker (blank)
+                educational_attainment,
+                new_spes_baby,  # New/ SPES Baby
+                "",  # Occupational Code & Position (blank)
+                "",  # Wage Rate per Day (blank)
+                "",  # EMPLOYMENT PERIOD (blank)
+                "",  # Total Amount to be earned/received as salary/wages (blank)
+                "",  # GSIS Policy No. (blank)
+                gsis_beneficiary  # GSIS BENEFICIARY (from name_of_beneficiary)
+            ]
+            for col_num, value in enumerate(table_row, 1):
+                cell = ws.cell(row=header_row + idx, column=col_num, value=value)
+                thin = Side(border_style="thin", color="000000")
+                cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+                cell.font = Font(name='Calibri')
+                cell.alignment = Alignment(horizontal='center', vertical='center')
 
-    # Prepared By block
-    prepared_text = (
-        "Prepared By:\n\n"
-        "_____________________________________________________________\n"
-        "                                        Signature over Printed Name\n\n"
-        "_____________________________________________________________\n"
-        "                                                          Date"
-    )
-    cell = ws.cell(row=prepared_start, column=1, value=prepared_text)
-    cell.font = Font(size=11)
-    cell.alignment = Alignment(wrap_text=True, vertical='top')
+        # --- Append contents after the table ---
+        last_table_row = header_row + len(rows)
+        note_row = last_table_row + 2
 
-    # Submitted By block
-    submitted_text = (
-        "Submitted By:\n\n"
-        "_____________________________________________________________\n"
-        "                                        Signature over Printed Name\n\n"
-        "_____________________________________________________________\n"
-        "                                                          Date"
-    )
-    cell = ws.cell(row=submitted_start, column=12, value=submitted_text)
-    cell.font = Font(size=11)
-    cell.alignment = Alignment(wrap_text=True, vertical='top')
+        # Merge A:P for the note row so it spans the whole table width
+        ws.merge_cells(start_row=note_row, start_column=1, end_row=note_row, end_column=16)  # A:P
 
-    # Save to BytesIO and send as response
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-    return send_file(
-        output,
-        download_name="gsis_placement_report.xlsx",
-        as_attachment=True,
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+        note_cell = ws.cell(row=note_row, column=1)
+        note_cell.value = "Note: This form shall be accomplished by the Public Employment Service Office to be submitted to the DOLE Regional Office at least ten (10) days prior to the date of employment."
+        note_cell.font = Font(italic=True, size=8)
+        note_cell.alignment = Alignment(wrap_text=False, horizontal='left', vertical='top')
+
+        # Two rows after note, merge A-E and L-P for 7 rows each
+        prepared_start = note_row + 2
+        prepared_end = prepared_start + 6
+        submitted_start = prepared_start
+        submitted_end = prepared_end
+
+        ws.merge_cells(start_row=prepared_start, start_column=1, end_row=prepared_end, end_column=5)  # A-E
+        ws.merge_cells(start_row=submitted_start, start_column=12, end_row=submitted_end, end_column=16)  # L-P
+
+        # Prepared By block
+        prepared_text = (
+            "Prepared By:\n\n"
+            "_____________________________________________________________\n"
+            "                                        Signature over Printed Name\n\n"
+            "_____________________________________________________________\n"
+            "                                                          Date"
+        )
+        cell = ws.cell(row=prepared_start, column=1, value=prepared_text)
+        cell.font = Font(size=11)
+        cell.alignment = Alignment(wrap_text=True, vertical='top')
+
+        # Submitted By block
+        submitted_text = (
+            "Submitted By:\n\n"
+            "_____________________________________________________________\n"
+            "                                        Signature over Printed Name\n\n"
+            "_____________________________________________________________\n"
+            "                                                          Date"
+        )
+        cell = ws.cell(row=submitted_start, column=12, value=submitted_text)
+        cell.font = Font(size=11)
+        cell.alignment = Alignment(wrap_text=True, vertical='top')
+
+        # Save to BytesIO and send as response
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        return send_file(
+            output,
+            download_name="gsis_placement_report.xlsx",
+            as_attachment=True,
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    except Exception as e:
+        return str(e), 500
+    finally:
+        conn.close()
