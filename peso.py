@@ -411,6 +411,16 @@ def reject_student(student_id):
     conn = get_conn()
     try:
         with conn.cursor() as cur:
+            # Fetch student's mobile_no and first_name before deleting
+            cur.execute("""
+                SELECT mobile_no, first_name
+                FROM student_application
+                WHERE student_id = %s
+            """, (student_id,))
+            student = cur.fetchone()
+            mobile_no = student[0] if student else None
+            first_name = student[1] if student else "Student"
+
             cur.execute("DELETE FROM student_application WHERE student_id = %s", (student_id,))
             # Delete from student_login as well
             cur.execute("DELETE FROM student_login WHERE student_id = %s", (student_id,))
@@ -421,6 +431,12 @@ def reject_student(student_id):
                 VALUES (%s, %s, %s, %s)
             """, (student_id, 'Reject', session.get('peso_username', 'unknown'), performed_at))
             conn.commit()
+        # Send SMS notification if mobile_no exists
+        if mobile_no:
+            sms_message = (
+                f"Good day {first_name}, We're sorry to inform you that your SPES application has been REJECTED. For more information, please contact PESO Balanga."
+            )
+            send_sms(mobile_no, sms_message)
         return jsonify({'success': True})
     except Exception as e:
         conn.rollback()
@@ -484,7 +500,7 @@ def move_to_final_list(student_id):
         # Send SMS notification if mobile_no exists
         if mobile_no:
             sms_message = (
-                f"Hello {first_name}, you are now qualified as a SPES beneficiary. Please await further instructions. - SPES Balanga"
+                f"Congrats {first_name}!, you are now qualified as a SPES beneficiary. Please await further instructions. - SPES Balanga"
             )
             send_sms(mobile_no, sms_message)
         return jsonify({'success': True})
@@ -524,7 +540,7 @@ def move_to_final_list_from_pending(student_id):
         # Send SMS notification if mobile_no exists
         if mobile_no:
             sms_message = (
-                f"Hello {first_name}, you are now qualified as a SPES beneficiary. Please wait for further instructions. - SPES Balanga"
+                f"Congratulations {first_name}!, you are now qualified as a SPES beneficiary. Please wait for further instructions. - SPES Balanga"
             )
             send_sms(mobile_no, sms_message)
         return jsonify({'success': True})
@@ -930,7 +946,7 @@ def move_to_payroll(student_id):
         # Send SMS notification if mobile_no exists
         if mobile_no:
             sms_message = (
-                f"Hello {first_name}, you have been moved to payroll. Please check the announcement tab for updates. Thank you. - SPES Balanga"
+                f"Congrats {first_name}!, you have been moved to payroll. Please standy for further updates. Thank you. - SPES Balanga"
             )
             send_sms(mobile_no, sms_message)
         flash('Student successfully moved to Payroll!', 'success')
@@ -1362,7 +1378,7 @@ def update_dtr_comment(student_id):
         # Send SMS if mobile_no exists
         if mobile_no:
             sms_message = (
-                f"New comment from PESO regarding Your DTR. {comment}"
+                f"New comment from PESO regarding your DTR. {comment}"
             )
             send_sms(mobile_no, sms_message)
         return jsonify({'success': True})
@@ -1800,3 +1816,33 @@ def download_requested_docs_archive(student_id):
         return jsonify({"error": str(e)}), 500
     finally:
         conn.close()
+        
+@peso_bp.route('/send_payroll_schedule_sms', methods=['POST'])
+def send_payroll_schedule_sms():
+    if 'peso_logged_in' not in session:
+        return jsonify({'success': False, 'message': 'Not authorized', 'category': 'danger'}), 401
+    data = request.get_json()
+    schedule_date = data.get('schedule_date')
+    if not schedule_date:
+        return jsonify({'success': False, 'message': 'No date provided', 'category': 'danger'}), 400
+    conn = get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT mobile_no, first_name FROM student_dtr_records
+                WHERE for_payroll = TRUE AND (is_paid = FALSE OR is_paid IS NULL) AND mobile_no IS NOT NULL
+            """)
+            students = cur.fetchall()
+            count = 0
+            for mobile_no, first_name in students:
+                if not mobile_no:
+                    continue
+                msg = f"Good day {first_name}, your payroll schedule is on {schedule_date}. Please be present. - SPES Balanga"
+                send_sms(mobile_no, msg)
+                count += 1
+        return jsonify({'success': True, 'message': f'SMS sent to {count} unpaid students.', 'category': 'success'})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'success': False, 'message': str(e), 'category': 'danger'}), 500
+    finally:
+        conn.close()        

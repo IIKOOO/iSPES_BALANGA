@@ -196,18 +196,18 @@ function fetchAndDisplayPayroll() {
                             }
                             // 3. Comment (read-only)
                             const student = allRecords.find(r => r.dtr_record_id == studentId);
-                            let comment = student && student.comment_for_dtr ? student.comment_for_dtr : '';
-                            let commentCard = `
-                                <div class="card mt-4 peso-comment-card shadow">
-                                    <div class="card-header text-white" style="background-color: #003366;">
-                                        <h5 class="mb-0 fw-bold">PESO Comment to Student</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <textarea class="form-control mb-2" id="dtrPesoComment" rows="3" placeholder="No comment yet..." readonly>${comment || ''}</textarea>
-                                    </div>
-                                </div>
-                            `;
-                            document.getElementById('dtr-details-content').innerHTML += commentCard;
+                            // let comment = student && student.comment_for_dtr ? student.comment_for_dtr : '';
+                            // let commentCard = `
+                            //     <div class="card mt-4 peso-comment-card shadow">
+                            //         <div class="card-header text-white" style="background-color: #003366;">
+                            //             <h5 class="mb-0 fw-bold">PESO Comment to Student</h5>
+                            //         </div>
+                            //         <div class="card-body">
+                            //             <textarea class="form-control mb-2" id="dtrPesoComment" rows="3" placeholder="No comment yet..." readonly>${comment || ''}</textarea>
+                            //         </div>
+                            //     </div>
+                            // `;
+                            document.getElementById('dtr-details-content').innerHTML;
                         });
 
                         document.querySelectorAll('.toggle-onhold-btn').forEach(btn => {
@@ -353,8 +353,9 @@ document.querySelectorAll('input[name="payrollDownloadCategory"]').forEach(el =>
 // Handle download on confirm
 document.getElementById('confirmDownloadStudentPayrollXlsxBtn').addEventListener('click', function() {
     const selected = document.querySelector('input[name="payrollDownloadCategory"]:checked');
+    const paidStatus = document.getElementById('payrollDownloadPaidStatus').value;
     if (!selected) return;
-    let url = '/download_student_payroll_xlsx?category=' + selected.value;
+    let url = '/download_student_payroll_xlsx?category=' + selected.value + '&is_paid=' + paidStatus;
     window.location.href = url;
     bootstrap.Modal.getInstance(document.getElementById('downloadStudentPayrollXlsxModal')).hide();
 });
@@ -426,3 +427,63 @@ document.getElementById('confirmMovePayrollArchiveBtn').addEventListener('click'
         setTimeout(() => location.reload(), 4000);
     });
 });
+
+// ...existing code...
+document.addEventListener('DOMContentLoaded', function() {
+    const sendBtn = document.getElementById('sendScheduleSmsBtn');
+    const modal = new bootstrap.Modal(document.getElementById('scheduleSmsModal'));
+    const dateInput = document.getElementById('scheduleDate');
+    const confirmBtn = document.getElementById('sendScheduleSmsConfirmBtn');
+    const smsPreview = document.getElementById('smsPreview');
+
+    if (sendBtn) {
+        sendBtn.addEventListener('click', () => {
+            dateInput.value = '';
+            smsPreview.classList.add('d-none');
+            confirmBtn.disabled = true;
+            modal.show();
+        });
+    }
+
+    if (dateInput) {
+        dateInput.addEventListener('input', () => {
+            if (dateInput.value) {
+                smsPreview.textContent = `SMS will be sent to all unpaid students: "Your payroll schedule is on ${dateInput.value}. Please be present."`;
+                smsPreview.classList.remove('d-none');
+                confirmBtn.disabled = false;
+            } else {
+                smsPreview.classList.add('d-none');
+                confirmBtn.disabled = true;
+            }
+        });
+    }
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', () => {
+            confirmBtn.disabled = true;
+            fetch('/send_payroll_schedule_sms', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({schedule_date: dateInput.value})
+            })
+            .then(res => res.json())
+            .then(data => {
+                modal.hide();
+                showToast(data.message || 'SMS sent!', data.category || 'success');
+            })
+            .catch(() => {
+                showToast('Failed to send SMS.', 'danger');
+            });
+        });
+    }
+
+    function showToast(msg, category) {
+        const toastBody = document.getElementById('payrollActionToastBody');
+        const toast = document.getElementById('payrollActionToast');
+        toastBody.textContent = msg;
+        toast.classList.remove('text-bg-success', 'text-bg-danger');
+        toast.classList.add('text-bg-' + (category === 'danger' ? 'danger' : 'success'));
+        new bootstrap.Toast(toast).show();
+    }
+});
+// ...existing code...

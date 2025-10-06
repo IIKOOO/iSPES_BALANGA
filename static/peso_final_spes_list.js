@@ -366,7 +366,8 @@ document.addEventListener('click', function (e) {
                     </div>
                     <div class="mb-3 mt-4">
                         <label for="pesoComment" class="form-label fw-bold">PESO Comment to Student</label>
-                        <textarea class="form-control" id="pesoComment" rows="3" readonly>${data.requirements.peso_comment || ''}</textarea>
+                        <textarea class="form-control" id="pesoComment" rows="3">${data.requirements.peso_comment || ''}</textarea>
+                        <button id="savePesoCommentBtn" type="button" class="btn btn-success mt-2">Send Comment</button>
                     </div>
                 </div>
             </div>
@@ -400,6 +401,23 @@ document.addEventListener('click', function (e) {
                 }
             }, 100);
         }).catch(error => console.error('Error:', error));
+    }
+    if (e.target && e.target.id === 'savePesoCommentBtn') {
+        const comment = document.getElementById('pesoComment').value;
+        fetch(`/update_peso_comment/${currentStudentId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ comment })
+        })
+        .then(res => res.json())
+        .then(resp => {
+            if (resp.success) {
+                showActionToast('Comment saved!', true);
+            } else {
+                showActionToast('Failed to save comment.', false);
+            }
+        })
+        .catch(() => showActionToast('Error saving comment.', false));
     }
 });
 

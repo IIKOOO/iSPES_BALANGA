@@ -147,8 +147,9 @@ def download_student_payroll_xlsx():
     conn = get_conn()
     try:
         category = request.args.get('category', 'all')
+        is_paid = request.args.get('is_paid', 'all')
         query = """
-            SELECT dtr_record_id, last_name, first_name, middle_name, suffix, student_category
+            SELECT dtr_record_id, last_name, first_name, middle_name, suffix, student_category, is_paid
             FROM student_dtr_records
             WHERE for_payroll = TRUE
         """
@@ -158,7 +159,11 @@ def download_student_payroll_xlsx():
             params.append('SENIOR HIGH SCHOOL')
         elif category == 'college':
             query += " AND student_category <> %s"
-            params.append('SENIOR HIGH SCHOOL')
+            params.append('SENIOR HIGH SCHOOL')    
+        if is_paid == 'paid':
+            query += " AND is_paid = TRUE"
+        elif is_paid == 'unpaid':
+            query += " AND is_paid = FALSE"
         query += " ORDER BY last_name, first_name"
 
         with conn.cursor() as cur:

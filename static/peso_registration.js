@@ -329,7 +329,7 @@ document.addEventListener('click', function (e) {
                             <div class="mb-3 mt-4">
                                 <label for="pesoComment" class="form-label fw-bold">PESO Comment to Student</label>
                                 <textarea class="form-control" id="pesoComment" rows="3">${data.requirements.peso_comment || ''}</textarea>
-                                <button id="savePesoCommentBtn" type="button" class="btn btn-success mt-2">Save Comment</button>
+                                <button id="savePesoCommentBtn" type="button" class="btn btn-success mt-2">Send Comment</button>
                             </div>
                         </div>
                     </div>

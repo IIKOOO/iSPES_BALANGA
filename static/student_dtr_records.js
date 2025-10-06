@@ -198,7 +198,7 @@ function fetchAndDisplayDtrRecords() {
                             </div>
                             <div class="card-body">
                                 <textarea class="form-control mb-2" id="dtrPesoComment" rows="3" placeholder="Enter comment...">${comment || ''}</textarea>
-                                <button id="saveDtrPesoCommentBtn" type="button" class="btn btn-success">Save Comment</button>
+                                <button id="saveDtrPesoCommentBtn" type="button" class="btn btn-success">Send Comment</button>
                             </div>
                         </div>
                     `;
