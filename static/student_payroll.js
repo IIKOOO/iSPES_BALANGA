@@ -436,6 +436,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmBtn = document.getElementById('sendScheduleSmsConfirmBtn');
     const smsPreview = document.getElementById('smsPreview');
 
+    // Set min date to tomorrow
+    if (dateInput) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const yyyy = tomorrow.getFullYear();
+        const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+        const dd = String(tomorrow.getDate()).padStart(2, '0');
+        dateInput.min = `${yyyy}-${mm}-${dd}`;
+    }
+
     if (sendBtn) {
         sendBtn.addEventListener('click', () => {
             dateInput.value = '';
@@ -448,7 +458,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dateInput) {
         dateInput.addEventListener('input', () => {
             if (dateInput.value) {
-                smsPreview.textContent = `SMS will be sent to all unpaid students: "Your payroll schedule is on ${dateInput.value}. Please be present."`;
+                // Format date as mm/dd/yyyy for preview
+                const d = new Date(dateInput.value);
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                const yyyy = d.getFullYear();
+                const formatted = `${mm}/${dd}/${yyyy}`;
+                smsPreview.textContent = `SMS will be sent to all unpaid students: "Your payroll schedule is on ${formatted} 8:00am-5:00pm. Please be present."`;
                 smsPreview.classList.remove('d-none');
                 confirmBtn.disabled = false;
             } else {
