@@ -196,7 +196,7 @@
                         <div class="card-body">
                             <form id="accomplishmentForm" method="POST" action="{{ url_for('student.upload_accomplishment_report') }}" enctype="multipart/form-data">
                                 <div class="mb-3">
-                                  <label for="accomplishment_report" class="form-label fw-bold">Upload Accomplishment Report (PDF/Image):<span class="text-danger">you wont be moved to  payroll if accomplishment report is missing*</span></label>
+                                  <label for="accomplishment_report" class="form-label fw-bold">Upload Accomplishment Report (PDF/Image):<span class="text-danger">  You wont be moved to  payroll if accomplishment report is missing*</span></label>
                                   <input type="file" class="form-control" id="accomplishment_report" name="accomplishment_report" accept=".pdf,application/pdf" required>
                                 </div>
                                 <div class="text-center mb-3">
@@ -217,7 +217,7 @@
                         <div class="card-body">
                             <form id="requestedDocsForm" method="POST" action="{{ url_for('student.upload_requested_docs') }}" enctype="multipart/form-data">
                                 <div class="mb-3">
-                                  <label for="requested_docs" class="form-label fw-bold">Upload Requested Documents (PDF/Image):<span class="text-danger">you wont be moved to  payroll if failed to comply*</span></label>
+                                  <label for="requested_docs" class="form-label fw-bold">Upload Requested Documents (PDF/Image):<span class="text-danger">  You wont be moved to  payroll if failed to comply*</span><span class="text-success">   Ignore if no documents is requested*</span></label>
                                   <input type="file" class="form-control" id="requested_docs" name="requested_docs" accept=".pdf,application/pdf" required>
                                 </div>
                                 <div class="text-center">
