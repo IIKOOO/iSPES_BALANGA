@@ -197,7 +197,7 @@ button {
     .btn, .navbar, .footer, .peso_right_side, .right_side {
         display: none !important;
     }
-}
+} */
 #registration_form input[type="text"],
   #registration_form input[type="email"],
   #registration_form textarea,
@@ -205,14 +205,14 @@ button {
     text-transform: uppercase;
 }
 
-/* Remove uppercase for email_address only 
+/* Remove uppercase for email_address only */
 #registration_form input#email_address,
 #registration_form input#registration_username,
 #registration_form input#registration_password,
 #registration_form input#confirm_password,
 #registration_form input#social_media_account {
     text-transform: none;
-} */
+} 
 
 .table td, .table th {
     white-space: nowrap;
