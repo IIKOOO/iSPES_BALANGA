@@ -1843,7 +1843,7 @@ def send_payroll_schedule_sms():
             for mobile_no, first_name in students:
                 if not mobile_no:
                     continue
-                msg = f"Good day {first_name}, your payroll schedule is on {formatted_date} 8:00am-5:00pm. Please be present. - SPES Balanga"
+                msg = f"Good day {first_name}, your payroll schedule is on {formatted_date} 9:00am-5:00pm. Please be present. - SPES Balanga"
                 send_sms(mobile_no, msg)
                 count += 1
         return jsonify({'success': True, 'message': f'SMS sent to {count} unpaid students.', 'category': 'success'})

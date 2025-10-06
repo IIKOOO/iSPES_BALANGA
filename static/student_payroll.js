@@ -464,7 +464,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const dd = String(d.getDate()).padStart(2, '0');
                 const yyyy = d.getFullYear();
                 const formatted = `${mm}/${dd}/${yyyy}`;
-                smsPreview.textContent = `SMS will be sent to all unpaid students: "Your payroll schedule is on ${formatted} 8:00am-5:00pm. Please be present."`;
+                smsPreview.textContent = `SMS will be sent to all unpaid students: "Your payroll schedule is on ${formatted} 9:00am-5:00pm. Please be present."`;
                 smsPreview.classList.remove('d-none');
                 confirmBtn.disabled = false;
             } else {
