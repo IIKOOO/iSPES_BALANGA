@@ -88,6 +88,7 @@
                                     <option value="last_name_desc">Last Name (Z-A)</option>
                                     <option value="timestamp_asc">Timestamp (Oldest First)</option>
                                     <option value="timestamp_desc">Timestamp (Newest First)</option>
+                                    <option value="still_working">Still Working Only</option>
                                 </select>
                             </div>
                         </div>
@@ -144,8 +145,10 @@
                         <h5 class="mb-0">Final SPES List Summary</h5>
                     </div>
                     <div class="card-body text-center">
-                        <h5 class="fw-bold">Total of Students Working</h5>
+                        <h5 class="fw-bold">Total SPES Students</h5>
                         <h3 class="text-primary fw-bold"><span id="totalFinal">0</span></h3>
+                        <h5 class="fw-bold">Total of Students Still Working</h5>
+                        <h3 class="text-primary fw-bold"><span id="totalFinalWorking">0</span></h3>
                         <div class="d-flex justify-content-center mt-3">
                             <!-- <button id="deleteAllPendingBtn" class="btn btn-danger btn-sm">
                                 <i class="bi bi-trash"></i> Delete All Students Records
@@ -171,7 +174,7 @@
                     <div class="card-header text-white" style="background-color: #003366;">
                         <h5 class="mb-0">Recent Action Logs</h5>
                     </div>
-                    <div class="card-body" style="max-height: 425px; overflow-y: auto;">
+                    <div class="card-body" style="max-height: 330px; overflow-y: auto;">
                     <ul class="list-group list-group-flush" id="actionLogsList"></ul>
                 </div>
             </div>

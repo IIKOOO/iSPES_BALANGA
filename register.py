@@ -9,7 +9,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-API_TOKEN = os.getenv('API_TOKEN')   
+API_TOKEN = os.getenv('API_TOKEN')
 
 register_bp = Blueprint('register', __name__)
 def get_conn():
@@ -27,7 +27,7 @@ def send_sms(to, message):
         "Content-Type": "application/json"
     }
     response = requests.post(url, json=payload, headers=headers)
-    print("SMS API response:", response.text)  # Add this line for debugging
+    print("SMS API response:", response.text)
     return response.json()
 
 @register_bp.route('/register', methods=['GET', 'POST'])

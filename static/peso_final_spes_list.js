@@ -505,6 +505,14 @@ function fetchFinalSummary() {
         });
 }
 
+function fetchFinalSummaryWorking() {
+    fetch('/final_spes_list_summary_working')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('totalFinalWorking').textContent = data.total_final_working;
+        });
+}
+
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('view-image-btn')) {
         const dtrId = e.target.getAttribute('data-dtr-id');
@@ -600,7 +608,7 @@ document.getElementById('downloadGSISXlsxBtn').addEventListener('click', functio
     });
 });
 
-document.addEventListener('DOMContentLoaded', fetchFinalSummary, fetchActionLogs());
+document.addEventListener('DOMContentLoaded', fetchFinalSummary(), fetchFinalSummaryWorking(), fetchActionLogs());
 
 document.addEventListener('click', function (e) {
     if (e.target && e.target.classList.contains('edit-dtr-btn')) {

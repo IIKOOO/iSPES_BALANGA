@@ -166,7 +166,10 @@ def retrieve_applications():
             query += " AND (CAST(s.student_id AS TEXT) ILIKE %s OR LOWER(s.last_name) ILIKE %s OR LOWER(s.first_name) ILIKE %s)"
             params.extend([f"%{search_query}%", f"%{search_query.lower()}%", f"%{search_query.lower()}%"])
 
-        if sort_option == "last_name_asc":
+        if sort_option == "still_working":
+            query += " AND s.student_id NOT IN (SELECT dtr_record_id FROM student_dtr_records)"
+            query += " ORDER BY s.last_name ASC"
+        elif sort_option == "last_name_asc":
             query += " ORDER BY s.last_name ASC"
         elif sort_option == "last_name_desc":
             query += " ORDER BY s.last_name DESC"
@@ -640,6 +643,26 @@ def final_spes_list_summary():
             """)
             total_final = cur.fetchone()[0]
         return jsonify({"total_final": total_final})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+        
+@peso_bp.route('/final_spes_list_summary_working', methods=['GET'])
+def final_spes_list_summary_working():
+    conn = get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT COUNT(*) FROM student_application
+                WHERE is_approved = TRUE
+                AND student_id NOT IN (
+                    SELECT dtr_record_id FROM student_dtr_records
+                )
+            """)
+            total_final_working = cur.fetchone()[0]
+        return jsonify({"total_final_working": total_final_working})
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 500
