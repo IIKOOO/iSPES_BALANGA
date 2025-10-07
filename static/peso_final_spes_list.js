@@ -412,12 +412,12 @@ document.addEventListener('click', function (e) {
         .then(res => res.json())
         .then(resp => {
             if (resp.success) {
-                showActionToast('Comment saved!', true);
+                alert('Comment saved!');
             } else {
-                showActionToast('Failed to save comment.', false);
+                showFinalActionToast('Failed to save comment.', false);
             }
         })
-        .catch(() => showActionToast('Error saving comment.', false));
+        .catch(() => showFinalActionToast('Error saving comment.', false));
     }
 });
 
@@ -672,6 +672,7 @@ document.getElementById('editDtrForm').addEventListener('submit', function(e) {
     .then(data => {
         if (data.success) {
             refreshDtrModalTable(currentStudentId);
+            alert('DTR updated successfully!');
         } else {
             alert('Failed to update DTR.');
         }
@@ -716,7 +717,7 @@ document.getElementById('confirmMoveFinalArchiveBtn').addEventListener('click', 
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            showFinalActionToast(`Successfully moved ${data.archived_count} students to archive.`, true);
+            alert(`Successfully moved ${data.archived_count} students to archive.`);
             setTimeout(() => location.reload(), 4000); // Wait 4 seconds before reload
         } else {
             showFinalActionToast('Error: ' + data.error, false);

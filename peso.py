@@ -395,7 +395,7 @@ def update_peso_comment(student_id):
             # Send SMS if mobile_no exists
             if mobile_no:
                 sms_message = (
-                    f"New comment from PESO regarding the status of your registration. {comment}"
+                    f"New comment from PESO. {comment}"
                 )
                 send_sms(mobile_no, sms_message)
 
