@@ -16,18 +16,17 @@ def get_conn():
     url = os.getenv('DATABASE_URL')
     return psycopg2.connect(url)
 
-def send_sms(to, message):
-    url = f'https://sms.iprogtech.com/api/v1/sms_messages'
+def send_sms(phone_number, message):
+    load_dotenv()
+    url = "https://sms.iprogtech.com/api/v1/sms_messages"
     payload = {
         "api_token": API_TOKEN,
-        "phone_number": to,
-        "message": message
+        "phone_number": phone_number,
+        "message": message,
+        "sms_provider": 2  # <-- Add this line
     }
-    headers = {
-        "Content-Type": "application/json"
-    }
+    headers = {"Content-Type": "application/json"}
     response = requests.post(url, json=payload, headers=headers)
-    print("SMS API response:", response.text)
     return response.json()
 
 @register_bp.route('/register', methods=['GET', 'POST'])
