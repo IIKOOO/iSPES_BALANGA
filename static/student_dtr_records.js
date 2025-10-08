@@ -127,7 +127,7 @@ function fetchAndDisplayDtrRecords() {
                                 <td>
                                     <button class="btn btn-warning btn-sm edit-dtr-btn"
                                         data-dtr-id="${row.dtr_id}"
-                                        data-dtr='${JSON.stringify(row)}'>Edit DTR
+                                        data-dtr='${JSON.stringify(row)}'>Rectify DTR
                                     </button>
                                 </td>
                             </tr>
@@ -421,7 +421,7 @@ function refreshDtrModalTable(studentId) {
                         <td>
                             <button class="btn btn-warning btn-sm edit-dtr-btn"
                                 data-dtr-id="${row.dtr_id}"
-                                data-dtr='${JSON.stringify(row)}'>Edit DTR</button>
+                                data-dtr='${JSON.stringify(row)}'>Rectify DTR</button>
                         </td>
                     </tr>
                 `;

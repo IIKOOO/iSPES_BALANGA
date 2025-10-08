@@ -37,32 +37,36 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// ...existing code...
 document.addEventListener('DOMContentLoaded', function() {
     fetch('/check_in_dtr_records')
     .then(res => res.json())
     .then(data => {
         if (data.in_records) {
-            // Now check on_hold status
+            // Hide resign button if student exists in DTR records
+            const resignBtnSection = document.getElementById('resignBtnSection');
+            if (resignBtnSection) {
+                resignBtnSection.style.display = 'none';
+            }
+            // ...existing code...
             fetch('/get_student_dtr_record_status')
             .then(res => res.json())
             .then(status => {
                 if (status.on_hold) {
                     document.getElementById('accomplishment-upload-section').style.display = 'block';
                     document.getElementById('requestedDocs-upload-section').style.display = 'block';
-                    document.getElementById('resignBtn').style.display = 'none';
                 } else {
                     document.getElementById('accomplishment-upload-section').style.display = 'block';
                     document.getElementById('requestedDocs-upload-section').style.display = 'none';
-                    document.getElementById('resignBtn').style.display = 'none';
                 }
             });
         } else {
             document.getElementById('accomplishment-upload-section').style.display = 'none';
             document.getElementById('requestedDocs-upload-section').style.display = 'none';
-            document.getElementById('resignBtn').style.display = 'block';
         }
     });
 });
+// ...existing code...
 
 document.addEventListener('DOMContentLoaded', function() {
     const progressBar = document.getElementById('dtrProgressBar');
@@ -88,20 +92,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.addEventListener('DOMContentLoaded', function() {
     const resignBtn = document.getElementById('resignBtn');
+    const confirmResignBtn = document.getElementById('confirmResignBtn');
+    const resignPassword = document.getElementById('resignPassword');
+    const resignPasswordError = document.getElementById('resignPasswordError');
+
     if (resignBtn) {
         resignBtn.addEventListener('click', function() {
+            // Reset modal state
+            confirmResignBtn.disabled = true;
+            resignPassword.value = '';
+            resignPasswordError.style.display = 'none';
             const modal = new bootstrap.Modal(document.getElementById('resignConfirmModal'));
             modal.show();
         });
     }
-    const confirmResignBtn = document.getElementById('confirmResignBtn');
+
+    if (resignPassword) {
+        resignPassword.addEventListener('input', function() {
+            const password = resignPassword.value;
+            if (password.length < 6) {
+                confirmResignBtn.disabled = true;
+                resignPasswordError.style.display = 'none';
+                return;
+            }
+            fetch('/student_auth_password', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({current_password: password})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    confirmResignBtn.disabled = false;
+                    resignPasswordError.style.display = 'none';
+                } else {
+                    confirmResignBtn.disabled = true;
+                    resignPasswordError.innerText = data.error || 'Incorrect password.';
+                    resignPasswordError.style.display = 'block';
+                }
+            });
+        });
+    }
+
     if (confirmResignBtn) {
         confirmResignBtn.addEventListener('click', function() {
             fetch('/student_resign', { method: 'POST' })
             .then(res => res.json())
             .then(data => {
+                bootstrap.Modal.getInstance(document.getElementById('resignConfirmModal')).hide();
                 if (data.success) {
-                    document.getElementById('resignBtnSection').style.display = 'none';
                     document.getElementById('accomplishment-upload-section').style.display = 'block';
                     location.reload();
                 } else {

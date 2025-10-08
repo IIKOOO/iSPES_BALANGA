@@ -1243,7 +1243,7 @@ def edit_dtr():
                 INSERT INTO peso_action_logs (student_id, action, performed_by, performed_at)
                 VALUES (%s, %s, %s, %s)
             """, (
-                student_id,'Edit DTR', session.get('peso_username', 'unknown'),performed_at
+                student_id,'Rectify DTR', session.get('peso_username', 'unknown'),performed_at
             ))
             conn.commit()
 

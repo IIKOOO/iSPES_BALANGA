@@ -56,6 +56,14 @@
                   Update Password
                 </a>
               </li>
+              <li class="mb-3 offcanvas-list" id="resignBtnSection">
+                  <a class="d-flex align-items-center rounded-4 px-3 py-3 w-100"
+                      style="background:#BC4A3C; color:#fff; text-decoration:none; font-size:1.2rem;"
+                      href="#" id="resignBtn">
+                      <i class="bi bi-person-x me-3 fs-3"></i>
+                      Resign
+                  </a>
+              </li>
               <li class="mb-3 offcanvas-list">
                 <a class="d-flex align-items-center rounded-4 px-3 py-3 w-100 text-white"
                   style="background:#BC4A3C; color:#fff; text-decoration:none; font-size:1.2rem;"
@@ -247,6 +255,29 @@
       </div>
     </div>
   </div>
+
+  <div class="modal fade" id="resignConfirmModal" tabindex="-1" aria-labelledby="resignConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="resignConfirmModalLabel">Confirm Resignation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to resign? This is irreversible and will finalize your DTR and you will be evaluated based on your current hours.
+                <div class="mt-3">
+                  <label for="resignPassword" class="form-label">Enter Password:</label>
+                  <input type="password" class="form-control" id="resignPassword" autocomplete="current-password">
+                <div id="resignPasswordError" class="text-danger mt-2" style="display:none;"></div>
+            </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmResignBtn">Yes, Resign</button>
+            </div>
+            </div>
+        </div>
+    </div>
     <footer class="bg-dark text-white text-center py-3 mt-5 fs-6">
       <footer class="bg-dark text-white text-center py-3 fs-6">
         <img class="m-0" style="height: 60px; width: 65px;" src="{{ url_for('static', filename='images/dole_logo.png') }}" alt="Logo">
