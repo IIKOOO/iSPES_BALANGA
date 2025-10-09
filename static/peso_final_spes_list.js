@@ -421,6 +421,47 @@ document.addEventListener('click', function (e) {
     }
 });
 
+document.addEventListener('mouseover', function(e) {
+    if (e.target.classList.contains('view-image-btn')) {
+        const btn = e.target;
+        const dtrId = btn.getAttribute('data-dtr-id');
+        fetch(`/get_dtr_images/${dtrId}`)
+            .then(res => res.json())
+            .then(images => {
+                let html = '';
+                if (images.length === 0) {
+                    html = '<p class="m-2">No image captured for this DTR entry.</p>';
+                } else {
+                    images.forEach(img => {
+                        html += `<img src="data:image/png;base64,${img.image_data}" class="img-fluid mb-2" style="max-width:250px;max-height:200px;" alt="DTR Image"><br>`;
+                        html += `<small class="text-muted">Captured at: ${img.captured_at}</small><hr>`;
+                    });
+                }
+                // Destroy previous popover if any
+                if (btn._popoverInstance) {
+                    btn._popoverInstance.dispose();
+                }
+                btn.setAttribute('data-bs-content', html);
+                btn.setAttribute('data-bs-html', 'true');
+                btn.setAttribute('data-bs-placement', 'left');
+                btn.setAttribute('data-bs-trigger', 'manual');
+                btn._popoverInstance = new bootstrap.Popover(btn);
+                btn._popoverInstance.show();
+            });
+    }
+});
+
+document.addEventListener('mouseout', function(e) {
+    if (e.target.classList.contains('view-image-btn')) {
+        const btn = e.target;
+        if (btn._popoverInstance) {
+            btn._popoverInstance.hide();
+            btn._popoverInstance.dispose();
+            btn._popoverInstance = null;
+        }
+    }
+});
+
 function refreshDtrModalTable(studentId) {
     fetch(`/get_student_dtr/${studentId}`)
         .then(res => res.json())
