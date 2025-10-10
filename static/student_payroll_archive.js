@@ -238,8 +238,23 @@ function fetchAndDisplayPayrollArchive() {
     });
 }
 
+let activePopovers = [];
+
+function hideAllPopovers() {
+    activePopovers.forEach(pop => {
+        if (pop && pop._popoverInstance) {
+            pop._popoverInstance.hide();
+            pop._popoverInstance.dispose();
+            pop._popoverInstance = null;
+        }
+    });
+    activePopovers = [];
+}
+
 document.addEventListener('mouseover', function(e) {
     if (e.target.classList.contains('view-image-btn')) {
+        hideAllPopovers(); // Always hide all before showing new
+
         const btn = e.target;
         const dtrId = btn.getAttribute('data-dtr-id');
         fetch(`/get_dtr_images/${dtrId}`)
@@ -254,16 +269,16 @@ document.addEventListener('mouseover', function(e) {
                         html += `<small class="text-muted">Captured at: ${img.captured_at}</small><hr>`;
                     });
                 }
-                // Destroy previous popover if any
                 if (btn._popoverInstance) {
                     btn._popoverInstance.dispose();
                 }
-                btn.setAttribute('data-bs-content', html);
+                btn.setAttribute('data-bs-content', `<div class="custom-popover">${html}</div>`);
                 btn.setAttribute('data-bs-html', 'true');
                 btn.setAttribute('data-bs-placement', 'left');
                 btn.setAttribute('data-bs-trigger', 'manual');
                 btn._popoverInstance = new bootstrap.Popover(btn);
                 btn._popoverInstance.show();
+                activePopovers.push(btn);
             });
     }
 });
@@ -276,19 +291,30 @@ document.addEventListener('mouseout', function(e) {
             btn._popoverInstance.dispose();
             btn._popoverInstance = null;
         }
+        // Remove from activePopovers
+        activePopovers = activePopovers.filter(pop => pop !== btn);
     }
 });
+
+
 function formatTime(datetimeStr) {
     if (!datetimeStr) return '-';
-    const tIndex = datetimeStr.indexOf('T');
-    if (tIndex !== -1) {
-        return datetimeStr.substring(tIndex + 1, tIndex + 6).replace(':', ' : ');
+    // Handles formats like "2025-07-20T08:00" or "2025-07-20T08:00:00"
+    let timePart = '';
+    if (datetimeStr.includes('T')) {
+        timePart = datetimeStr.split('T')[1].substring(0,5);
+    } else if (datetimeStr.includes(' ')) {
+        timePart = datetimeStr.split(' ')[1].substring(0,5);
+    } else {
+        timePart = datetimeStr.substring(0,5);
     }
-    const spaceIndex = datetimeStr.indexOf(' ');
-    if (spaceIndex !== -1) {
-        return datetimeStr.substring(spaceIndex + 1, spaceIndex + 6).replace(':', ' : ');
-    }
-    return datetimeStr;
+    // Convert to 12-hour format
+    const [hourStr, minuteStr] = timePart.split(':');
+    let hour = parseInt(hourStr, 10);
+    const minute = minuteStr;
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12 || 12;
+    return `${hour}:${minute} ${ampm}`;
 }
 
 document.addEventListener('DOMContentLoaded', fetchAndDisplayPayrollArchive);

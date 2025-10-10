@@ -25,10 +25,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 </td>
                 <td>${new Date(row.date).toLocaleDateString('en-US', {weekday:'short'})}</td>
                 <td>${row.date}</td>
-                <td>${row.time_in_am || '-'}</td>
-                <td>${row.time_out_am || '-'}</td>
-                <td>${row.time_in_pm || '-'}</td>
-                <td>${row.time_out_pm || '-'}</td>
+                <td>${formatTime(row.time_in_am)}</td>
+                <td>${formatTime(row.time_out_am)}</td>
+                <td>${formatTime(row.time_in_pm)}</td>
+                <td>${formatTime(row.time_out_pm)}</td>
                 <td>${row.evaluation_am || '-'}</td>
                 <td>${row.evaluation_pm || '-'}</td>
                 <td>${row.daily_total ? row.daily_total + ' hours' : '-'}</td>
@@ -340,4 +340,14 @@ function showActionToast(message, isSuccess) {
     toastEl.classList.remove('text-bg-success', 'text-bg-danger');
     toastEl.classList.add(isSuccess ? 'text-bg-success' : 'text-bg-danger');
     new bootstrap.Toast(toastEl).show();
+}
+
+function formatTime(timeStr) {
+    if (!timeStr || timeStr === '-') return '-';
+    // Handles "HH:MM" or "HH:MM:SS"
+    let [hour, minute] = timeStr.split(':');
+    hour = parseInt(hour, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12 || 12;
+    return `${hour}:${minute} ${ampm}`;
 }

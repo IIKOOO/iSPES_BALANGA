@@ -249,47 +249,6 @@ function fetchAndDisplayPayroll() {
             });
         });
 
-        document.addEventListener('mouseover', function(e) {
-    if (e.target.classList.contains('view-image-btn')) {
-        const btn = e.target;
-        const dtrId = btn.getAttribute('data-dtr-id');
-        fetch(`/get_dtr_images/${dtrId}`)
-            .then(res => res.json())
-            .then(images => {
-                let html = '';
-                if (images.length === 0) {
-                    html = '<p class="m-2">No image captured for this DTR entry.</p>';
-                } else {
-                    images.forEach(img => {
-                        html += `<img src="data:image/png;base64,${img.image_data}" class="img-fluid mb-2" style="max-width:250px;max-height:200px;" alt="DTR Image"><br>`;
-                        html += `<small class="text-muted">Captured at: ${img.captured_at}</small><hr>`;
-                    });
-                }
-                // Destroy previous popover if any
-                if (btn._popoverInstance) {
-                    btn._popoverInstance.dispose();
-                }
-                btn.setAttribute('data-bs-content', html);
-                btn.setAttribute('data-bs-html', 'true');
-                btn.setAttribute('data-bs-placement', 'left');
-                btn.setAttribute('data-bs-trigger', 'manual');
-                btn._popoverInstance = new bootstrap.Popover(btn);
-                btn._popoverInstance.show();
-            });
-    }
-});
-
-document.addEventListener('mouseout', function(e) {
-    if (e.target.classList.contains('view-image-btn')) {
-        const btn = e.target;
-        if (btn._popoverInstance) {
-            btn._popoverInstance.hide();
-            btn._popoverInstance.dispose();
-            btn._popoverInstance = null;
-        }
-    }
-});
-
         document.querySelectorAll('.toggle-onhold-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const studentId = this.getAttribute('data-id');
@@ -333,7 +292,6 @@ document.getElementById('category_filter').addEventListener('change', fetchAndDi
 document.getElementById('sort_option').addEventListener('change', fetchAndDisplayPayroll);
 document.getElementById('search_input').addEventListener('input', fetchAndDisplayPayroll);
 
-// ...existing summary and logs
 
 function fetchPayrollSummary() {
     fetch('/payroll_summary')
@@ -344,6 +302,64 @@ function fetchPayrollSummary() {
             document.getElementById('payrollUnpaid').textContent = data.unpaid;
         });
 }
+
+let activePopovers = [];
+
+function hideAllPopovers() {
+    activePopovers.forEach(pop => {
+        if (pop && pop._popoverInstance) {
+            pop._popoverInstance.hide();
+            pop._popoverInstance.dispose();
+            pop._popoverInstance = null;
+        }
+    });
+    activePopovers = [];
+}
+
+document.addEventListener('mouseover', function(e) {
+    if (e.target.classList.contains('view-image-btn')) {
+        hideAllPopovers(); // Always hide all before showing new
+
+        const btn = e.target;
+        const dtrId = btn.getAttribute('data-dtr-id');
+        fetch(`/get_dtr_images/${dtrId}`)
+            .then(res => res.json())
+            .then(images => {
+                let html = '';
+                if (images.length === 0) {
+                    html = '<p class="m-2">No image captured for this DTR entry.</p>';
+                } else {
+                    images.forEach(img => {
+                        html += `<img src="data:image/png;base64,${img.image_data}" class="img-fluid mb-2" style="max-width:250px;max-height:200px;" alt="DTR Image"><br>`;
+                        html += `<small class="text-muted">Captured at: ${img.captured_at}</small><hr>`;
+                    });
+                }
+                if (btn._popoverInstance) {
+                    btn._popoverInstance.dispose();
+                }
+                btn.setAttribute('data-bs-content', `<div class="custom-popover">${html}</div>`);
+                btn.setAttribute('data-bs-html', 'true');
+                btn.setAttribute('data-bs-placement', 'left');
+                btn.setAttribute('data-bs-trigger', 'manual');
+                btn._popoverInstance = new bootstrap.Popover(btn);
+                btn._popoverInstance.show();
+                activePopovers.push(btn);
+            });
+    }
+});
+
+document.addEventListener('mouseout', function(e) {
+    if (e.target.classList.contains('view-image-btn')) {
+        const btn = e.target;
+        if (btn._popoverInstance) {
+            btn._popoverInstance.hide();
+            btn._popoverInstance.dispose();
+            btn._popoverInstance = null;
+        }
+        // Remove from activePopovers
+        activePopovers = activePopovers.filter(pop => pop !== btn);
+    }
+});
 
 function fetchActionLogs() {
     fetch('/peso_action_logs_summary')
