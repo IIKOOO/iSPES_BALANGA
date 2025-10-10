@@ -156,25 +156,27 @@
                         </div>
                     </div>
                     <div class="card-body text-center">
-                        <button id="downloadFinalSpesListCsvBtn" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-download"></i> Download Final SPES List CSV
-                        </button>
-                        <button id="downloadFinalSpesListXlsxBtn" class="btn btn-outline-primary btn-sm mt-3">
-                            <i class="bi bi-download"></i> Generate Final SPES List xlsx
-                        </button>
-                        <button id="downloadGSISXlsxBtn" class="btn btn-outline-primary btn-sm mt-3">
-                            <i class="bi bi-download"></i> Generate GSIS Report xlsx
-                        </button>
-                        <button id="moveFinalSpesListToArchiveBtn" class="btn btn-danger btn-sm mt-3 text-warning">
-                            <i class="bi"></i> Move All Final SPES List to Archive
-                        </button>
+                        <div class="d-flex flex-column align-items-center gap-2">
+                            <button id="downloadFinalSpesListCsvBtn" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="bi bi-file-earmark-excel"></i> Generate Final SPES List CSV
+                            </button>
+                            <button id="downloadFinalSpesListXlsxBtn" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="bi bi-file-earmark-excel"></i> Generate Final SPES List XLSX
+                            </button>
+                            <button id="downloadGSISXlsxBtn" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="bi bi-file-earmark-excel"></i> Generate GSIS Report XLSX
+                            </button>
+                            <button id="moveFinalSpesListToArchiveBtn" class="btn btn-danger btn-sm w-100 text-warning">
+                                <i class="bi bi-box-arrow-in-down"></i> Archive Final SPES List
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="card mt-3 shadow-sm">
                     <div class="card-header text-white" style="background-color: #003366;">
                         <h5 class="mb-0">Recent Action Logs</h5>
                     </div>
-                    <div class="card-body" style="max-height: 330px; overflow-y: auto;">
+                    <div class="card-body" style="max-height: 350px; overflow-y: auto;">
                     <ul class="list-group list-group-flush" id="actionLogsList"></ul>
                 </div>
             </div>

@@ -407,6 +407,10 @@ document.querySelectorAll('input[name="payrollDownloadCategory"]').forEach(el =>
     });
 });
 
+document.getElementById('downloadAllDtrBtn').addEventListener('click', function() {
+    window.location.href = '/download_all_csc_dtr_zip';
+});
+
 // Handle download on confirm
 document.getElementById('confirmDownloadStudentPayrollXlsxBtn').addEventListener('click', function() {
     const selected = document.querySelector('input[name="payrollDownloadCategory"]:checked');
@@ -423,16 +427,21 @@ document.addEventListener('DOMContentLoaded', fetchPayrollSummary, fetchActionLo
 function formatTime(datetimeStr) {
     if (!datetimeStr) return '-';
     // Handles formats like "2025-07-20T08:00" or "2025-07-20T08:00:00"
-    const tIndex = datetimeStr.indexOf('T');
-    if (tIndex !== -1) {
-        return datetimeStr.substring(tIndex + 1, tIndex + 6).replace(':', ' : ');
+    let timePart = '';
+    if (datetimeStr.includes('T')) {
+        timePart = datetimeStr.split('T')[1].substring(0,5);
+    } else if (datetimeStr.includes(' ')) {
+        timePart = datetimeStr.split(' ')[1].substring(0,5);
+    } else {
+        timePart = datetimeStr.substring(0,5);
     }
-    // Handles formats like "2025-07-20 08:00:00"
-    const spaceIndex = datetimeStr.indexOf(' ');
-    if (spaceIndex !== -1) {
-        return datetimeStr.substring(spaceIndex + 1, spaceIndex + 6).replace(':', ' : ');
-    }
-    return datetimeStr; // fallback
+    // Convert to 12-hour format
+    const [hourStr, minuteStr] = timePart.split(':');
+    let hour = parseInt(hourStr, 10);
+    const minute = minuteStr;
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12 || 12;
+    return `${hour}:${minute} ${ampm}`;
 }
 
 document.getElementById('moveStudentPayrollToArchiveBtn').addEventListener('click', function() {
@@ -559,4 +568,3 @@ document.addEventListener('DOMContentLoaded', function() {
         new bootstrap.Toast(toast).show();
     }
 });
-// ...existing code...

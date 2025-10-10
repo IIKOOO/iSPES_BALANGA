@@ -220,20 +220,28 @@
                                 <p class="fw-bold text-danger">Unpaid:</p>
                                 <p class="fw-bold text-danger"><span id="payrollUnpaid">0</span></p>
                             </div>
-                            <div class="card-body text-center">
-                                <button id="downloadStudentPayrollCsvBtn" class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-download"></i> Download Student Payroll CSV
-                                </button>
-                                <button id="downloadStudentPayrollXlsxBtn" class="btn btn-outline-primary btn-sm mt-3">
-                                    <i class="bi bi-download"></i> Generate Student Payroll List xlsx
-                                </button>
-                                <button id="sendScheduleSmsBtn" class="btn btn-outline-success btn-sm mt-3 ms-2">
-                                    <i class="bi bi-envelope"></i> Send Payroll Schedule SMS
-                                </button>
-                                <button id="moveStudentPayrollToArchiveBtn" class="btn btn-danger btn-sm mt-3 text-warning">
-                                    <i class="bi"></i> Move All Student Payroll to Archive
-                                </button>
-                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="d-flex flex-column align-items-center gap-2">
+                            <button id="downloadStudentPayrollCsvBtn" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="bi bi-file-earmark-excel"></i> Generate Payroll CSV
+                            </button>
+                            <button id="downloadStudentPayrollXlsxBtn" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="bi bi-file-earmark-excel"></i> Generate Payroll XLSX
+                            </button>
+                            <button id="sendScheduleSmsBtn" class="btn btn-outline-success btn-sm w-100">
+                                <i class="bi bi-envelope"></i> Payroll Schedule SMS
+                            </button>
+                            <button id="downloadAllDtrBtn" class="btn btn-outline-success btn-sm w-100">
+                                <i class="bi bi-archive"></i> Download All DTRs
+                            </button>
+                            <!-- <button id="downloadAllARBtn" class="btn btn-outline-success btn-sm w-100">
+                                <i class="bi bi-archive"></i> Download All AR
+                            </button> -->
+                            <button id="moveStudentPayrollToArchiveBtn" class="btn btn-danger btn-sm w-100 text-warning">
+                                <i class="bi bi-box-arrow-in-down"></i> Archive Payroll
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -241,7 +249,7 @@
                     <div class="card-header text-white" style="background-color: #003366;">
                         <h5 class="mb-0">Recent Action Logs</h5>
                     </div>
-                    <div class="card-body" style="max-height: 310px; overflow-y: auto;">
+                    <div class="card-body" style="max-height: 335px; overflow-y: auto;">
                         <ul class="list-group list-group-flush" id="actionLogsList"></ul>
                     </div>
                 </div>
