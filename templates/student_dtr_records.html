@@ -210,15 +210,35 @@
         </div>
     </div>
     <div class="modal fade" id="dtrImageModal" tabindex="-1" aria-labelledby="dtrImageModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="dtrImageModalLabel">Captured Image</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body text-center" id="dtr-image-modal-body">
-                <!-- Image will be loaded here -->
-            </div>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dtrImageModalLabel">Captured Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Modal body split: left 30% profile + DTR details, right 70% scrollable images -->
+                <div class="modal-body p-0" id="dtr-image-modal-body" style="min-height:300px;">
+                    <div class="d-flex" style="gap:0;">
+                        <!-- Left: Profile / passport (30%) -->
+                        <div id="dtr-image-left" style="flex: 0 0 30%; max-width:30%; border-right:1px solid #e9ecef; background:#f8f9fa;">
+                            <div class="p-3">
+                                <div class="text-center mb-3">
+                                    <img id="dtr-passport-img" src="" alt="Passport" class="img-fluid rounded" style="max-height:220px; object-fit:contain; width:100%;">
+                                </div>
+                                <h6 id="dtr-fullname" class="text-center fw-bold"></h6>
+                                <div id="dtr-profile-details" class="mt-3 small">
+                                    <!-- profile + selected DTR details injected here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Images (70%) - scrollable -->
+                        <div id="dtr-image-right" style="flex: 0 0 70%; max-width:70%; overflow-y:auto; max-height:75vh; padding:1rem;">
+                            <div id="dtr-image-list" class="d-flex flex-column" style="gap:.75rem;"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

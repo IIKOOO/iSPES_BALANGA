@@ -327,24 +327,200 @@ document.getElementById('downloadFinishDtrCsvBtn').addEventListener('click', fun
 document.addEventListener('DOMContentLoaded', fetchDtrSummary,fetchActionLogs());
 
 document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('view-image-btn')) {
+    if (e.target && e.target.classList.contains('view-image-btn')) {
         const dtrId = e.target.getAttribute('data-dtr-id');
-        fetch(`/get_dtr_images/${dtrId}`)
-            .then(res => res.json())
-            .then(images => {
-                let html = '';
-                if (images.length === 0) {
-                    html = '<p>No image captured for this DTR entry.</p>';
+        // get current student id from modal footer button (set when opening viewDtrModal)
+        const moveBtn = document.getElementById('moveToPayrollBtn');
+        const studentId = (moveBtn && moveBtn.getAttribute('data-student-id')) || e.target.getAttribute('data-student-id');
+
+        Promise.all([
+            fetch(`/get_dtr_images/${dtrId}`).then(r => r.json()),
+            studentId ? fetch(`/get_student_details/${studentId}`).then(r => r.json()) : Promise.resolve(null)
+        ]).then(([images, student]) => {
+            // Left panel: passport and small profile
+            const passportUrl = student ? `/get_requirement_file/student_application/${student.student_id}/passport_pic` : '';
+            const fullName = student ? `${student.last_name || ''}, ${student.first_name || ''} ${student.middle_name || ''} ${student.suffix || ''}`.replace(/\s+/g,' ').trim() : '';
+            const profileDetails = [];
+            if (student) {
+                if (student.student_category) profileDetails.push(`<strong>Category:</strong> ${student.student_category}`);
+                if (student.mobile_no) profileDetails.push(`<strong>Mobile:</strong> ${student.mobile_no}`);
+                if (student.email) profileDetails.push(`<strong>Email:</strong> ${student.email}`);
+                if (student.birth_date) profileDetails.push(`<strong>Birth:</strong> ${new Date(student.birth_date).toLocaleDateString('en-US')}`);
+            }
+
+            // Populate left
+            const passportImgEl = document.getElementById('dtr-passport-img');
+            const fullnameEl = document.getElementById('dtr-fullname');
+            const detailsEl = document.getElementById('dtr-profile-details');
+
+            if (passportImgEl && passportUrl) {
+                passportImgEl.src = passportUrl;
+                passportImgEl.onerror = () => { passportImgEl.src = ''; passportImgEl.alt = 'No passport image'; }
+            } else if (passportImgEl) {
+                passportImgEl.src = '';
+                passportImgEl.alt = 'No passport image';
+            }
+            fullnameEl.textContent = fullName || `ID: ${studentId || '-'}`;
+
+            // Show basic profile first, add placeholder for DTR details
+            detailsEl.innerHTML = profileDetails.length ? profileDetails.map(s => `<div class="mb-1">${s}</div>`).join('') : '<div class="text-muted">No additional details</div>';
+            const singleDtrContainerId = 'dtr-single-details';
+            const prev = document.getElementById(singleDtrContainerId);
+            if (prev) prev.remove();
+            const placeholder = document.createElement('div');
+            placeholder.id = singleDtrContainerId;
+            placeholder.className = 'mt-3';
+            placeholder.innerHTML = `<div class="text-muted small">Loading DTR details...</div>`;
+            detailsEl.appendChild(placeholder);
+
+            // Fetch student's DTR rows to render the specific clicked DTR under the profile
+            if (studentId) {
+                fetch(`/get_student_dtr/${studentId}`).then(r => r.json()).then(dtrRows => {
+                    const clicked = dtrRows.find(d => String(d.dtr_id) === String(dtrId));
+                    const container = document.getElementById(singleDtrContainerId);
+                    if (!container) return;
+                    if (!clicked) {
+                        container.innerHTML = `<div class="text-muted small">DTR details not found.</div>`;
+                        return;
+                    }
+                    const dtrDetailHtml = `
+                        <div class="card shadow-sm">
+                            <div class="card-body p-2">
+                                <h6 class="mb-2 fw-bold text-center">This DTR</h6>
+                                <div class="row mb-1">
+                                    <div class="col-5"><strong>Location:</strong></div>
+                                    <div class="col-7">${clicked.scanner_location || '-'}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-5"><strong>Day:</strong></div>
+                                    <div class="col-7">${new Date(clicked.date).toLocaleDateString('en-US', {weekday:'short'})}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-5"><strong>Date:</strong></div>
+                                    <div class="col-7">${clicked.date || '-'}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-5"><strong>Morning In:</strong></div>
+                                    <div class="col-7">${formatTime(clicked.time_in_am)}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-5"><strong>Morning Out:</strong></div>
+                                    <div class="col-7">${formatTime(clicked.time_out_am)}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-5"><strong>Afternoon In:</strong></div>
+                                    <div class="col-7">${formatTime(clicked.time_in_pm)}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-5"><strong>Afternoon Out:</strong></div>
+                                    <div class="col-7">${formatTime(clicked.time_out_pm)}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-5"><strong>Eval AM:</strong></div>
+                                    <div class="col-7">${clicked.evaluation_am || '-'}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-5"><strong>Eval PM:</strong></div>
+                                    <div class="col-7">${clicked.evaluation_pm || '-'}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-5"><strong>Daily Total:</strong></div>
+                                    <div class="col-7">${clicked.daily_total ? clicked.daily_total + ' hours' : '-'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML = dtrDetailHtml;
+
+                    const rectifyWrapper = document.createElement('div');
+                    rectifyWrapper.className = 'mt-2';
+                    const rectifyBtn = document.createElement('button');
+                    rectifyBtn.type = 'button';
+                    rectifyBtn.className = 'btn btn-warning btn-sm w-100 edit-dtr-btn';
+                    rectifyBtn.textContent = 'Rectify DTR';
+                    // attach needed data attributes used by existing edit handler
+                    rectifyBtn.setAttribute('data-dtr-id', clicked.dtr_id);
+                    // store the row object as JSON so existing handler can parse it
+                    rectifyBtn.setAttribute('data-dtr', JSON.stringify(clicked));
+                    rectifyWrapper.appendChild(rectifyBtn);
+                    container.appendChild(rectifyWrapper);
+                }).catch(() => {
+                    const container = document.getElementById(singleDtrContainerId);
+                    if (container) container.innerHTML = `<div class="text-muted small">Failed to load DTR details.</div>`;
+                });
+            } else {
+                const container = document.getElementById(singleDtrContainerId);
+                if (container) container.innerHTML = `<div class="text-muted small">Student ID missing; cannot load DTR details.</div>`;
+            }
+
+            // Right panel: images list
+            const listEl = document.getElementById('dtr-image-list');
+            listEl.innerHTML = '';
+            if (!images || images.length === 0) {
+                listEl.innerHTML = `<div class="text-center text-muted">No image captured for this DTR entry.</div>`;
+            } else {
+                images.forEach(img => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'd-flex flex-column align-items-center';
+                    wrapper.innerHTML = `
+                        <img src="data:image/png;base64,${img.image_data}" class="img-fluid rounded border" style="max-width:100%; max-height:520px; object-fit:contain;" alt="DTR Image">
+                        <small class="text-muted mt-2">Captured at: ${img.captured_at}</small>
+                        <hr style="width:100%; margin-top:.75rem; margin-bottom:.75rem;">
+                    `;
+                    listEl.appendChild(wrapper);
+                });
+            }
+
+            // Show modal
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('dtrImageModal')).show();
+        }).catch(err => {
+            console.error('Error fetching images or student details:', err);
+            // fallback: show images only
+            fetch(`/get_dtr_images/${dtrId}`).then(r => r.json()).then(images => {
+                const listEl = document.getElementById('dtr-image-list');
+                listEl.innerHTML = '';
+                if (!images || images.length === 0) {
+                    listEl.innerHTML = `<div class="text-center text-muted">No image captured for this DTR entry.</div>`;
                 } else {
                     images.forEach(img => {
-                        html += `<img src="data:image/png;base64,${img.image_data}" class="img-fluid mb-2" style="max-width:100%;max-height:400px;" alt="DTR Image"><br>`;
-                        html += `<small class="text-muted">Captured at: ${img.captured_at}</small><hr>`;
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'd-flex flex-column align-items-center';
+                        wrapper.innerHTML = `
+                            <img src="data:image/png;base64,${img.image_data}" class="img-fluid rounded border" style="max-width:100%; max-height:520px; object-fit:contain;" alt="DTR Image">
+                            <small class="text-muted mt-2">Captured at: ${img.captured_at}</small>
+                            <hr style="width:100%; margin-top:.75rem; margin-bottom:.75rem;">
+                        `;
+                        listEl.appendChild(wrapper);
                     });
                 }
-                document.getElementById('dtr-image-modal-body').innerHTML = html;
-                new bootstrap.Modal(document.getElementById('dtrImageModal')).show();
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('dtrImageModal')).show();
             });
+        });
     }
+});
+
+document.getElementById('dtrImageModal')?.addEventListener('show.bs.modal', function () {
+    // count existing backdrops to compute stacking offset
+    const existingBackdrops = document.querySelectorAll('.modal-backdrop').length;
+    const stackOffset = existingBackdrops * 10;
+
+    // modal should be above existing modals
+    const modalZ = 1050 + stackOffset + 10;     // e.g. 1060 if one modal already open
+    const backdropZ = modalZ - 1;               // backdrop sits just under the modal
+
+    // apply z-index to modal
+    this.style.zIndex = modalZ;
+
+    // the new backdrop is appended after this event, so adjust it on next tick
+    setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        const newBackdrop = backdrops[backdrops.length - 1];
+        if (newBackdrop) {
+            newBackdrop.style.zIndex = backdropZ;
+            // mark it so we can clean up later if needed
+            newBackdrop.setAttribute('data-stacked', 'true');
+        }
+    }, 0);
 });
 
 let activePopovers = [];
@@ -564,6 +740,30 @@ document.getElementById('editDtrForm').addEventListener('submit', function(e) {
             showDtrActionToast('Failed to update DTR.', false);
         }
         bootstrap.Modal.getInstance(document.getElementById('editDtrModal')).hide();
+    });
+});
+
+document.getElementById('editDtrModal')?.addEventListener('show.bs.modal', function () {
+    const existingBackdrops = document.querySelectorAll('.modal-backdrop').length;
+    const stackOffset = existingBackdrops * 10;
+    const modalZ = 1050 + stackOffset + 10;
+    const backdropZ = modalZ - 1;
+    this.style.zIndex = modalZ;
+    setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        const newBackdrop = backdrops[backdrops.length - 1];
+        if (newBackdrop) {
+            newBackdrop.style.zIndex = backdropZ;
+            newBackdrop.setAttribute('data-stacked', 'true');
+        }
+    }, 0);
+});
+
+document.getElementById('editDtrModal')?.addEventListener('hidden.bs.modal', function () {
+    this.style.zIndex = '';
+    document.querySelectorAll('.modal-backdrop[data-stacked="true"]').forEach(bd => {
+        bd.removeAttribute('data-stacked');
+        bd.style.zIndex = '';
     });
 });
 

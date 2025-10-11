@@ -238,6 +238,38 @@ function fetchAndDisplayPayrollArchive() {
     });
 }
 
+document.getElementById('dtrImageModal')?.addEventListener('show.bs.modal', function () {
+    // number of backdrops already in DOM (e.g. from viewDtrModal)
+    const existingBackdrops = document.querySelectorAll('.modal-backdrop').length;
+    const stackOffset = existingBackdrops * 10;
+    const modalZ = 1050 + stackOffset + 10; // base 1050 used by Bootstrap, push above existing
+    const backdropZ = modalZ - 1;
+
+    // bring this modal above any open modals
+    this.style.zIndex = modalZ;
+
+    // adjust the new backdrop after it is inserted
+    setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        const newBackdrop = backdrops[backdrops.length - 1];
+        if (newBackdrop) {
+            newBackdrop.style.zIndex = backdropZ;
+            // mark so we can reset later
+            newBackdrop.setAttribute('data-stacked', 'true');
+        }
+    }, 0);
+});
+
+document.getElementById('dtrImageModal')?.addEventListener('hidden.bs.modal', function () {
+    // reset modal inline style
+    this.style.zIndex = '';
+    // clean up any stacked backdrops we created
+    document.querySelectorAll('.modal-backdrop[data-stacked="true"]').forEach(bd => {
+        bd.removeAttribute('data-stacked');
+        bd.style.zIndex = '';
+    });
+});
+
 let activePopovers = [];
 
 function hideAllPopovers() {
