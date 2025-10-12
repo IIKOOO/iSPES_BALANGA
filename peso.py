@@ -1821,8 +1821,9 @@ def download_requested_docs_archive(student_id):
 def send_payroll_schedule_sms():
     if 'peso_logged_in' not in session:
         return jsonify({'success': False, 'message': 'Not authorized', 'category': 'danger'}), 401
-    data = request.get_json()
+    data = request.get_json() or {}
     schedule_date = data.get('schedule_date')
+    category = data.get('category', 'all')
     if not schedule_date:
         return jsonify({'success': False, 'message': 'No date provided', 'category': 'danger'}), 400
     # Format date as mm/dd/yyyy
@@ -1834,10 +1835,19 @@ def send_payroll_schedule_sms():
     conn = get_conn()
     try:
         with conn.cursor() as cur:
-            cur.execute("""
-                SELECT mobile_no, first_name FROM student_dtr_records
+            query = """
+                SELECT mobile_no, first_name
+                FROM student_dtr_records
                 WHERE for_payroll = TRUE AND (is_paid = FALSE OR is_paid IS NULL) AND mobile_no IS NOT NULL
-            """)
+            """
+            params = []
+            if category == 'senior_high':
+                query += " AND student_category = %s"
+                params.append('SENIOR HIGH SCHOOL')
+            elif category == 'college':
+                query += " AND student_category <> %s"
+                params.append('SENIOR HIGH SCHOOL')
+            cur.execute(query, params)
             students = cur.fetchall()
             count = 0
             for mobile_no, first_name in students:
@@ -1846,7 +1856,8 @@ def send_payroll_schedule_sms():
                 msg = f"Good day {first_name}, your payroll schedule is on {formatted_date} 9:00am-5:00pm. Please be present. - SPES Balanga"
                 send_sms(mobile_no, msg)
                 count += 1
-        return jsonify({'success': True, 'message': f'SMS sent to {count} unpaid students.', 'category': 'success'})
+        cat_label = 'All' if category == 'all' else ('Senior High' if category == 'senior_high' else 'College')
+        return jsonify({'success': True, 'message': f'SMS sent to {count} unpaid students ({cat_label}).', 'category': 'success'})
     except Exception as e:
         conn.rollback()
         return jsonify({'success': False, 'message': str(e), 'category': 'danger'}), 500

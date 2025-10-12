@@ -325,6 +325,17 @@
                 <div class="modal-body">
                     <label for="scheduleDate" class="form-label fw-bold">Select Schedule Date:</label>
                     <input type="date" id="scheduleDate" class="form-control mb-3">
+                    <label class="form-label fw-bold">Select Recipient Category:</label>
+                    <div class="mb-3">
+                        <input type="radio" name="payrollSmsCategory" id="payrollSmsAll" value="all" checked>
+                        <label for="payrollSmsAll">All</label>
+                        <br>
+                        <input type="radio" name="payrollSmsCategory" id="payrollSmsSHS" value="senior_high">
+                        <label for="payrollSmsSHS">Senior High School</label>
+                        <br>
+                        <input type="radio" name="payrollSmsCategory" id="payrollSmsCollege" value="college">
+                        <label for="payrollSmsCollege">College</label>
+                    </div>
                     <div id="smsPreview" class="alert alert-info d-none"></div>
                 </div>
                 <div class="modal-footer">

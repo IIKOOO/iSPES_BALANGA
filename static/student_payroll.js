@@ -658,6 +658,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmBtn = document.getElementById('sendScheduleSmsConfirmBtn');
     const smsPreview = document.getElementById('smsPreview');
 
+    // helper to read selected category radio
+    function getSelectedSmsCategory() {
+        const sel = document.querySelector('input[name="payrollSmsCategory"]:checked');
+        return sel ? sel.value : 'all';
+    }
+
     // Set min date to tomorrow
     if (dateInput) {
         const tomorrow = new Date();
@@ -680,13 +686,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dateInput) {
         dateInput.addEventListener('input', () => {
             if (dateInput.value) {
-                // Format date as mm/dd/yyyy for preview
                 const d = new Date(dateInput.value);
                 const mm = String(d.getMonth() + 1).padStart(2, '0');
                 const dd = String(d.getDate()).padStart(2, '0');
                 const yyyy = d.getFullYear();
                 const formatted = `${mm}/${dd}/${yyyy}`;
-                smsPreview.textContent = `SMS will be sent to all unpaid students: "Your payroll schedule is on ${formatted} 9:00am-5:00pm. Please be present."`;
+                const category = getSelectedSmsCategory();
+                const targetText = category === 'all' ? 'all unpaid students' : (category === 'senior_high' ? 'Senior High unpaid students' : 'College unpaid students');
+                smsPreview.textContent = `SMS will be sent to ${targetText}: "Your payroll schedule is on ${formatted} 9:00am-5:00pm. Please be present."`;
                 smsPreview.classList.remove('d-none');
                 confirmBtn.disabled = false;
             } else {
@@ -696,13 +703,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // update preview when category changes
+    document.querySelectorAll('input[name="payrollSmsCategory"]').forEach(el => {
+        el.addEventListener('change', () => {
+            if (dateInput && dateInput.value) {
+                // re-trigger to update preview text
+                const ev = new Event('input');
+                dateInput.dispatchEvent(ev);
+            }
+        });
+    });
+
     if (confirmBtn) {
         confirmBtn.addEventListener('click', () => {
             confirmBtn.disabled = true;
+            const category = getSelectedSmsCategory();
             fetch('/send_payroll_schedule_sms', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({schedule_date: dateInput.value})
+                body: JSON.stringify({schedule_date: dateInput.value, category: category})
             })
             .then(res => res.json())
             .then(data => {
@@ -711,6 +730,9 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(() => {
                 showToast('Failed to send SMS.', 'danger');
+            })
+            .finally(() => {
+                confirmBtn.disabled = false;
             });
         });
     }
