@@ -408,6 +408,10 @@ function fetchAndDisplayPayroll() {
 }
 
 document.getElementById('dtrImageModal')?.addEventListener('show.bs.modal', function () {
+    // hide any open popovers immediately and prevent new ones while modal is open
+    hideAllPopovers();
+    isDtrImageModalOpen = true;
+
     // count existing backdrops to compute stacking offset
     const existingBackdrops = document.querySelectorAll('.modal-backdrop').length;
     const stackOffset = existingBackdrops * 10;
@@ -431,7 +435,7 @@ document.getElementById('dtrImageModal')?.addEventListener('show.bs.modal', func
     }, 0);
 });
 
-// cleanup styles after modal hidden
+// cleanup styles and flags after modal hidden
 document.getElementById('dtrImageModal')?.addEventListener('hidden.bs.modal', function () {
     // reset modal inline style
     this.style.zIndex = '';
@@ -441,6 +445,10 @@ document.getElementById('dtrImageModal')?.addEventListener('hidden.bs.modal', fu
         bd.removeAttribute('data-stacked');
         bd.style.zIndex = '';
     });
+
+    // clear modal-open flag and ensure no popovers remain
+    isDtrImageModalOpen = false;
+    hideAllPopovers();
 });
 
 document.addEventListener('DOMContentLoaded', fetchAndDisplayPayroll);
@@ -460,6 +468,7 @@ function fetchPayrollSummary() {
 }
 
 let activePopovers = [];
+let isDtrImageModalOpen = false;
 
 function hideAllPopovers() {
     activePopovers.forEach(pop => {
@@ -473,6 +482,9 @@ function hideAllPopovers() {
 }
 
 document.addEventListener('mouseover', function(e) {
+    // do not show hover popovers while the image modal is open
+    if (isDtrImageModalOpen) return;
+
     if (e.target.classList.contains('view-image-btn')) {
         hideAllPopovers(); // Always hide all before showing new
 

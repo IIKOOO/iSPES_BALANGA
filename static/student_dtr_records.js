@@ -500,6 +500,10 @@ document.addEventListener('click', function(e) {
 });
 
 document.getElementById('dtrImageModal')?.addEventListener('show.bs.modal', function () {
+    // hide any open popovers immediately and prevent new ones while modal is open
+    hideAllPopovers();
+    isDtrImageModalOpen = true;
+
     // count existing backdrops to compute stacking offset
     const existingBackdrops = document.querySelectorAll('.modal-backdrop').length;
     const stackOffset = existingBackdrops * 10;
@@ -523,7 +527,15 @@ document.getElementById('dtrImageModal')?.addEventListener('show.bs.modal', func
     }, 0);
 });
 
+// ensure flag is cleared when modal hides
+document.getElementById('dtrImageModal')?.addEventListener('hidden.bs.modal', function () {
+    isDtrImageModalOpen = false;
+    // also clean up any leftover popovers just in case
+    hideAllPopovers();
+});
+
 let activePopovers = [];
+let isDtrImageModalOpen = false;
 
 function hideAllPopovers() {
     activePopovers.forEach(pop => {
@@ -537,6 +549,9 @@ function hideAllPopovers() {
 }
 
 document.addEventListener('mouseover', function(e) {
+    // do not show hover popovers while the image modal is open
+    if (isDtrImageModalOpen) return;
+
     if (e.target.classList.contains('view-image-btn')) {
         hideAllPopovers(); // Always hide all before showing new
 
