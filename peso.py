@@ -500,7 +500,7 @@ def move_to_final_list(student_id):
         # Send SMS notification if mobile_no exists
         if mobile_no:
             sms_message = (
-                f"Congrats {first_name}!, you are now qualified as a SPES beneficiary. Please await further instructions. - SPES Balanga"
+                f"Congrats {first_name}!, you are now qualified as a SPES beneficiary. Please wait for orientation schedule and further updates. - SPES Balanga"
             )
             send_sms(mobile_no, sms_message)
         return jsonify({'success': True})
@@ -540,7 +540,7 @@ def move_to_final_list_from_pending(student_id):
         # Send SMS notification if mobile_no exists
         if mobile_no:
             sms_message = (
-                f"Congratulations {first_name}!, you are now qualified as a SPES beneficiary. Please wait for further instructions. - SPES Balanga"
+                f"Congratulations {first_name}!, you are now qualified as a SPES beneficiary. Please wait for orientation schedule and further updates. - SPES Balanga"
             )
             send_sms(mobile_no, sms_message)
         return jsonify({'success': True})

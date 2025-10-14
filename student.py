@@ -50,6 +50,13 @@ def upload_required_docs():
         manila_tz = pytz.timezone('Asia/Manila')
         now = datetime.now(manila_tz).replace(tzinfo=None)
 
+        # read bytes only if file provided and has filename
+        birth_bytes = birth_certificate.read() if birth_certificate and birth_certificate.filename else None
+        report_bytes = report_card.read() if report_card and report_card.filename else None
+        passport_bytes = passport_photo.read() if passport_photo and passport_photo.filename else None
+        parents_bytes = parents_id.read() if parents_id and parents_id.filename else None
+        itr_bytes = itr.read() if itr and itr.filename else None
+
         try:
             cur = conn.cursor()
             cur.execute("""
@@ -58,34 +65,47 @@ def upload_required_docs():
             existing = cur.fetchone()
 
             if existing:
+                # Preserve existing blobs when no new file provided
                 cur.execute("""
                     UPDATE student_application_requirements
-                    SET birth_certificate = %s,
-                        parents_valid_id = %s,
-                        ctc_rog = %s,
-                        parents_itr = %s,
-                        passport_pic = %s,
+                    SET birth_certificate = COALESCE(%s, birth_certificate),
+                        parents_valid_id = COALESCE(%s, parents_valid_id),
+                        ctc_rog = COALESCE(%s, ctc_rog),
+                        parents_itr = COALESCE(%s, parents_itr),
+                        passport_pic = COALESCE(%s, passport_pic),
                         last_upload_timestamp = %s
                     WHERE student_application_id = %s
                 """, (
-                    birth_certificate.read() if birth_certificate else None,
-                    parents_id.read() if parents_id else None,
-                    report_card.read() if report_card else None,
-                    itr.read() if itr else None,
-                    passport_photo.read() if passport_photo else None,
+                    birth_bytes,
+                    parents_bytes,
+                    report_bytes,
+                    itr_bytes,
+                    passport_bytes,
                     now, student_application_id
                 ))
             else:
+                # If DB has NOT NULL constraints, require all required files on first insert
+                missing = []
+                if not birth_bytes: missing.append('birth certificate')
+                if not parents_bytes: missing.append('parents id')
+                if not report_bytes: missing.append('report card')
+                if not itr_bytes: missing.append('parents ITR')
+                if not passport_bytes: missing.append('passport photo')
+                if missing:
+                    flash('First upload must include: ' + ', '.join(missing), 'danger')
+                    cur.close()
+                    return redirect(url_for('student.student_registrations'))
+
                 cur.execute("""
                     INSERT INTO student_application_requirements (
                         birth_certificate, parents_valid_id, ctc_rog, parents_itr, passport_pic, student_application_id, first_upload_timestamp, last_upload_timestamp
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
-                    birth_certificate.read() if birth_certificate else None,
-                    parents_id.read() if parents_id else None,
-                    report_card.read() if report_card else None,
-                    itr.read() if itr else None,
-                    passport_photo.read() if passport_photo else None,
+                    birth_bytes,
+                    parents_bytes,
+                    report_bytes,
+                    itr_bytes,
+                    passport_bytes,
                     student_application_id,
                     now,
                     now
