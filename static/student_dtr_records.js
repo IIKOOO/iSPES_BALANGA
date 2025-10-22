@@ -2,11 +2,11 @@ function fetchAndDisplayDtrRecords() {
     const selectedCategory = document.getElementById('category_filter').value;
     const searchQuery = document.getElementById('search_input').value;
     const sortOption = document.getElementById('sort_option').value;
+    const holdStatus = document.getElementById('hold_status') ? document.getElementById('hold_status').value : 'All';
     let onHoldFilter = null;
-    if (sortOption === 'active') onHoldFilter = false;
-    if (sortOption === 'on_hold') onHoldFilter = true;
+    if (holdStatus === 'active') onHoldFilter = false;
+    else if (holdStatus === 'on_hold') onHoldFilter = true;
 
-    
     fetch('/get_student_dtr_records', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -235,6 +235,7 @@ document.addEventListener('DOMContentLoaded', fetchAndDisplayDtrRecords);
 document.getElementById('category_filter').addEventListener('change', fetchAndDisplayDtrRecords);
 document.getElementById('sort_option').addEventListener('change', fetchAndDisplayDtrRecords);
 document.getElementById('search_input').addEventListener('input', fetchAndDisplayDtrRecords);
+document.getElementById('hold_status').addEventListener('change', fetchAndDisplayDtrRecords);
 
 // Toast function for payroll actions
 function showDtrActionToast(message, isSuccess) {
@@ -810,7 +811,7 @@ document.addEventListener('click', function(e) {
             .then(resp => {
                 if (resp.success) {
                     location.reload();
-                    alert('On hold status updated successfully!');
+                    // alert('On hold status updated successfully!');
                 } else {
                     showDtrActionToast('Failed to update on hold status.', false);
                 }

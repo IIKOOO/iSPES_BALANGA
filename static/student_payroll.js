@@ -2,9 +2,10 @@ function fetchAndDisplayPayroll() {
     const selectedCategory = document.getElementById('category_filter').value;
     const searchQuery = document.getElementById('search_input').value;
     const sortOption = document.getElementById('sort_option').value;
+    const paidStatus = document.getElementById('paid_status') ? document.getElementById('paid_status').value : 'All';
     let isPaidFilter = null;
-    if (sortOption === 'paid') isPaidFilter = true;
-    if (sortOption === 'unpaid') isPaidFilter = false;
+    if (paidStatus === 'paid') isPaidFilter = true;
+    else if (paidStatus === 'unpaid') isPaidFilter = false;
 
     fetch('/get_student_dtr_records', {
         method: 'POST',
@@ -42,19 +43,46 @@ function fetchAndDisplayPayroll() {
                 </tr>
             `;
         });
+        let pendingToggleStudentId = null;
+        let pendingToggleNewStatus = null;
+
         document.querySelectorAll('.toggle-paid-btn').forEach(btn => {
             btn.addEventListener('click', function() {
-                const studentId = this.getAttribute('data-id');
-                fetch(`/toggle_payroll_paid/${studentId}`, { method: 'POST' })
-                    .then(res => res.json())
-                    .then(resp => {
-                        if (resp.success) {
-                            location.reload();
-                        } else {
-                            alert('Failed to update payroll status.');
-                        }
-                    });
+                pendingToggleStudentId = this.getAttribute('data-id');
+                const wasPaid = this.getAttribute('data-is-paid') === 'true';
+                pendingToggleNewStatus = !wasPaid;
+                const actionText = pendingToggleNewStatus ? 'mark this record as Paid' : 'mark this record as Unpaid';
+                const modalBody = document.getElementById('confirmTogglePaidModalBody');
+                modalBody.textContent = `Are you sure you want to ${actionText} (ID: ${pendingToggleStudentId})?`;
+                // show modal
+                new bootstrap.Modal(document.getElementById('confirmTogglePaidModal')).show();
             });
+        });
+
+        document.getElementById('confirmTogglePaidBtn')?.addEventListener('click', function() {
+            if (!pendingToggleStudentId) return;
+            const btn = this;
+            btn.disabled = true;
+            fetch(`/toggle_payroll_paid/${pendingToggleStudentId}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(resp => {
+                    btn.disabled = false;
+                    bootstrap.Modal.getInstance(document.getElementById('confirmTogglePaidModal')).hide();
+                    if (resp.success) {
+                        // refresh the list to reflect new status
+                        fetchAndDisplayPayroll();
+                        fetchActionLogs();
+                        fetchPayrollSummary();  
+                    } else {
+                        alert('Failed to update payroll status.');
+                    }
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    bootstrap.Modal.getInstance(document.getElementById('confirmTogglePaidModal')).hide();
+                    console.error(err);
+                    alert('Network error while updating payroll status.');
+                });
         });
 
         document.querySelectorAll('.view-dtr-btn').forEach(btn => {
@@ -455,6 +483,7 @@ document.addEventListener('DOMContentLoaded', fetchAndDisplayPayroll);
 document.getElementById('category_filter').addEventListener('change', fetchAndDisplayPayroll);
 document.getElementById('sort_option').addEventListener('change', fetchAndDisplayPayroll);
 document.getElementById('search_input').addEventListener('input', fetchAndDisplayPayroll);
+document.getElementById('paid_status')?.addEventListener('change', fetchAndDisplayPayroll);
 
 
 function fetchPayrollSummary() {

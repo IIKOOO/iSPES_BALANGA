@@ -2,6 +2,7 @@ function fetchAndDisplayFinalList() {
     const selectedCategory = document.getElementById('category_filter').value;
     const searchQuery = document.getElementById('search_input').value;
     const sortOption = document.getElementById('sort_option').value;
+    const workStatus = document.getElementById('work_status').value;
 
     // Use the unified endpoint and status for final list
     fetch('/retrieve_applications', {
@@ -11,7 +12,8 @@ function fetchAndDisplayFinalList() {
             status: 'final', // Only show applications with is_approved = true
             student_category: selectedCategory,
             search_query: searchQuery,
-            sort_option: sortOption
+            sort_option: sortOption,
+            work_status: workStatus
         })
     })
     .then(response => response.json())
@@ -47,6 +49,7 @@ document.addEventListener('DOMContentLoaded', fetchAndDisplayFinalList);
 document.getElementById('category_filter').addEventListener('change', fetchAndDisplayFinalList);
 document.getElementById('sort_option').addEventListener('change', fetchAndDisplayFinalList);
 document.getElementById('search_input').addEventListener('input', fetchAndDisplayFinalList);
+document.getElementById('work_status').addEventListener('change', fetchAndDisplayFinalList);
 
 function renderRow(label, value) {
     if (value === undefined || value === null || value === '') return '';

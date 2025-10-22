@@ -131,6 +131,7 @@ def retrieve_applications():
         student_category = request.json.get('student_category', None)
         search_query = request.json.get('search_query', None)
         sort_option = request.json.get('sort_option', 'last_name_asc')
+        work_status = request.json.get('work_status', 'All')
 
         # Determine flags based on status
         if status == 'registration':
@@ -165,11 +166,13 @@ def retrieve_applications():
         if search_query:
             query += " AND (CAST(s.student_id AS TEXT) ILIKE %s OR LOWER(s.last_name) ILIKE %s OR LOWER(s.first_name) ILIKE %s)"
             params.extend([f"%{search_query}%", f"%{search_query.lower()}%", f"%{search_query.lower()}%"])
-
-        if sort_option == "still_working":
+            
+        if work_status == "still_working":
             query += " AND s.student_id NOT IN (SELECT dtr_record_id FROM student_dtr_records)"
-            query += " ORDER BY s.last_name ASC"
-        elif sort_option == "last_name_asc":
+        elif work_status == "finished_working":
+            query += " AND s.student_id IN (SELECT dtr_record_id FROM student_dtr_records)"
+
+        if sort_option == "last_name_asc":
             query += " ORDER BY s.last_name ASC"
         elif sort_option == "last_name_desc":
             query += " ORDER BY s.last_name DESC"
@@ -759,7 +762,7 @@ def get_student_dtr_records():
     conn = get_conn()
     try:
         data = request.get_json() or {}
-        status = data.get('status', 'dtr')  # 'dtr' or 'payroll'
+        status = data.get('status', 'dtr')
         category = data.get('student_category', None)
         search = data.get('search_query', None)
         sort = data.get('sort_option', 'last_name_asc')
@@ -975,11 +978,11 @@ def toggle_payroll_paid(student_id):
                 VALUES (%s, %s, %s, %s)
             """, (student_id, action, session.get('peso_username', 'unknown'), performed_at))
             conn.commit()
-        flash(f"Student payroll marked as {'Paid' if new_status else 'Unpaid'}.", "success")
+        # flash(f"Student payroll marked as {'Paid' if new_status else 'Unpaid'}.", "success")
         return jsonify({'success': True, 'is_paid': new_status})
     except Exception as e:
         conn.rollback()
-        flash('Failed to update payroll status: ' + str(e), 'danger')
+        # flash('Failed to update payroll status: ' + str(e), 'danger')
         return jsonify({'success': False, 'error': str(e)}), 500
     finally:
         conn.close()
