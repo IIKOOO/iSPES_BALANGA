@@ -369,7 +369,8 @@ document.addEventListener('click', function (e) {
                     </div>
                     <div class="mb-3 mt-4">
                         <label for="pesoComment" class="form-label fw-bold">PESO Comment to Student</label>
-                        <textarea class="form-control" id="pesoComment" rows="3">${data.requirements.peso_comment || ''}</textarea>
+                        <div id="pesoCommentsList" class="mb-2" style="max-height:220px; overflow:auto;"></div>
+                        <textarea class="form-control" id="pesoComment" rows="1" placeholder="Write a comment..."></textarea>
                         <button id="savePesoCommentBtn" type="button" class="btn btn-success mt-2">Send Comment</button>
                     </div>
                 </div>
@@ -377,6 +378,8 @@ document.addEventListener('click', function (e) {
             `;
             const modalContent = document.getElementById('modalContent');
             modalContent.innerHTML = dtrHtml + html + requirementsHtml;
+
+            renderPesoComments((data.requirements && data.requirements.peso_comments) ? data.requirements.peso_comments : []);
 
             // Update progress bar after rendering
             let totalWorkedHours = 0;
@@ -406,7 +409,12 @@ document.addEventListener('click', function (e) {
         }).catch(error => console.error('Error:', error));
     }
     if (e.target && e.target.id === 'savePesoCommentBtn') {
-        const comment = document.getElementById('pesoComment').value;
+        const commentEl = document.getElementById('pesoComment');
+        const comment = commentEl.value.trim();
+        if (!comment) {
+            showFinalActionToast('Comment cannot be empty.', false);
+            return;
+        }
         fetch(`/update_peso_comment/${currentStudentId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -416,8 +424,32 @@ document.addEventListener('click', function (e) {
         .then(resp => {
             if (resp.success) {
                 alert('Comment saved!');
+                if (resp.comment) {
+                    const list = document.getElementById('pesoCommentsList');
+                    const itemHtml = `
+                        <div class="card mb-2">
+                            <div class="card-body p-2">
+                                <div class="small text-secondary">${resp.comment.author || 'PESO'}</div>
+                                <div class="small text-muted">${formatTimestamp(resp.comment.created_at || '')}</div>
+                                <div class="mt-1">${(resp.comment.comment || '').replace(/\n/g,'<br>')}</div>
+                            </div>
+                        </div>
+                    `;
+                    if (list) {
+                        list.insertAdjacentHTML('beforeend', itemHtml);
+                        list.scrollTop = list.scrollHeight;
+                    }
+                } else {
+                    // fallback: refresh
+                    fetch(`/get_student_details/${currentStudentId}`)
+                        .then(r => r.json())
+                        .then(d => {
+                            if (d.requirements && d.requirements.peso_comments) renderPesoComments(d.requirements.peso_comments);
+                        });
+                }
+                commentEl.value = '';
             } else {
-                showFinalActionToast('Failed to save comment.', false);
+                showFinalActionToast(resp.error || 'Failed to save comment.', false);
             }
         })
         .catch(() => showFinalActionToast('Error saving comment.', false));
@@ -1029,4 +1061,47 @@ function formatBirthDate(dateStr) {
     const options = { month: 'long', day: '2-digit', year: 'numeric' };
     // e.g. "October 01, 2002"
     return date.toLocaleDateString('en-US', options);
+}
+
+function formatTimestamp(isoOrSqlString) {
+    if (!isoOrSqlString) return '';
+    // Ensure a parseable ISO string: replace space with 'T' if needed
+    const s = isoOrSqlString.includes('T') ? isoOrSqlString : isoOrSqlString.replace(' ', 'T');
+    const d = new Date(s);
+    if (isNaN(d)) return isoOrSqlString;
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    let hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+    const hh = String(hours).padStart(2, '0');
+    return `${mm}-${dd}-${yyyy}, ${hh}:${minutes} ${ampm}`;
+}
+
+function renderPesoComments(comments = []) {
+    const list = document.getElementById('pesoCommentsList');
+    if (!list) return;
+    if (!comments || comments.length === 0) {
+        list.innerHTML = '<div class="small text-muted">No previous comments.</div>';
+        return;
+    }
+
+    // Show oldest first so latest is at the bottom
+    const ordered = comments.slice().reverse();
+
+    list.innerHTML = ordered.map(c => `
+        <div class="card mb-2">
+            <div class="card-body p-2">
+                <div class="small text-secondary">${c.author || 'PESO'}</div>
+                <div class="small text-muted">${formatTimestamp(c.created_at)}</div>
+                <div class="mt-1">${(c.comment || '').replace(/\n/g, '<br>')}</div>
+            </div>
+        </div>
+    `).join('');
+
+    // Auto-scroll to bottom so latest comment is visible
+    list.scrollTop = list.scrollHeight;
 }

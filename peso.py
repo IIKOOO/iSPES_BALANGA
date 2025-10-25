@@ -339,6 +339,22 @@ def get_student_details(student_id):
                 "passport_pic_isgood": bool(requirements[16]) if requirements else False,
                 "additional_files_isgood": bool(requirements[17]) if requirements else False,
             }
+            
+            cur.execute("""
+                SELECT author, peso_comment, created_at
+                FROM public.peso_comment
+                WHERE student_id = %s
+                ORDER BY created_at DESC
+            """, (student_id,))
+            comments = cur.fetchall()
+            data["requirements"]["peso_comments"] = [
+                {
+                    "author": c[0],
+                    "comment": c[1],
+                    "created_at": c[2].strftime('%Y-%m-%d %H:%M:%S') if hasattr(c[2], 'strftime') else str(c[2])
+                } for c in comments
+            ]
+            
             return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -384,14 +400,24 @@ def update_peso_comment(student_id):
     conn = get_conn()
     try:
         comment = request.json.get('comment', '')
+        author = session.get('peso_username', 'PESO')
         with conn.cursor() as cur:
-            # Update the comment
+            # Update the comment in requirements (keep existing behavior)
             cur.execute("""
                 UPDATE student_application_requirements
                 SET peso_comment = %s
                 WHERE student_application_id = %s
             """, (comment, student_id))
-            conn.commit()
+
+            # Insert into peso_comment history table
+            manila_tz = pytz.timezone('Asia/Manila')
+            created_at = datetime.now(manila_tz).replace(tzinfo=None)
+            cur.execute("""
+                INSERT INTO public.peso_comment (author, peso_comment, created_at, student_id)
+                VALUES (%s, %s, %s, %s)
+                RETURNING peso_comment_id, created_at
+            """, (author, comment, created_at, student_id))
+            inserted = cur.fetchone()
 
             # Fetch student's mobile_no and first_name
             cur.execute("""
@@ -403,14 +429,18 @@ def update_peso_comment(student_id):
             mobile_no = student[0] if student else None
             first_name = student[1] if student else "Student"
 
-            # Send SMS if mobile_no exists
-            if mobile_no:
-                sms_message = (
-                    f"New comment from PESO. {comment}"
-                )
-                send_sms(mobile_no, sms_message)
+            conn.commit()
 
-        return jsonify({'success': True})
+        # Send SMS if mobile_no exists
+        if mobile_no:
+            sms_message = (
+                f"New comment from PESO. {comment}"
+            )
+            send_sms(mobile_no, sms_message)
+
+        # Return created comment for UI
+        created_at_str = inserted[1].strftime('%Y-%m-%d %H:%M:%S') if inserted and hasattr(inserted[1], 'strftime') else (str(inserted[1]) if inserted else '')
+        return jsonify({'success': True, 'comment': {'peso_comment_id': inserted[0] if inserted else None, 'author': author, 'comment': comment, 'created_at': created_at_str}})
     except Exception as e:
         conn.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -1369,13 +1399,25 @@ def update_dtr_comment(student_id):
     conn = get_conn()
     try:
         comment = request.json.get('comment', '')
+        author = session.get('peso_username', 'PESO')
         with conn.cursor() as cur:
-            # Update the comment
+            # Update the comment in student_dtr_records (keep existing behavior)
             cur.execute("""
                 UPDATE student_dtr_records
                 SET comment_for_dtr = %s
                 WHERE dtr_record_id = %s
             """, (comment, student_id))
+
+            # Insert into dtr_comment history table
+            manila_tz = pytz.timezone('Asia/Manila')
+            created_at = datetime.now(manila_tz).replace(tzinfo=None)
+            cur.execute("""
+                INSERT INTO public.dtr_comment (author, dtr_comment, created_at, student_id)
+                VALUES (%s, %s, %s, %s)
+                RETURNING dtr_comment_id, created_at
+            """, (author, comment, created_at, student_id))
+            inserted = cur.fetchone()
+
             # Fetch student's mobile_no and first_name
             cur.execute("""
                 SELECT mobile_no, first_name
@@ -1385,20 +1427,51 @@ def update_dtr_comment(student_id):
             student = cur.fetchone()
             mobile_no = student[0] if student else None
             first_name = student[1] if student else "Student"
+
             conn.commit()
-        # Send SMS if mobile_no exists
+
+        # Send SMS if mobile_no exists (same behavior)
         if mobile_no:
             sms_message = (
                 f"New comment from PESO regarding your DTR. {comment}"
             )
             send_sms(mobile_no, sms_message)
-        return jsonify({'success': True})
+
+        # Return created comment for UI (ISO timestamp)
+        created_at_iso = inserted[1].isoformat() if inserted and hasattr(inserted[1], 'isoformat') else (str(inserted[1]) if inserted else '')
+        return jsonify({'success': True, 'comment': {'dtr_comment_id': inserted[0] if inserted else None, 'author': author, 'comment': comment, 'created_at': created_at_iso}})
     except Exception as e:
         conn.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
     finally:
         conn.close()
-    
+
+# New endpoint: fetch dtr comment history for a student
+@peso_bp.route('/get_dtr_comments/<int:student_id>', methods=['GET'])
+def get_dtr_comments(student_id):
+    conn = get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT author, dtr_comment, created_at
+                FROM public.dtr_comment
+                WHERE student_id = %s
+                ORDER BY created_at ASC
+            """, (student_id,))
+            rows = cur.fetchall()
+            comments = [
+                {
+                    "author": r[0],
+                    "comment": r[1],
+                    "created_at": r[2].isoformat() if hasattr(r[2], 'isoformat') else str(r[2])
+                } for r in rows
+            ]
+        return jsonify({"comments": comments})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
     
 @peso_bp.route('/retrieve_archived_applications', methods=['POST'])
 def retrieve_archived_applications():

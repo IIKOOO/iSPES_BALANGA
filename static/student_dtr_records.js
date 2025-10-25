@@ -189,15 +189,14 @@ function fetchAndDisplayDtrRecords() {
                     }
 
                     // 4. Comment Card
-                    const student = allRecords.find(r => r.dtr_record_id == studentId);
-                    let comment = student && student.comment_for_dtr ? student.comment_for_dtr : '';
                     let commentCard = `
                         <div class="card mt-4 peso-comment-card shadow">
                             <div class="card-header text-white" style="background-color: #003366;">
                                 <h5 class="mb-0 fw-bold">PESO Comment to DTR</h5>
                             </div>
                             <div class="card-body">
-                                <textarea class="form-control mb-2" id="dtrPesoComment" rows="3" placeholder="Enter comment...">${comment || ''}</textarea>
+                                <div id="dtrCommentsList" class="mb-2" style="max-height:220px; overflow:auto;"></div>
+                                <textarea class="form-control mb-2" id="dtrPesoComment" rows="1" placeholder="Write a comment..."></textarea>
                                 <button id="saveDtrPesoCommentBtn" type="button" class="btn btn-success">Send Comment</button>
                             </div>
                         </div>
@@ -226,6 +225,17 @@ function fetchAndDisplayDtrRecords() {
                             progressText.textContent = `${totalWorkedHours} hours completed, ${Math.max(0, maxHours - totalWorkedHours)} hours remaining`;
                         }
                     }, 100);
+
+                    // after inserting modalContent, fetch and render DTR comment history
+                    fetch(`/get_dtr_comments/${studentId}`)
+                        .then(r => r.json())
+                        .then(js => {
+                            if (js && js.comments) renderDtrComments(js.comments);
+                        })
+                        .catch(() => {
+                            const list = document.getElementById('dtrCommentsList');
+                            if (list) list.innerHTML = '<div class="small text-muted">Failed to load comments.</div>';
+                        });
                 });
             });
         });
@@ -858,10 +868,17 @@ document.addEventListener('change', function(e) {
     }
 });
 
+// Save DTR comment — append to history and auto-scroll bottom
 document.addEventListener('click', function(e) {
     if (e.target && e.target.id === 'saveDtrPesoCommentBtn') {
         const studentId = document.getElementById('moveToPayrollBtn').getAttribute('data-student-id');
-        const comment = document.getElementById('dtrPesoComment').value;
+        const commentEl = document.getElementById('dtrPesoComment');
+        if (!studentId || !commentEl) return;
+        const comment = commentEl.value.trim();
+        if (!comment) {
+            alert('Comment cannot be empty.');
+            return;
+        }
         fetch(`/update_dtr_comment/${studentId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -870,11 +887,72 @@ document.addEventListener('click', function(e) {
         .then(res => res.json())
         .then(resp => {
             if (resp.success) {
-                alert('Comment saved and SMS sent!');
+                alert('Comment saved!');
+                if (resp.comment) {
+                    const list = document.getElementById('dtrCommentsList');
+                    const itemHtml = `
+                        <div class="card mb-2">
+                            <div class="card-body p-2">
+                                <div class="small text-secondary">${resp.comment.author || 'PESO'}</div>
+                                <div class="small text-muted">${formatTimestamp(resp.comment.created_at || '')}</div>
+                                <div class="mt-1">${(resp.comment.comment || '').replace(/\n/g,'<br>')}</div>
+                            </div>
+                        </div>
+                    `;
+                    if (list) {
+                        list.insertAdjacentHTML('beforeend', itemHtml);
+                        requestAnimationFrame(() => { list.scrollTop = list.scrollHeight; });
+                    }
+                } else {
+                    // fallback: refresh history
+                    fetch(`/get_dtr_comments/${studentId}`)
+                        .then(r => r.json())
+                        .then(d => { if (d.comments) renderDtrComments(d.comments); });
+                }
+                commentEl.value = '';
             } else {
-                showDtrActionToast('Failed to save comment.', false);
+                showDtrActionToast(resp.error || 'Failed to save comment.', false);
             }
         })
         .catch(() => showDtrActionToast('Error saving comment.', false));
     }
 });
+
+// Helpers: timestamp formatting and render
+function formatTimestamp(isoOrSqlString) {
+    if (!isoOrSqlString) return '';
+    const s = isoOrSqlString.includes('T') ? isoOrSqlString : isoOrSqlString.replace(' ', 'T');
+    const d = new Date(s);
+    if (isNaN(d)) return isoOrSqlString;
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    let hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+    const hh = String(hours).padStart(2, '0');
+    return `${mm}-${dd}-${yyyy}, ${hh}:${minutes} ${ampm}`;
+}
+
+function renderDtrComments(comments = []) {
+    const list = document.getElementById('dtrCommentsList');
+    if (!list) return;
+    if (!comments || comments.length === 0) {
+        list.innerHTML = '<div class="small text-muted">No previous comments.</div>';
+        return;
+    }
+    // ensure oldest-first so newest is at bottom
+    const ordered = comments.slice().reverse();
+    list.innerHTML = ordered.map(c => `
+        <div class="card mb-2">
+            <div class="card-body p-2">
+                <div class="small text-secondary">${c.author || 'PESO'}</div>
+                <div class="small text-muted">${formatTimestamp(c.created_at)}</div>
+                <div class="mt-1">${(c.comment || '').replace(/\n/g, '<br>')}</div>
+            </div>
+        </div>
+    `).join('');
+    requestAnimationFrame(() => { list.scrollTop = list.scrollHeight; });
+}
