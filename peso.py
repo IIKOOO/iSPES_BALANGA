@@ -68,6 +68,14 @@ def peso_registration():
         return redirect(url_for('index'))
     return render_template('peso_registration.html')
 
+@peso_bp.route('/peso_action_logs')
+@nocache
+@require_scanner_unlocked
+def peso_action_logs():
+    if 'peso_logged_in' not in session:
+        return redirect(url_for('index'))
+    return render_template('peso_action_logs.html')
+
 @peso_bp.route('/peso_pending_registration')
 @nocache
 @require_scanner_unlocked
@@ -739,7 +747,7 @@ def peso_action_logs_summary():
                 SELECT student_id, action, performed_by, performed_at
                 FROM peso_action_logs
                 ORDER BY performed_at DESC
-                LIMIT 10
+                LIMIT 20
             """)
             logs = [
                 {
